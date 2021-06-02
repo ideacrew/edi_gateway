@@ -13,9 +13,9 @@ jobs:
         uses: actions/cache@v1
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-aca_entities-gems-${{ hashFiles('**/Gemfile.lock') }}
+          key: ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-aca_entities-gems-${{ hashFiles('**/Gemfile.lock') }}
+            ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
       - name: bundle install
         run: |
           bundle config path vendor/bundle
