@@ -4,6 +4,7 @@ AllCops:
   SuggestExtensions: false
   NewCops: enable
   Exclude:
+    - config/application.rb
     - "bin/**/*"
     - "vendor/**/*"
 
