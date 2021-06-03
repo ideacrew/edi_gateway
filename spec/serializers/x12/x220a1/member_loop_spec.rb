@@ -28,6 +28,10 @@ RSpec.describe X12::X220A1::MemberLoop do
         <DTP02__DateTimePeriodFormatQualifier>D8</DTP02__DateTimePeriodFormatQualifier>
         <DTP03__StatusInformationEffectiveDate>20200315</DTP03__StatusInformationEffectiveDate>
       </DTP_MemberLevelDates_2000>
+      <Loop_2300>
+      </Loop_2300>
+      <Loop_2300>
+      </Loop_2300>
     </Loop_2000>
     XMLCODE
   end
@@ -75,5 +79,9 @@ RSpec.describe X12::X220A1::MemberLoop do
     expect(member_date.date_qualifier).to eq "303"
     expect(member_date.format_qualifier).to eq "D8"
     expect(member_date.date).to eq "20200315"
+  end
+
+  it "has member_coverage" do
+    expect(subject.member_coverage.length).to eq 2
   end
 end

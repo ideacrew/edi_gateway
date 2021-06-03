@@ -14,6 +14,7 @@ module X12
       has_one :subscriber_identifier_segment, SubscriberIdentifierSegment
       has_many :member_supplemental_identifiers, MemberSupplementalIdentifier
       has_many :member_level_dates, MemberLevelDate
+      has_many :member_coverage, MemberCoverage
 
       delegate :subscriber_indicator, to: :member_level_detail, allow_nil: true
       delegate :maintenance_type_code, to: :member_level_detail, allow_nil: true
