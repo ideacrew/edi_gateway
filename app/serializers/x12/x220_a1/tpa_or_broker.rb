@@ -8,6 +8,12 @@ module X12
 
       tag "Loop_1000C"
       namespace 'x12'
+
+      has_one :tpa_broker_name, TpaBrokerName
+
+      delegate :tpa_or_broker_name, to: :tpa_broker_name, allow_nil: true
+      delegate :identification_code_qualifier, to: :tpa_broker_name, allow_nil: true
+      delegate :tpa_or_broker_identifier, to: :tpa_broker_name, allow_nil: true
     end
   end
 end
