@@ -8,7 +8,7 @@ RSpec.describe X12::X220A1::Sponsor do
     <Loop_1000A xmlns="urn:x12:schemas:005:010:834A1A1:BenefitEnrollmentAndMaintenance">
       <N1_SponsorName_1000A>
         <N101__EntityIdentifierCode>P5</N101__EntityIdentifierCode>
-        <N102__PlanSponsorName>A Carrier</N102__PlanSponsorName>
+        <N102__PlanSponsorName>An Employer or Exchange</N102__PlanSponsorName>
         <N103__IdentificationCodeQualifier>FI</N103__IdentificationCodeQualifier>
         <N104__SponsorIdentifier>123456789</N104__SponsorIdentifier>
       </N1_SponsorName_1000A>
@@ -21,7 +21,7 @@ RSpec.describe X12::X220A1::Sponsor do
   end
 
   it "has a plan_sponsor_name" do
-    expect(subject.plan_sponsor_name).to eq "A Carrier"
+    expect(subject.plan_sponsor_name).to eq "An Employer or Exchange"
   end
 
   it "has an identification_code_qualifier" do
