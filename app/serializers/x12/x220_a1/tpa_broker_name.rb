@@ -2,6 +2,7 @@
 
 module X12
   module X220A1
+    # TPA or Broker info under loop 1000C.
     class TpaBrokerName
       include HappyMapper
       register_namespace 'x12', 'urn:x12:schemas:005:010:834A1A1:BenefitEnrollmentAndMaintenance'
