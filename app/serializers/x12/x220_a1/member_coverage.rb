@@ -11,6 +11,8 @@ module X12
       namespace 'x12'
 
       has_one :health_coverage_segment, HealthCoverageSegment
+      has_many :coverage_dates, CoverageDate
+      has_many :coverage_policy_numbers, CoveragePolicyNumber
 
       delegate :maintenance_type_code, to: :health_coverage_segment, allow_nil: true
       delegate :insurance_line_code, to: :health_coverage_segment, allow_nil: true
