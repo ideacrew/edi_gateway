@@ -1,3 +1,15 @@
+GIT
+  remote: https://github.com/ideacrew/aca_x12_entities.git
+  revision: 75e4660346f53392c7d3f579c2c907a754dfcf50
+  branch: trunk
+  specs:
+    aca_x12_entities (0.1.0)
+      dry-monads (~> 1.2)
+      dry-struct (~> 1.0)
+      dry-transformer (~> 0.1.1)
+      dry-types (~> 1.0)
+      dry-validation (~> 1.2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -66,8 +78,6 @@ GEM
       msgpack (~> 1.0)
     bson (4.12.0)
     builder (3.2.4)
-    byebug (11.1.3)
-    coderay (1.1.3)
     concurrent-ruby (1.1.8)
     crass (1.0.6)
     diff-lcs (1.4.4)
@@ -110,6 +120,7 @@ GEM
       dry-events (>= 0.1.0)
       dry-matcher (>= 0.7.0)
       dry-monads (>= 0.4.0)
+    dry-transformer (0.1.1)
     dry-types (1.5.1)
       concurrent-ruby (~> 1.0)
       dry-container (~> 0.3)
@@ -160,15 +171,11 @@ GEM
     nokogiri (1.11.3)
       mini_portile2 (~> 2.5.0)
       racc (~> 1.4)
+    nokogiri-happymapper (0.8.1)
+      nokogiri (~> 1.5)
     parallel (1.20.1)
     parser (3.0.1.1)
       ast (~> 2.4.1)
-    pry (0.13.1)
-      coderay (~> 1.1)
-      method_source (~> 1.0)
-    pry-byebug (3.9.0)
-      byebug (~> 11.0)
-      pry (~> 0.13.0)
     puma (5.2.2)
       nio4r (~> 2.0)
     racc (1.5.2)
@@ -290,8 +297,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  aca_x12_entities!
   bootsnap (>= 1.4.4)
-  byebug
   dry-matcher (~> 0.8)
   dry-monads (~> 1.3)
   dry-struct (~> 1.3)
@@ -302,7 +309,7 @@ DEPENDENCIES
   jbuilder (~> 2.7)
   listen (~> 3.3)
   mongoid (~> 7.2.1)
-  pry-byebug
+  nokogiri-happymapper
   puma (~> 5.0)
   rack-mini-profiler (~> 2.0)
   rails (~> 6.1.3, >= 6.1.3.1)

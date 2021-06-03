@@ -31,11 +31,11 @@ gem 'dry-types',            '~> 1.4'
 gem 'dry-validation',       '~> 1.6'
 gem 'mongoid',             '~> 7.2.1'
 
+gem 'nokogiri-happymapper'
+gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
+
 group :development, :test do
-  # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'factory_bot_rails'
-  gem 'pry-byebug'
   gem 'rspec-rails',            '~> 5.0'
   gem 'shoulda-matchers',       '~> 3'
   gem 'yard'
