@@ -54,23 +54,26 @@ module X12
             second_parts.to_i
           end
         dt_args = date_segments + time_segments + [seconds]
-        extract_time_zone_proc.call(dt_args)
+        build_time_value(dt_args)
       end
       # rubocop:enable Style/StringConcatenation
 
-      def extract_time_zone_proc
-        case time_zone_code
-        when "ED"
-          proc { |t_args| DateTime.new(*(t_args + ['-04:00'])) }
-        when "ES"
-          proc { |t_args| DateTime.new(*(t_args + ['-05:00'])) }
-        when "ET"
-          proc do |t_args|
-            ActiveSupport::TimeZone["Eastern Time (US & Canada)"].local(*t_args).to_datetime
-          end
+      def build_time_value(t_args)
+        time_strategy = pick_time_strategy
+        if time_strategy.first == :offset
+          DateTime.new(*(t_args + [time_strategy.last]))
         else
-          proc { |t_args| DateTime.new(*(t_args + ['+00:00'])) }
+          ActiveSupport::TimeZone[time_strategy.last].local(*t_args).to_datetime
         end
+      end
+
+      def pick_time_strategy
+        {
+          "ED" => [:offset, '-04:00'],
+          "ES" => [:offset, '-05:00'],
+          "ET" => [:zone, "Eastern Time (US & Canada)"],
+          "UT" => [:offset, "+00:00"]
+        }.fetch(time_zone_code, [:offset, "+00:00"])
       end
     end
   end
