@@ -2,6 +2,8 @@
 
 module X12
   module X220A1
+    # Take an ASC X12 834 payload in XML, and convert it to the
+    # aca_x12_entities domain model.
     class TranslateInbound834
       send(:include, Dry::Monads[:result, :do, :try])
 

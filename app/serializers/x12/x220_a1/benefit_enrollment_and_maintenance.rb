@@ -46,7 +46,7 @@ module X12
       def sponsor_parameters
         s_parameters = sponsor ? sponsor.to_domain_parameters : {}
         {
-          sponsor: {}
+          sponsor: s_parameters
         }
       end
 

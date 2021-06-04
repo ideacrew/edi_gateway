@@ -18,9 +18,9 @@ module X12
 
       def to_domain_parameters
         {
-         name: plan_sponsor_name,
-         identification_code_qualifier: identification_code_qualifier,
-         identification_code: sponsor_identifier
+          name: plan_sponsor_name,
+          identification_code_qualifier: identification_code_qualifier,
+          identification_code: sponsor_identifier
         }
       end
     end

@@ -18,9 +18,9 @@ module X12
 
       def to_domain_parameters
         {
-         name: insurer_name,
-         identification_code_qualifier: identification_code_qualifier,
-         identification_code: insurer_identifier
+          name: insurer_name,
+          identification_code_qualifier: identification_code_qualifier,
+          identification_code: insurer_identifier
         }
       end
     end

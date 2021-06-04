@@ -20,9 +20,7 @@ module X12
 
       def to_domain_parameters
         optional_params = {}
-        unless reference_identification.blank?
-          optional_params[:reference_identification] = reference_identification
-        end
+        optional_params[:reference_identification] = reference_identification unless reference_identification.blank?
         {
           transaction_set_purpose_code: transaction_set_purpose_code,
           transaction_set_reference_number: transaction_set_reference_number,
