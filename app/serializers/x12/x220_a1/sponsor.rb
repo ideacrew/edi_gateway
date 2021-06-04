@@ -15,6 +15,14 @@ module X12
       delegate :plan_sponsor_name, to: :sponsor_name, allow_nil: true
       delegate :identification_code_qualifier, to: :sponsor_name, allow_nil: true
       delegate :sponsor_identifier, to: :sponsor_name, allow_nil: true
+
+      def to_domain_parameters
+        {
+         name: plan_sponsor_name,
+         identification_code_qualifier: identification_code_qualifier,
+         identification_code: sponsor_identifier
+        }
+      end
     end
   end
 end

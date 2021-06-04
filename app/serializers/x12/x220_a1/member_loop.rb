@@ -20,6 +20,10 @@ module X12
       delegate :maintenance_type_code, to: :member_level_detail, allow_nil: true
       delegate :maintenance_reason_code, to: :member_level_detail, allow_nil: true
       delegate :subscriber_identifier, to: :subscriber_identifier_segment, allow_nil: true
+
+      def to_domain_parameters
+        {}
+      end
     end
   end
 end

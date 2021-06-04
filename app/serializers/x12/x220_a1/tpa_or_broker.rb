@@ -12,9 +12,27 @@ module X12
 
       has_one :tpa_broker_name, TpaBrokerName
 
+      delegate :entity_identifier_code, to: :tpa_broker_name, allow_nil: true
       delegate :tpa_or_broker_name, to: :tpa_broker_name, allow_nil: true
       delegate :identification_code_qualifier, to: :tpa_broker_name, allow_nil: true
       delegate :tpa_or_broker_identifier, to: :tpa_broker_name, allow_nil: true
+
+      def to_domain_parameters
+        params = {
+          name: tpa_or_broker_name,
+          identification_code_qualifier: identification_code_qualifier,
+          identification_code: tpa_or_broker_identifier
+        }
+        if entity_identifier_code == "TV"
+          {
+            third_party_administrator: params
+          }
+        else
+          {
+            broker: params
+          }
+        end
+      end
     end
   end
 end

@@ -17,6 +17,25 @@ module X12
       element :time_zone_code, String, tag: "BGN05__TimeZoneCode", namespace: "x12"
       element :reference_identification, String, tag: "BGN06__OriginalTransactionSetReferenceNumber", namespace: "x12"
       element :action_code, String, tag: "BGN08__ActionCode", namespace: "x12"
+
+      def to_domain_parameters
+        optional_params = {}
+        unless reference_identification.blank?
+          optional_params[:reference_identification] = reference_identification
+        end
+        {
+          transaction_set_purpose_code: transaction_set_purpose_code,
+          transaction_set_reference_number: transaction_set_reference_number,
+          action_code: action_code,
+          transaction_set_timestamp: parse_date_time_and_location
+        }.merge(optional_params)
+      end
+
+      protected
+
+      def parse_date_time_and_location
+        nil
+      end
     end
   end
 end

@@ -13,6 +13,12 @@ module X12
       element :transaction_set_identifier_code, String, tag: "ST01__TransactionSetIdentifierCode", namespace: "x12"
       element :transaction_set_control_number, String, tag: "ST02__TransactionSetControlNumber", namespace: "x12"
       element :implementation_convention_reference, String, tag: "ST03__ImplementationConventionReference", namespace: "x12"
+
+      def to_domain_parameters
+        {
+          transaction_set_control_number: transaction_set_control_number
+        }
+      end
     end
   end
 end

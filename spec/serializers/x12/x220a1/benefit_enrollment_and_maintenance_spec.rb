@@ -16,6 +16,8 @@ RSpec.describe X12::X220A1::BenefitEnrollmentAndMaintenance do
       </Loop_1000B>
       <Loop_1000C>
       </Loop_1000C>
+      <Loop_1000C>
+      </Loop_1000C>
       <Loop_2000>
       </Loop_2000>
     </X12_005010X220A1_834A1>

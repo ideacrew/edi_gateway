@@ -15,6 +15,14 @@ module X12
       delegate :insurer_name, to: :payer_name, allow_nil: true
       delegate :identification_code_qualifier, to: :payer_name, allow_nil: true
       delegate :insurer_identifier, to: :payer_name, allow_nil: true
+
+      def to_domain_parameters
+        {
+         name: insurer_name,
+         identification_code_qualifier: identification_code_qualifier,
+         identification_code: insurer_identifier
+        }
+      end
     end
   end
 end
