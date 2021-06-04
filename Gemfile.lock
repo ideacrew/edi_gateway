@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ideacrew/aca_x12_entities.git
-  revision: cf36c7218ec7bd241783e8b9e13b39f2768e9b35
+  revision: 5517bc302854af7cc290d0a48ad322d42a97f0f5
   branch: trunk
   specs:
     aca_x12_entities (0.1.0)
