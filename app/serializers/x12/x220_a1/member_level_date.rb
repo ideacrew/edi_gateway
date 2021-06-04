@@ -13,6 +13,20 @@ module X12
       element :date_qualifier, String, tag: "DTP01__DateTimeQualifier", namespace: "x12"
       element :format_qualifier, String, tag: "DTP02__DateTimePeriodFormatQualifier", namespace: "x12"
       element :date, String, tag: "DTP03__StatusInformationEffectiveDate", namespace: "x12"
+
+      def to_domain_parameters
+        {
+          date_qualifier: date_qualifier,
+          date: parse_date
+        }
+      end
+
+      protected
+
+      def parse_date
+        return nil if date.blank?
+        Date.strptime(date, "%Y%m%d")
+      end
     end
   end
 end

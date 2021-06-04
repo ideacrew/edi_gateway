@@ -84,4 +84,15 @@ RSpec.describe X12::X220A1::MemberLoop do
   it "has member_coverage" do
     expect(subject.member_coverage.length).to eq 2
   end
+
+  it "converts to domain parameters" do
+    mapped_params = subject.to_domain_parameters
+    expect(mapped_params[:member_coverage].length).to eq 2
+    expect(mapped_params[:member_level_dates].length).to eq 1
+    expect(mapped_params[:member_supplemental_identifiers].length).to eq 2
+    expect(mapped_params[:subscriber_indicator]).to be_truthy
+    expect(mapped_params[:subscriber_identifier]).to eq "SUBID"
+    expect(mapped_params[:maintenance_type_code]).to eq "021"
+    expect(mapped_params[:maintenance_reason_code]).to eq "EC"
+  end
 end

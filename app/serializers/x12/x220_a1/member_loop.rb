@@ -22,7 +22,15 @@ module X12
       delegate :subscriber_identifier, to: :subscriber_identifier_segment, allow_nil: true
 
       def to_domain_parameters
-        {}
+        {
+          subscriber_indicator: subscriber_indicator,
+          subscriber_identifier: subscriber_identifier,
+          maintenance_type_code: maintenance_type_code,
+          maintenance_reason_code: maintenance_reason_code,
+          member_supplemental_identifiers: member_supplemental_identifiers.map(&:to_domain_parameters),
+          member_level_dates: member_level_dates.map(&:to_domain_parameters),
+          member_coverage: member_coverage.map(&:to_domain_parameters)
+        }
       end
     end
   end

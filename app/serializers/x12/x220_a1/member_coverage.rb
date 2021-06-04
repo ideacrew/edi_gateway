@@ -17,6 +17,10 @@ module X12
       delegate :maintenance_type_code, to: :health_coverage_segment, allow_nil: true
       delegate :insurance_line_code, to: :health_coverage_segment, allow_nil: true
       delegate :coverage_level_code, to: :health_coverage_segment, allow_nil: true
+
+      def to_domain_parameters
+        {}
+      end
     end
   end
 end
