@@ -73,4 +73,14 @@ RSpec.describe X12::X220A1::MemberCoverage do
       subject.coverage_dates.last.date
     ).to eq "20200101-20200331"
   end
+
+  it "converts to domain parameters" do
+    mapped_params = subject.to_domain_parameters
+    expect(mapped_params[:insurance_line_code]).to eq "HLT"
+    expect(mapped_params[:coverage_level_code]).to eq "EMP"
+    expect(mapped_params[:maintenance_type_code]).to eq "021"
+    expect(mapped_params[:coverage_policy_numbers].length).to eq 1
+    expect(mapped_params[:coverage_dates].length).to eq 1
+    expect(mapped_params[:previous_coverage_periods].length).to eq 1
+  end
 end

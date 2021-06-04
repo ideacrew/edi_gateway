@@ -12,6 +12,13 @@ module X12
 
       element :identification_qualifier, String, tag: "REF01__ReferenceIdentificationQualifier", namespace: "x12"
       element :reference_identification, String, tag: "REF02__MemberGroupOrPolicyNumber", namespace: "x12"
+
+      def to_domain_parameters
+        {
+          reference_identification_qualfier: identification_qualifier,
+          reference_identification: reference_identification
+        }
+      end
     end
   end
 end

@@ -18,9 +18,34 @@ module X12
       delegate :insurance_line_code, to: :health_coverage_segment, allow_nil: true
       delegate :coverage_level_code, to: :health_coverage_segment, allow_nil: true
 
+      # rubocop:disable Style/IfUnlessModifier
       def to_domain_parameters
-        {}
+        optional_params = {}
+        unless coverage_level_code.blank?
+          optional_params[:coverage_level_code] = coverage_level_code
+        end
+        {
+          maintenance_type_code: maintenance_type_code,
+          insurance_line_code: insurance_line_code,
+          coverage_policy_numbers: coverage_policy_numbers.map(&:to_domain_parameters)
+        }.merge(optional_params).merge(date_parameters)
       end
+      # rubocop:enable Style/IfUnlessModifier
+
+      protected
+
+      # rubocop:disable Style/IfUnlessModifier
+      def date_parameters
+        dates, ranges = coverage_dates.partition(&:is_previous_coverage_range?)
+        optional_date_ranges = {}
+        if ranges.any?
+          optional_date_ranges[:previous_coverage_periods] = ranges.map(&:to_domain_parameters)
+        end
+        {
+          coverage_dates: dates.map(&:to_domain_parameters)
+        }.merge(optional_date_ranges)
+      end
+      # rubocop:enable Style/IfUnlessModifier
     end
   end
 end
