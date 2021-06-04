@@ -17,6 +17,9 @@ RSpec.describe X12::X220A1::BenefitEnrollmentAndMaintenance do
       <Loop_1000C>
       </Loop_1000C>
       <Loop_1000C>
+        <N1_TPABrokerName_1000C>
+          <N101__EntityIdentifierCode>TV</N101__EntityIdentifierCode>
+        </N1_TPABrokerName_1000C>
       </Loop_1000C>
       <Loop_2000>
       </Loop_2000>
@@ -50,5 +53,14 @@ RSpec.describe X12::X220A1::BenefitEnrollmentAndMaintenance do
 
   it "has a beginning_segment" do
     expect(subject.beginning_segment).not_to be_nil
+  end
+
+  it "converts its children to mapped domain values" do
+    mapped_params = subject.to_domain_parameters
+    expect(mapped_params[:sponsor]).not_to be_nil
+    expect(mapped_params[:payer]).not_to be_nil
+    expect(mapped_params[:broker]).not_to be_nil
+    expect(mapped_params[:third_party_administrator]).not_to be_nil
+    expect(mapped_params[:members].length).to eq 1
   end
 end

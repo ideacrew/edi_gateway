@@ -31,4 +31,11 @@ RSpec.describe X12::X220A1::Sponsor do
   it "has a sponsor_identifier" do
     expect(subject.sponsor_identifier).to eq "123456789"
   end
+
+  it "converts to domain model parameters" do
+    mapped_params = subject.to_domain_parameters
+    expect(mapped_params[:name]).to eq "An Employer or Exchange"
+    expect(mapped_params[:identification_code_qualifier]).to eq "FI"
+    expect(mapped_params[:identification_code]).to eq "123456789"
+  end
 end

@@ -28,4 +28,9 @@ RSpec.describe X12::X220A1::TransactionSetHeader do
   it "has an implementation_convention_reference" do
     expect(subject.implementation_convention_reference).to eq "X220A1"
   end
+
+  it "converts to domain model parameters" do
+    mapped_params = subject.to_domain_parameters
+    expect(mapped_params[:transaction_set_control_number]).to eq "12345"
+  end
 end
