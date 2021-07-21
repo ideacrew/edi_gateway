@@ -32,6 +32,7 @@ module X12
       protected
 
       # rubocop:disable Style/StringConcatenation
+      # rubocop:disable Style/SlicingWithRange
       def parse_date_time_and_location
         return nil if transaction_set_creation_date.blank?
         return nil if transaction_set_creation_time.blank?
@@ -57,6 +58,7 @@ module X12
         build_time_value(dt_args)
       end
       # rubocop:enable Style/StringConcatenation
+      # rubocop:enable Style/SlicingWithRange
 
       def build_time_value(t_args)
         time_strategy = pick_time_strategy

@@ -30,6 +30,7 @@ gem 'dry-transaction'
 gem 'dry-types',            '~> 1.4'
 gem 'dry-validation',       '~> 1.6'
 gem 'mongoid',             '~> 7.2.1'
+gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
 
 gem 'nokogiri-happymapper'
 gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"

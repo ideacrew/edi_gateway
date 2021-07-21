@@ -1,6 +1,6 @@
 # This yaml describes our current checks.
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 2.7
   SuggestExtensions: false
   NewCops: enable
   Exclude:
@@ -61,6 +61,12 @@ Naming/ConstantName:
 
 Style/BlockComments:
   Enabled: false
+
+Style/Documentation:
+  Enabled: true
+  Exclude:
+    - "app/helpers/application_helper.rb"
+    - "config/application.rb"
 
 Style/EachWithObject:
   Enabled: false
