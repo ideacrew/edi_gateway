@@ -32,7 +32,7 @@ RSpec.describe Inbound834::ExtractGatewayEnvelope, "given a valid set of propert
       group_creation_timestamp: DateTime.now,
       transaction_set_count: 25,
       b2b_message_id: "SOME MESSAGE ID",
-      b2b_created_at: DateTime.now,
+      b2b_created_at: 1626900798,
       b2b_updated_at: DateTime.now,
       b2b_business_message_id: "SOME BUSINESS MESSAGE ID",
       b2b_protocol_message_id: "SOME PROTOCOL MESSAGE ID",
