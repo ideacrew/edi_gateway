@@ -7,6 +7,8 @@ module Inbound834
 
     # Extract the GatewayEnvelope information.
     # @param headers [Hash] the hash of headers from the AMQP message.
+    # @return [Dry::Result<AcaX12Entities::X220A1::GatewayEnvelope>] the new
+    #   GatewayEnvelope or a reason for failure
     def call(headers = {})
       header_properties = yield validate_headers(headers)
       build_gateway_envelope(header_properties)
