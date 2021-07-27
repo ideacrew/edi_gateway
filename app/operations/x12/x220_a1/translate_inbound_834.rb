@@ -7,9 +7,9 @@ module X12
     class TranslateInbound834
       send(:include, Dry::Monads[:result, :do, :try])
 
-      def call(payload)
-        mapper = yield parse_payload(payload)
-        domain_parameters = yield transform_to_parameters(mapper)
+      def call(params)
+        mapper = yield parse_payload(params[:payload])
+        domain_parameters = yield transform_to_parameters(mapper, params[:envelope])
         AcaX12Entities::Operations::X220A1::BuildBenefitEnrollmentAndMaintenance.new.call(
           domain_parameters
         )
@@ -26,8 +26,8 @@ module X12
         result
       end
 
-      def transform_to_parameters(mapper)
-        Success(mapper.to_domain_parameters)
+      def transform_to_parameters(mapper, envelope)
+        Success(mapper.to_domain_parameters.merge({ gateway_envelope: envelope.to_h }))
       end
     end
   end

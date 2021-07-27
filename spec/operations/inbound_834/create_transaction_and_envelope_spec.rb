@@ -2,8 +2,8 @@
 
 require "rails_helper"
 
-RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload for a transaction it has never seen" do
-  let(:envelope_properties) do
+RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers and a payload for a transaction it has never seen" do
+  let(:headers) do
     {
       interchange_control_number: "12345",
       interchange_sender_qualifier: "FI",
@@ -14,12 +14,7 @@ RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload
       group_control_number: "123456",
       application_senders_code: "ME0",
       application_receivers_code: "SHP",
-      group_creation_timestamp: DateTime.now
-    }
-  end
-
-  let(:oracle_envelope_properties) do
-    {
+      group_creation_timestamp: DateTime.now,
       b2b_message_id: "1234",
       b2b_created_at: DateTime.now,
       b2b_updated_at: DateTime.now,
@@ -38,10 +33,6 @@ RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload
 
   let(:payload) do
     "<xml xmlns=\"urn:whatever\"></xml>"
-  end
-
-  let(:headers) do
-    oracle_envelope_properties.merge(envelope_properties)
   end
 
   let(:params) do
@@ -68,17 +59,21 @@ RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload
   end
 
   it "returns the new transaction record" do
-    expect(subject.value!.is_a?(Inbound834Transaction)).to be_truthy
+    expect(subject.value!.first.is_a?(Inbound834Transaction)).to be_truthy
+  end
+
+  it "returns the gateway envelope" do
+    expect(subject.value!.last.is_a?(::AcaX12Entities::X220A1::GatewayEnvelope)).to be_truthy
   end
 
   it "persists the payload" do
-    expect(subject.value!.payload.file.nil?).to be_falsey
-    expect(subject.value!.payload.file.read).to eq payload
+    expect(subject.value!.first.payload.file.nil?).to be_falsey
+    expect(subject.value!.first.payload.file.read).to eq payload
   end
 end
 
-RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload for a transaction it has already seen" do
-  let(:envelope_properties) do
+RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers and a payload for a transaction it has already seen" do
+  let(:headers) do
     {
       interchange_control_number: "12345",
       interchange_sender_qualifier: "FI",
@@ -89,12 +84,7 @@ RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload
       group_control_number: "123456",
       application_senders_code: "ME0",
       application_receivers_code: "SHP",
-      group_creation_timestamp: DateTime.now
-    }
-  end
-
-  let(:oracle_envelope_properties) do
-    {
+      group_creation_timestamp: DateTime.now,
       b2b_message_id: "1234",
       b2b_created_at: DateTime.now,
       b2b_updated_at: DateTime.now,
@@ -113,10 +103,6 @@ RSpec.describe Inbound834::CreateTransaction, "given valid headers and a payload
 
   let(:payload) do
     "<xml xmlns=\"urn:whatever\"></xml>"
-  end
-
-  let(:headers) do
-    oracle_envelope_properties.merge(envelope_properties)
   end
 
   let(:params) do

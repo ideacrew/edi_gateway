@@ -96,6 +96,7 @@ class Inbound834Transaction
 
   # Set only if payload parses correctly
   field :transaction_set_control_number, type: String
+  field :transaction_set_reference_number, type: String
 
   index({ one_time_tag: 1 }, { unique: true })
 

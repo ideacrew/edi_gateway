@@ -3,12 +3,19 @@
 require "rails_helper"
 
 RSpec.describe X12::X220A1::TranslateInbound834, "given an empty string" do
+  let(:envelope) do
+    {}
+  end
+
   let(:payload) do
     ""
   end
 
   subject do
-    described_class.new.call(payload)
+    described_class.new.call({
+                               payload: payload,
+                               envelope: envelope
+                             })
   end
 
   it "fails to parse" do
@@ -18,12 +25,19 @@ RSpec.describe X12::X220A1::TranslateInbound834, "given an empty string" do
 end
 
 RSpec.describe X12::X220A1::TranslateInbound834, "given invalid xml" do
+  let(:envelope) do
+    {}
+  end
+
   let(:payload) do
     "<some namespace> </kjls>"
   end
 
   subject do
-    described_class.new.call(payload)
+    described_class.new.call({
+                               payload: payload,
+                               envelope: envelope
+                             })
   end
 
   it "fails to parse" do
@@ -55,8 +69,15 @@ RSpec.describe X12::X220A1::TranslateInbound834, "given:
     XMLCODE
   end
 
+  let(:envelope) do
+    {}
+  end
+
   subject do
-    described_class.new.call(payload)
+    described_class.new.call({
+                               payload: payload,
+                               envelope: envelope
+                             })
   end
 
   it "fails to validate" do
@@ -65,7 +86,35 @@ RSpec.describe X12::X220A1::TranslateInbound834, "given:
   end
 end
 
-RSpec.describe X12::X220A1::TranslateInbound834, "given a full XML with almost everything" do
+RSpec.describe X12::X220A1::TranslateInbound834, "given headers and a full XML with almost everything" do
+  let(:headers) do
+    {
+      interchange_control_number: "12345",
+      interchange_sender_qualifier: "FI",
+      interchange_sender_id: "543219",
+      interchange_receiver_qualifier: "FI",
+      interchange_receiver_id: "543217",
+      interchange_timestamp: DateTime.now,
+      group_control_number: "123456",
+      application_senders_code: "ME0",
+      application_receivers_code: "SHP",
+      group_creation_timestamp: DateTime.now,
+      b2b_message_id: "1234",
+      b2b_created_at: DateTime.now,
+      b2b_updated_at: DateTime.now,
+      b2b_business_message_id: "4321",
+      b2b_protocol_message_id: "54321",
+      b2b_in_trading_partner: "ME0",
+      b2b_out_trading_partner: "CF",
+      b2b_message_status: "MSG_ERROR",
+      b2b_direction: "INBOUND",
+      b2b_document_type_name: "834",
+      b2b_document_protocol_name: "X12",
+      b2b_document_protocol_version: "X220A1",
+      b2b_document_definition: "834Def"
+    }
+  end
+
   let(:payload) do
     <<-XMLCODE
     <X12_005010X220A1_834A1 xmlns="urn:x12:schemas:005:010:834A1A1:BenefitEnrollmentAndMaintenance">
@@ -145,8 +194,17 @@ RSpec.describe X12::X220A1::TranslateInbound834, "given a full XML with almost e
     XMLCODE
   end
 
+  let(:envelope) do
+    Inbound834::ExtractGatewayEnvelope.new.call(
+      headers
+    ).value!
+  end
+
   subject do
-    described_class.new.call(payload)
+    described_class.new.call({
+                               payload: payload,
+                               envelope: envelope
+                             })
   end
 
   it "succeeds" do

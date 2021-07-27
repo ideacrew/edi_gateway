@@ -2,14 +2,14 @@
 
 module Inbound834
   # Create the inbound transaction record representing an 834.
-  class CreateTransaction
+  class CreateTransactionAndEnvelope
     include Dry::Monads[:result, :do, :try]
 
     # Create the transaction from the payload and headers.
     # @param opts [Hash] the operation options
     # @option opts :payload [String] the 834 XML payload
-    # @option opts :headers [Headers] the message headers
-    # @return [Dry::Result<Inbound834Transaction>] the created transaction
+    # @option opts :headers [Hash] the message headers
+    # @return [Dry::Result<Array<Inbound834Transaction, AcaX12Entities::X220A1::GatewayEnvelope>>] the created transaction
     def call(opts = {})
       payload = opts[:payload]
       headers = opts[:headers]
@@ -17,7 +17,8 @@ module Inbound834
       one_time_tag = yield calculate_one_time_tag(gateway_envelope, payload)
       transaction_record = yield build_transaction_record(gateway_envelope, one_time_tag)
       inserted_record = yield persist_record(transaction_record)
-      persist_payload(inserted_record, payload)
+      record_with_payload = yield persist_payload(inserted_record, payload)
+      Success([record_with_payload, gateway_envelope])
     end
 
     protected
