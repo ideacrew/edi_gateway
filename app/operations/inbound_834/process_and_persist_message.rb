@@ -6,9 +6,9 @@ module Inbound834
     send(:include, Dry::Monads[:result, :do, :try])
 
     # Create all records from the payload and headers.
-    # @param opts [Hash] the operation options
-    # @option opts :payload [String] the 834 XML payload
-    # @option opts :headers [Hash] the message headers
+    # @param params [Hash] the operation options
+    # @option params :payload [String] the 834 XML payload
+    # @option params :headers [Hash] the message headers
     # @return [Dry::Result<Array<Inbound834Transaction, AcaX12Entities::X220A1::BenefitEnrollmentAndMaintenance>>] the created objects or failure
     def call(params)
       payload = params[:payload]
