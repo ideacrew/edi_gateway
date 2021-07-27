@@ -16,7 +16,8 @@ module Inbound834
       gateway_envelope = yield ExtractGatewayEnvelope.new.call(headers)
       one_time_tag = yield calculate_one_time_tag(gateway_envelope, payload)
       transaction_record = yield build_transaction_record(gateway_envelope, one_time_tag)
-      _inserted_record = yield persist_record(transaction_record)
+      inserted_record = yield persist_record(transaction_record)
+      persist_payload(inserted_record, payload)
     end
 
     protected
@@ -40,11 +41,20 @@ module Inbound834
     def persist_record(transaction_record)
       creation_result = Try(::Mongo::Error::OperationFailure) do
         transaction_record.save!
+        transaction_record
       end
 
       creation_result.or do |_e|
         Failure(:already_processed)
       end
     end
+
+    # rubocop:disable Style/StringConcatenation
+    def persist_payload(transaction_record, payload)
+      transaction_record.payload = PayloadWrapper.new(payload, transaction_record.one_time_tag + ".xml")
+      transaction_record.save!
+      Success(transaction_record)
+    end
+    # rubocop:enable Style/StringConcatenation
   end
 end
