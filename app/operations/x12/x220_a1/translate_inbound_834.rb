@@ -19,7 +19,7 @@ module X12
 
       def parse_payload(payload)
         result = Try do
-          BenefitEnrollmentAndMaintenance.parse(payload, single: true)
+          AcaX12Entities::Serializers::X220A1::BenefitEnrollmentAndMaintenance.parse(payload, single: true)
         end.or(Failure(:parse_payload_failed))
         return result unless result.success?
         return Failure(:parse_payload_failed) if result.value!.blank?

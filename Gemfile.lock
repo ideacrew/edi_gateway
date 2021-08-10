@@ -1,14 +1,16 @@
 GIT
   remote: https://github.com/ideacrew/aca_x12_entities.git
-  revision: ab511e05a4b2a63f0bffebb070c71a266bf642cd
+  revision: 8ff3b0ec52f968d91d807052697dec48d102a723
   branch: trunk
   specs:
     aca_x12_entities (0.1.0)
+      activesupport
       dry-monads (~> 1.2)
       dry-struct (~> 1.0)
       dry-transformer (~> 0.1.1)
       dry-types (~> 1.0)
       dry-validation (~> 1.2)
+      nokogiri-happymapper
 
 GEM
   remote: https://rubygems.org/
