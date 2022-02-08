@@ -1,0 +1,199 @@
+############################################
+###             Base image               ###
+############################################
+
+# Taken from .ruby-version
+ARG RUBY_VERSION=2.7.4
+FROM ruby:$RUBY_VERSION-slim-buster as base
+LABEL author="IdeaCrew"
+
+ENV USERNAME=polypress
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Taken from Gemfile.lock
+ARG BUNDLER_VERSION=2.1.4
+
+# Must be set as ENV variable to overrride the default
+ENV BUNDLER_VERSION=$BUNDLER_VERSION
+
+# Needed for Java install
+# https://stackoverflow.com/questions/61815233/install-java-runtime-in-debian-based-docker-image
+RUN mkdir -p /usr/share/man/man1 /usr/share/man/man2
+
+# Basic packages needed because we're using the slim image
+RUN apt-get update \
+    && apt-get -yq dist-upgrade  \
+    && apt-get install -y \
+      fontconfig \
+      libcurl4-openssl-dev \
+      libffi6 \
+      libsodium23 \
+      libxext6 \
+      libxrender1 \
+      libyaml-cpp0.6 \
+      openssl \
+      nano \
+      sshpass \
+      unzip \
+      vim \
+      zip \
+      zlibc \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && truncate -s 0 /var/log/*log
+
+# Configure bundler and PATH, install bundler version
+ENV GEM_HOME=/usr/local/bundle
+ENV BUNDLE_PATH=$GEM_HOME
+ENV BUNDLE_APP_CONFIG=$BUNDLE_PATH
+ENV BUNDLE_BIN=/usr/local/bin
+ENV BUNDLE_JOBS=4
+ENV BUNDLE_RETRY=3
+
+ENV LANG=C.UTF-8
+
+ENV HOME=/polypress
+
+ENV PATH=$HOME/bin:$BUNDLE_BIN:$GEM_HOME/gems/bin:$PATH
+
+RUN gem update --system
+RUN rm -f /usr/local/bin/ruby/gems/*/specifications/default/bundler-*.gemspec
+RUN gem install bundler -v $BUNDLER_VERSION
+
+RUN groupadd --gid 1001 $USERNAME \
+  && useradd --uid 1001 --gid $USERNAME --shell /bin/bash --create-home $USERNAME
+
+RUN mkdir $HOME && chown -R $USERNAME:$USERNAME $HOME
+
+RUN mkdir /aws && chown -R $USERNAME:$USERNAME /aws
+
+# Configure app home directory
+WORKDIR $HOME
+
+ENV RAILS_ENV=production
+ENV NODE_ENV=production
+
+###############################################################################
+###       Builder. Adds node and Yarn. Not necessary in production.         ###
+###############################################################################
+
+FROM base as builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -qq && \
+    apt-get install -yq --no-install-recommends \
+      curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && truncate -s 0 /var/log/*log
+
+ARG NODE_MAJOR=14
+ENV NODE_MAJOR=$NODE_MAJOR
+RUN curl -fsSL https://deb.nodesource.com/setup_$NODE_MAJOR.x | bash -
+
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+  && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+
+RUN apt-get update -qq \
+  && apt-get install -yq --no-install-recommends \
+    build-essential \
+    git \
+    libpq-dev \
+    nodejs \
+    yarn \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+  && truncate -s 0 /var/log/*log
+
+########################################################
+###          Node and Bundle for production          ###
+########################################################
+
+FROM builder as prod_gems_and_assets
+
+ARG HOSTNAME=localhost
+
+# Polypress Specific Config
+ENV POLYPRESS_DB_HOST=${HOSTNAME}
+ENV POLYPRESS_DB_NAME=polypress_production
+ENV POLYPRESS_DB_PORT=27017
+
+# Needed for most repos, not service-specific
+ARG RABBITMQ_URL=amqp://${HOSTNAME}:5672
+ARG RABBITMQ_URL_EVENT_SOURCE=amqp://${HOSTNAME}
+ARG RABBITMQ_HOST=amqp://${HOSTNAME}
+ARG RABBITMQ_VHOST=event_source
+
+COPY --chown=$USERNAME:$USERNAME package.json $HOME/
+COPY --chown=$USERNAME:$USERNAME yarn.lock $HOME/
+
+RUN yarn install \
+  && (rm -rf /tmp/* || true)
+
+COPY --chown=$USERNAME:$USERNAME ./project_gems/effective_datatables-2.6.14/effective_datatables-2.6.14.gemspec $HOME/project_gems/effective_datatables-2.6.14/effective_datatables-2.6.14.gemspec
+COPY --chown=$USERNAME:$USERNAME ./project_gems/liquid-5.0.1/liquid.gemspec $HOME/project_gems/liquid-5.0.1/liquid.gemspec
+COPY --chown=$USERNAME:$USERNAME ./project_gems/liquid-5.0.1/lib/liquid/version.rb $HOME/project_gems/liquid-5.0.1/lib/liquid/version.rb
+
+COPY --chown=$USERNAME:$USERNAME ./Gemfile $HOME/Gemfile
+COPY --chown=$USERNAME:$USERNAME ./Gemfile.lock $HOME/Gemfile.lock
+
+RUN bundle config set --local without 'development test' \
+  && bundle install
+
+RUN bundle exec rails webpacker:install:erb
+
+COPY --chown=$USERNAME:$USERNAME . $HOME
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/master.key $HOME/config
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/credentials.yml.enc $HOME/config
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/mongoid.yml $HOME/config
+
+RUN bundle exec rails assets:precompile \
+  && yarn cache clean \
+  && (rm -rf /tmp/* || true) \
+  # Cleanup
+  && rm -rf $BUNDLE_PATH/*.gem \
+  && find $BUNDLE_PATH/ruby -name "*.c" -delete \
+  && find $BUNDLE_PATH/ruby -name "*.o" -delete \
+  && find $BUNDLE_PATH/ruby -name ".git"  -type d -prune -execdir rm -rf {} +
+
+# https://github.com/rubygems/rubygems/issues/3225
+RUN rm -rf $GEM_HOME/ruby/*/cache
+
+################################################################
+###                     Deployable image                     ###
+################################################################
+
+FROM base as deploy
+
+ARG HOSTNAME=localhost
+
+ENV POLYPRESS_DB_AUTH=true
+ENV POLYPRESS_DB_NAME=anything
+ENV POLYPRESS_DB_HOST=anything
+ENV POLYPRESS_DB_PORT=anything
+ENV POLYPRESS_DB_REPLICA_SET_NAME=anything
+ENV POLYPRESS_DB_USERNAME=anything
+ENV POLYPRESS_DB_PASSWORD=anything
+
+ENV RABBITMQ_URL=amqp://${HOSTNAME}:5672
+ENV RABBITMQ_URL_EVENT_SOURCE=amqp://${HOSTNAME}
+ENV RABBITMQ_HOST=amqp://${HOSTNAME}
+ENV RABBITMQ_VHOST=event_source
+
+# Copy prebuilt gems
+COPY --chown=$USERNAME:$USERNAME --from=prod_gems_and_assets $BUNDLE_PATH $BUNDLE_PATH
+
+# Copy all app code again (sans gems, node_modules, assets)
+COPY --chown=$USERNAME:$USERNAME . $HOME
+
+# Copy prebuilt assets
+COPY --chown=$USERNAME:$USERNAME --from=prod_gems_and_assets $HOME/public $HOME/public
+
+# Copy environment-based config files
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/mongoid.yml $HOME/config
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/credentials.yml.enc $HOME/config
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/master.key $HOME/config
+
+USER $USERNAME

@@ -33,7 +33,7 @@ gem 'mongoid',             '~> 7.2.1'
 gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
 
 gem 'nokogiri-happymapper'
-gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
+# gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
 
 group :development, :test do
   gem 'factory_bot_rails'
