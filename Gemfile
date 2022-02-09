@@ -15,10 +15,13 @@ gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
 
 gem 'dry-matcher',          '~> 0.8'
 gem 'dry-monads',           '~> 1.3'
+gem 'dry-schema'
 gem 'dry-struct',           '~> 1.3'
 gem 'dry-transaction'
 gem 'dry-types',            '~> 1.4'
 gem 'dry-validation',       '~> 1.6'
+
+gem 'event_source',  git:  'https://github.com/ideacrew/event_source.git', branch: 'trunk'
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.7'
@@ -31,6 +34,8 @@ gem 'nokogiri-happymapper'
 gem 'puma', '~> 5.0'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem 'rails', '~> 6.1.3', '>= 6.1.3.1'
+
+# gem 'resource_registry',  git:  'https://github.com/ideacrew/resource_registry.git', branch: 'trunk'
 
 gem 'rbnacl'
 
