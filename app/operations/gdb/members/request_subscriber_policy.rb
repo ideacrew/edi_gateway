@@ -1,9 +1,11 @@
+# frozen_string_literal: true
 
 require 'dry/monads'
 require 'dry/monads/do'
 
 module Gdb
   module Members
+    # publish an event to edi gateway to subscriber and make http call to glue
     class RequestSubscriberPolicy
       send(:include, Dry::Monads[:result, :do])
       send(:include, Dry::Monads[:try])
@@ -15,6 +17,8 @@ module Gdb
         payload = yield construct_payload_hash(validated_params, user_token)
         event = yield build_event(payload)
         result = yield publish(event, payload)
+
+        Success(result)
       end
 
       private
@@ -35,20 +39,21 @@ module Gdb
       end
 
       def construct_payload_hash(validated_params, user_token)
-        payload =  { year: Date.today.year == 2021 ? 2022 : Date.today.year,
-          user_token: user_token,
-          subscriber_id: validated_params[:subscriber_id] }
+        payload = { year: Date.today.year == 2021 ? 2022 : Date.today.year,
+                    user_token: user_token,
+                    subscriber_id: validated_params[:subscriber_id] }
         Success(payload)
       end
 
       def build_event(payload)
-        event("events.gdb.members.member_publisher.gdb_subscriber_policy_requested", attributes: payload.to_h)
+        event("events.gdb.members.gdb_subscriber_policy_requested",
+              attributes: payload.merge!(CorrelationID: payload[:subscriber_id]))
       end
 
       def publish(event, payload)
         event.publish
 
-        Success("Successfully sent request to subscribe")
+        Success("Successfully sent request to subscribe on edi gateway")
       rescue StandardError => _e
         if payload[:hios_id].present?
           Failure("Error publishing request for subscriber_id: #{payload[:subscriber_id]}")

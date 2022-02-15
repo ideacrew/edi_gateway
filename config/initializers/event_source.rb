@@ -26,14 +26,13 @@ EventSource.configure do |config|
     end
 
     server.http do |http|
-      http.ref = 'http://localhost:3000/api/event_source'
+      http.ref = 'http://localhost:3000/api/event_source/enrolled_subjects'
       http.host = ENV['GLUE_HOST'] || 'http://localhost'
       http.port = ENV['GLUE_PORT'] || '3000'
-      http.url = ENV['GLUE_URL'] || 'http://localhost:3000/api/event_source'
+      http.url = ENV['GLUE_URL'] || 'http://localhost:3000/api/event_source/enrolled_subjects'
       http.default_content_type = 'application/json'
     end
   end
-
 
   async_api_resources =
     ::AcaEntities.async_api_config_find_by_service_name(
@@ -41,9 +40,9 @@ EventSource.configure do |config|
     ).success
 
   async_api_resources +=
-      ::AcaEntities.async_api_config_find_by_service_name(
-        { protocol: :http, service_name: :edi_gateway }
-      ).success
+    ::AcaEntities.async_api_config_find_by_service_name(
+      { protocol: :http, service_name: :edi_gateway }
+    ).success
 
   config.async_api_schemas =
     async_api_resources.collect do |resource|

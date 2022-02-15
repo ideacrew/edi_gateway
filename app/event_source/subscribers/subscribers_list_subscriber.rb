@@ -3,10 +3,10 @@
 module Subscribers
   # Receive response from Glue
   class SubscribersListSubscriber
-    include ::EventSource::Subscriber[http: '/enrolled_subjects/subscribers_list']
+    include ::EventSource::Subscriber[http: '/subscribers_list']
     extend EventSource::Logging
 
-    subscribe(:on_enrolled_subjects_subscribers_list) do |body, status, headers|
+    subscribe(:on_subscribers_list) do |body, status, headers|
       if status.to_s == "200"
         logger.info "Received response #{status}, Body - #{body}, Headers - #{headers}"
         persist(body)
@@ -18,7 +18,7 @@ module Subscribers
     end
 
     def self.persist(body)
-      params = {subscribers_list: JSON.parse(body)}
+      params = { subscribers_list: JSON.parse(body) }
 
       result = Reports::StoreSubscribersList.new.call(params.deep_symbolize_keys!)
       message = if result.success?

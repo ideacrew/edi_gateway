@@ -1,9 +1,11 @@
+# frozen_string_literal: true
 
 require 'dry/monads'
 require 'dry/monads/do'
 
 module Gdb
   module Members
+    # Operation to make http call to Glue and fetch subscribers list
     class RequestGdbSubscribersList
       send(:include, Dry::Monads[:result, :do])
       send(:include, Dry::Monads[:try])
@@ -11,10 +13,10 @@ module Gdb
 
       def call
         user_token = yield fetch_user_token
-        glue_subscriber_end_point_payload = yield construct_payload_hash(user_token)
-        event = yield build_event(glue_subscriber_end_point_payload)
-        subscribers_list = yield call_glue_for_subscribers_list(event, glue_subscriber_end_point_payload)
-        result = yield request_policy_information_for_list(subscribers_list)
+        payload = yield construct_payload_hash(user_token)
+        event = yield build_event(payload)
+        subscribers_list = yield publish(event, payload)
+        _result = yield request_policy_information_for_list(subscribers_list)
 
         Success(true)
       end
@@ -32,21 +34,19 @@ module Gdb
 
       def construct_payload_hash(user_token)
         params = { year: Date.today.year == 2021 ? 2022 : Date.today.year,
-                   hios_id: "33653",
                    user_token: user_token,
                    start_time: Time.now,
-                   end_time: Time.now + 1.hour}
+                   end_time: Time.now + 1.hour }
 
         Success(params)
       end
 
       def build_event(payload)
-        event("events.gdb.members.subscribers_list_received", attributes: payload.merge!(CorrelationID: "12345"))
+        event("events.gdb.enrolled_subjects.subscribers_list", attributes: payload)
       end
 
-      def call_glue_for_subscribers_list(event, payload)
+      def publish(event, payload)
         response = event.publish
-
         Success(response.body)
       rescue StandardError => _e
         if payload[:hios_id].present?
@@ -58,7 +58,7 @@ module Gdb
 
       def request_policy_information_for_list(subscribers_list)
         subscribers_list.each do |subscriber_id|
-          ::Gdb::Members::RequestSubscriberPolicy.new.call({subscriber_id: subscriber_id})
+          ::Gdb::Members::RequestSubscriberPolicy.new.call({ subscriber_id: subscriber_id })
         end
         Success(true)
       end
