@@ -29,8 +29,6 @@ gem 'dry-struct',           '~> 1.3'
 gem 'dry-transaction'
 gem 'dry-types',            '~> 1.4'
 gem 'dry-validation',       '~> 1.6'
-gem 'mongoid',             '~> 7.2.1'
-gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
 
 gem 'nokogiri-happymapper'
 gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
@@ -56,3 +54,7 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem 'pg', '~> 1.1'
+gem 'sequent', git: 'https://github.com/zilverline/sequent'
+gem 'mongoid',             '~> 7.2.1'
+gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
