@@ -8,7 +8,7 @@ class SequentMigrations < Sequent::Migrations::Projectors
  def self.versions
    {
      '1' => [
-       # List of migrations for version 1
+      Policies::Projector
      ],
    }
  end
