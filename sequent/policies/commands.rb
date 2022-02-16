@@ -13,9 +13,14 @@ module Policies
       validates_presence_of :subscriber_hbx_id
       validates_presence_of :policy_identifier
       validates_presence_of :coverage_span
+      validates_presence_of :product
       validates_with(
         ActiveRecord::Validations::AssociatedValidator,
         attributes: :coverage_span
+      )
+      validates_with(
+        ActiveRecord::Validations::AssociatedValidator,
+        attributes: :product
       )
 
       def self.create(policy_id, subscriber_hbx_id, span, sponsor, product, responsible_party_hbx_id)

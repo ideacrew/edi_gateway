@@ -16,6 +16,9 @@ module Policies
         product_name: String,
         provider_name: String
       })
+
+      validates_presence_of :hios_id
+      validates_presence_of :coverage_year
     end
 
     class Sponsor < Sequent::ValueObject
@@ -31,6 +34,7 @@ module Policies
         hbx_member_id: String,
         premium: BigDecimal,
         rate_schedule_date: DateTime,
+        tobacco_usage: String,
         relationship: String
       })
     end

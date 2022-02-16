@@ -1,6 +1,6 @@
 module Policies
   class Projector < Sequent::Projector
-    manages_tables ::Policies::PolicyRecord, ::Policies::CoverageSpanRecord
+    manages_tables ::Policies::PolicyRecord, ::Policies::CoverageSpanRecord, ::Policies::CoverageSpanEnrolleeRecord
 
     on ::Policies::Events::PolicyCreated do |event|
       span = event.coverage_span
@@ -12,10 +12,12 @@ module Policies
           subscriber_hbx_id: event.subscriber_hbx_id,
           policy_start: span.coverage_start,
           policy_end: span.coverage_end,
+          product_hios_id: event.product.hios_id,
+          product_coverage_year: event.product.coverage_year,
           responsible_party_hbx_id: event.responsible_party_hbx_id
         }
       )
-      create_record(
+      coverage_span_record = create_record(
         ::Policies::CoverageSpanRecord,
         {
           policy_record_aggregate_id: event.aggregate_id,
@@ -28,6 +30,21 @@ module Policies
           responsible_amount: span.responsible_amount
         }
       )
+      if span.enrollees
+        span.enrollees.each do |en|
+          create_record(
+            ::Policies::CoverageSpanEnrolleeRecord,
+            {
+              coverage_span_id: coverage_span_record.id,
+              hbx_member_id: en.hbx_member_id,
+              premium: en.premium,
+              rate_schedule_date: en.rate_schedule_date,
+              relationship: en.relationship,
+              tobacco_usage: en.tobacco_usage
+            }
+          )
+        end
+      end
     end
   end
 end
