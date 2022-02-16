@@ -21,11 +21,24 @@ module PolicyInventory
       if candidates.any?
         matched_policy = yield check_candidate_matchups(candidates, params)
         if matched_policy
+          add_new_span(matched_policy, params)
         else
           create_new_policy(params)
         end
       else
         create_new_policy(params)
+      end
+    end
+
+    def add_new_span(matched_policy, params)
+      new_span = build_coverage_span(params)
+      add_command = Policies::Commands::AddSpan.create(
+        matched_policy.policy_identifier,
+        new_span
+      )
+      return Failure(add_command.errors) unless add_command.valid?
+      Try do
+        Sequent.command_service.execute_commands add_command
       end
     end
 

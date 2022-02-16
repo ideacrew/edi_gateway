@@ -10,5 +10,13 @@ module Policies
         responsible_party_hbx_id: String
       })
     end
+
+    class SpanAdded < Sequent::Event
+      attrs({
+        policy_start: DateTime,
+        policy_end: DateTime,
+        coverage_span: ::Policies::ValueObjects::CoverageSpan
+      })
+    end
   end
 end

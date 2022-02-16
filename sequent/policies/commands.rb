@@ -36,5 +36,25 @@ module Policies
         })
       end
     end
+
+    class AddSpan < Sequent::Command
+      attrs({
+        coverage_span: ::Policies::ValueObjects::CoverageSpan
+      })
+
+      validates_presence_of :coverage_span
+      validates_with(
+        ActiveRecord::Validations::AssociatedValidator,
+        attributes: :coverage_span
+      )
+
+      def self.create(policy_id, span)
+        aggregate_id = "::Policies::Policy__#{policy_id}"
+        self.new({
+          aggregate_id: aggregate_id,
+          coverage_span: span
+        })
+      end
+    end
   end
 end
