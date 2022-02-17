@@ -1,0 +1,20 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  # username: your username for your Postgresql access
+  # password: your password for your Postgresql access
+  # For details on connection pooling, see rails configuration guide
+  # http://guides.rubyonrails.org/configuring.html#database-pooling
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+  development:
+    <<: *default
+    database: The name for your **development** database that you created (probably in PGAdmin?)
+
+  test:
+    <<: *default
+    database: The name for your **test** database that you created (probably in PGAdmin?)
+
+  production:
+    <<: *default
+    database: The name for your **production** database that you created (probably in PGAdmin?)

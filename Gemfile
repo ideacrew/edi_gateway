@@ -13,6 +13,9 @@ gem 'bootsnap', '>= 1.4.4', require: false
 
 gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
 
+# Double Entry Accounting model
+gem 'double_entry'
+
 gem 'dry-matcher',          '~> 0.8'
 gem 'dry-monads',           '~> 1.3'
 gem 'dry-schema'
@@ -26,9 +29,13 @@ gem 'event_source',  git:  'https://github.com/ideacrew/event_source.git', branc
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.7'
 
+# MongoDB Database
 gem 'mongoid',             '~> 7.3.1'
 
 gem 'nokogiri-happymapper'
+
+# Postgres Database
+gem 'pg'
 
 # Use Puma as the app server
 gem 'puma', '~> 5.0'
