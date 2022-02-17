@@ -14,4 +14,5 @@ CREATE TABLE policies_policy_records%SUFFIX% (
 CREATE INDEX policies_policy_records_agg_id%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (aggregate_id);
 CREATE INDEX policies_policy_records_pi_id%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (policy_identifier);
 CREATE INDEX policies_policy_records_sub_id%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (subscriber_hbx_id);
+CREATE INDEX policies_policy_records_rp_id%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (responsible_party_hbx_id);
 CREATE INDEX policies_policy_records_product_search%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (product_hios_id, product_coverage_year);

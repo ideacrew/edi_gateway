@@ -1,0 +1,70 @@
+<div class="card">
+<div class="card-header">
+<h3>HBX Policy ID: <%= policy.policy_identifier %></h3>
+</div>
+<div class="card-body">
+<dl class="row">
+<dt class="col-2">HIOS ID</dt>
+<dd class="col-10"><%= policy.product_hios_id %></dd>
+<dt class="col-2">Subscriber HBX ID</dt>
+<dd class="col-10"><%= policy.subscriber_hbx_id %></dd>
+<dt class="col-2">Policy Start</dt>
+<dd class="col-10"><%= policy.policy_start %></dd>
+<% if policy.policy_end %>
+<dt class="col-2">Policy End</dt>
+<dd class="col-10"><%= policy.policy_end %></dd>
+<% end %>
+<% if policy.responsible_party_hbx_id %>
+<dt>Responsible Party HBX ID</dt>
+<dd class="col-10"><%= policy.responsible_party_hbx_id %></dd>
+<% end %>
+</dl>
+<h3>Spans</h3>
+<% policy.coverage_span_records.each do |span| %>
+<dl class="row">
+  <dt class="col-2">HBX Enrollment ID</dt>
+  <dd class="col-10"><%= span.enrollment_id %></dd>
+  <dt class="col-2">Coverage Start</dt>
+  <dd class="col-10"><%= span.coverage_start %></dd>
+  <% if span.coverage_end %>
+  <dt class="col-2">Coverage End</dt>
+  <dd class="col-10"><%= span.coverage_end %></dd>
+  <% end %>
+</dl>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Member ID</th>
+      <th>Relationship</th>
+      <th>Tobacco Usage</th>
+      <th>Premium</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% span.coverage_span_enrollee_records.each do |enrollee| %>
+    <tr>
+      <td><%= enrollee.hbx_member_id %></td>
+      <td><%= enrollee.relationship %></td>
+      <td><%= enrollee.tobacco_usage %></td>
+      <td class="text-end"><%= enrollee.premium %></td>
+    </tr>
+    <% end %>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="3" class="text-end">Total</td>
+      <td class="text-end"><%= span.total_cost %></td>
+    </tr>
+    <tr>
+      <td colspan="3" class="text-end">Assistance</td>
+      <td class="text-end"><%= span.applied_aptc%></td>
+    </tr>
+    <tr>
+      <td colspan="3" class="text-end">Responsible Amount</td>
+      <td class="text-end"><%= span.responsible_amount%></td>
+    </tr>
+  </tfoot>
+</table>
+<% end %>
+</div>
+</div>

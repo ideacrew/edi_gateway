@@ -1,0 +1,27 @@
+<div class="row">
+  <div class="col-12">
+    <h1><%= @person.hbx_id %></h1>
+  </div>
+</div>
+
+<% if @person.policies.any? %>
+<div class="row">
+  <div class="col-12">
+    <h2>Policies</h2>
+    <% @person.policies.each do |policy| %>
+      <%= render :partial => "policy", :object => policy %>
+    <% end %>
+  </div>
+</div>
+<% end %>
+
+<% if @person.rp_policies.any? %>
+<div class="row">
+  <div class="col-12">
+  <h2>Responsible Party Policies</h2>
+  <% @person.rp_policies.each do |policy| %>
+  <%= render :partial => "policy", :object => policy %>
+  <% end %>
+  </div>
+</div>
+<% end %>
