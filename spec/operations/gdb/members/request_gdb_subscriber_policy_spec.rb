@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Gdb::Members::RequestGdbSubscriberPolicy, dbclean: :before_each do
+RSpec.describe Gdb::Members::RequestGdbSubscriberPolicy do
   include Dry::Monads[:result, :do]
   describe 'with valid arguments' do
 

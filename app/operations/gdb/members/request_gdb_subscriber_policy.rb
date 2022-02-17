@@ -58,10 +58,10 @@ module Gdb
         return Failure("Unable to get response") if response.status != 200
         # rubocop:disable Style/MultilineBlockChain
         Try() do
-          ::AuditReportDatum.where(subscriber_id: payload[:subscriber_id])
+          ::AuditReportDatum.where(subscriber_id: payload[:id])
         end.bind do |result|
           if result.empty?
-            Success(::AuditReportDatum.create!(subscriber_id: payload[:subscriber_id],
+            Success(::AuditReportDatum.create!(subscriber_id: payload[:id],
                                                payload: response.body,
                                                status: "completed"))
           else

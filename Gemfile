@@ -72,6 +72,10 @@ group :development, :test do
   gem 'yard'
 end
 
+group :test do
+  gem 'database_cleaner', '~> 1.7'
+end
+
 group :development do
   gem 'listen', '~> 3.3'
   # Display performance information such as SQL time and flame graphs for each request in your browser.
