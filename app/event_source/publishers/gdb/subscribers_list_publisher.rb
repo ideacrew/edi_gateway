@@ -4,9 +4,9 @@ module Publishers
   # Publisher will send request payload to gdb for subscribers list
   module Gdb
     class SubscribersListPublisher
-      include ::EventSource::Publisher[http: '/subscribers_list']
+      include ::EventSource::Publisher[http: '/api/event_source/enrolled_subjects']
 
-      register_event '/subscribers_list'
+      register_event '/api/event_source/enrolled_subjects'
     end
   end
 end

@@ -33,7 +33,7 @@ module Gdb
       def construct_payload_hash(validated_params)
         payload = { year: validated_params[:year],
                     user_token: validated_params[:user_token],
-                    subscriber_id: validated_params[:subscriber_id] }
+                    id: validated_params[:subscriber_id] }
 
         Success(payload)
       end

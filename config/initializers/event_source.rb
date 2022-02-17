@@ -26,10 +26,10 @@ EventSource.configure do |config|
     end
 
     server.http do |http|
-      http.ref = 'http://localhost:3000/api/event_source/enrolled_subjects'
+      http.ref = 'http://localhost:3000'
       http.host = ENV['GLUE_HOST'] || 'http://localhost'
       http.port = ENV['GLUE_PORT'] || '3000'
-      http.url = ENV['GLUE_URL'] || 'http://localhost:3000/api/event_source/enrolled_subjects'
+      http.url = ENV['GLUE_URL'] || 'http://localhost:3000'
       http.default_content_type = 'application/json'
     end
   end

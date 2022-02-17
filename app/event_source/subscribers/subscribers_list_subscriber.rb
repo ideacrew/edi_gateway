@@ -3,10 +3,10 @@
 module Subscribers
   # Receive response from Glue
   class SubscribersListSubscriber
-    include ::EventSource::Subscriber[http: '/subscribers_list']
+    include ::EventSource::Subscriber[http: '/api/event_source/enrolled_subjects']
     extend EventSource::Logging
 
-    subscribe(:on_subscribers_list) do |body, status, headers|
+    subscribe(:on_api_event_source_enrolled_subjects) do |body, status, headers|
       if status.to_s == "200"
         logger.info "Received response #{status}, Body - #{body}, Headers - #{headers}"
         persist(body)
