@@ -6,7 +6,7 @@ module UserFee
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embedded_in :customer_account, class_name: 'UserFee::CustomerAccount'
+    embedded_in :customer_account, as: :customer, class_name: 'UserFee::CustomerAccount'
 
     field :hbx_id, type: String
     field :first_name, type: String

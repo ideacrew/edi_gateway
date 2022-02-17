@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module UserFee
-  class Product
+  class TaxHousehold
     include Mongoid::Document
     include Mongoid::Timestamps
 

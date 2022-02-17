@@ -16,8 +16,7 @@ module UserFee
     field :end_on, type: Date
 
     embeds_many :enrolled_members, class_name: 'UserFee::EnrolledMember'
-
     embeds_one :product, class_name: 'UserFee::Product'
-    accepts_nested_attributess_for :product
+    accepts_nested_attributes_for :product, :enrolled_members
   end
 end

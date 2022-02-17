@@ -12,6 +12,6 @@ module UserFee
 
     embeds_one :member, class_name: 'UserFee::Member'
     embeds_one :premium, class_name: 'UserFee::Premium'
-    accepts_nested_attributess_for :member, :premium
+    accepts_nested_attributes_for :member, :premium
   end
 end
