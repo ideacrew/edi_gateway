@@ -11,7 +11,7 @@ module UserFee
     field :is_active, type: Boolean
 
     embeds_one :customer, class_name: 'UserFee::Member'
-    embeds_many :policies, class_name: 'UserFee::Policy'
+    has_many :policies, class_name: 'UserFee::Policy'
     accepts_nested_attributes_for :customer, :policies
 
     def account

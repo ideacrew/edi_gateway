@@ -5,13 +5,13 @@ module UserFee
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embedded_in :policy, class_name: 'UserFee::Policy'
+    embedded_in :marketplace_segment, class_name: 'UserFee::MarketplaceSegment'
 
     field :start_on, type: Date
     field :end_on, type: Date
 
-    embeds_one :member, class_name: 'UserFee::Member'
+    has_one :member, class_name: 'UserFee::Member'
     embeds_one :premium, class_name: 'UserFee::Premium'
-    accepts_nested_attributes_for :member, :premium
+    accepts_nested_attributes_for :premium
   end
 end

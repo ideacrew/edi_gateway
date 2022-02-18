@@ -7,6 +7,6 @@ module UserFee
 
     embedded_in :policy, class_name: 'UserFee::Policy'
 
-    field :aptc_amount_total, type: Money
+    field :aptc_amount_total, type: BigDecimal
   end
 end

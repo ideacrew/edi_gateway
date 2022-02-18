@@ -5,7 +5,7 @@ module UserFee
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embedded_in :customer_account, class_name: 'UserFee::CustomerAccount'
+    belongs_to :customer_account, class_name: 'UserFee::CustomerAccount'
 
     field :exchange_assigned_id, type: String
     field :insurer_assigned_id, type: String
@@ -15,8 +15,9 @@ module UserFee
     field :start_on, type: Date
     field :end_on, type: Date
 
-    embeds_many :enrolled_members, class_name: 'UserFee::EnrolledMember'
+    embeds_one :insurer, class_name: 'UserFee::Insurer'
     embeds_one :product, class_name: 'UserFee::Product'
-    accepts_nested_attributes_for :product, :enrolled_members
+    has_many :marketplace_segments, class_name: 'UserFee::MarketplaceSegment'
+    accepts_nested_attributes_for :product, :marketplace_segments
   end
 end
