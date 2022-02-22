@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-module UserFee
+module UserFees
   class Insurer
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    has_many :policies, class_name: 'UserFee::Policy'
+    embedded_in :policies, class_name: 'UserFees::Policy'
 
     field :hios_id, type: String
     field :name, type: String
