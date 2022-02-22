@@ -7,14 +7,26 @@ default: &default
   # http://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-  development:
-    <<: *default
-    database: The name for your **development** database that you created (probably in PGAdmin?)
+  # development:
+  #   <<: *default
+  #   database: edi_gateway_development
 
-  test:
-    <<: *default
-    database: The name for your **test** database that you created (probably in PGAdmin?)
+  # test:
+  #   <<: *default
+  #   database: edi_gateway_test
 
-  production:
-    <<: *default
-    database: The name for your **production** database that you created (probably in PGAdmin?)
+  # production:
+  #   <<: *default
+  #   database: edi_gateway_production
+
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: edi_gateway_development
+  pool: 5
+
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: edi_gateway_test
+  pool: 5
