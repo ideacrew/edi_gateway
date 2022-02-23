@@ -7,9 +7,9 @@ class ReinstatementTransactionWorkflowStatus
 
   belongs_to :inbound_834_transaction
 
-  field :policy_database_status, String
-  field :enrollment_database_status, String
+  field :policy_database_status, type: String
+  field :enrollment_database_status, type: String
 
-  field :policy_database_correlation_id, String
-  field :enrollment_database_correlation_id, String
+  field :policy_database_correlation_id, type: String
+  field :enrollment_database_correlation_id, type: String
 end
