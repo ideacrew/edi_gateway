@@ -12,24 +12,23 @@ module UserFees
     field :account_id, type: String
     field :is_active, type: Boolean, default: true
 
-    embeds_one :customer, class_name: '::UserFees::Member'
-    embeds_many :tax_households, class_name: '::UserFees::TaxHousehold'
-    embeds_many :policies, class_name: 'UserFees::Policy'
+    embeds_one :customer, class_name: '::UserFees::Member', cascade_callbacks: true
+    embeds_many :tax_households, class_name: '::UserFees::TaxHousehold', cascade_callbacks: true
+    embeds_many :policies, class_name: 'UserFees::Policy', cascade_callbacks: true
     accepts_nested_attributes_for :customer, :policies, :tax_households
 
-    scope :all, -> { exists(_id: true) }
-    scope :active, -> { where(is_active: true) }
-
-    # scope :by_customer_role, ->(value) { where(customer_role: value[:value]) }
-    # scope :by_customer_id, ->(value) { where('customer.hbx_id': value[:value]) }
-    # scope :by_subscriber_hbx_id, ->(value) { where('customer.subscriber_hbx_id': value[:value]) }
+    scope :by_active, -> { where(is_active: true) }
+    scope :by_customer_role, ->(value) { where(customer_role: value[:value]) }
+    scope :by_customer_id, ->(value) { where('customer.hbx_id': value[:value]) }
     scope :by_id, ->(value) { value[:_id] }
 
     index({ is_active: 1 }, { name: 'is_active_index' })
-
     index({ customer_role: 1 }, { name: 'customer_role_index' })
-    index({ 'customer.hbx_id': 1 }, { name: 'customer_hbx_id_index' })
-    index({ 'customer.subscriber_hbx_id': 1 }, { name: 'subscriber_hbx_id_index' })
+    index({ 'customer.hbx_id': 1 }, { unique: true, name: 'customer_hbx_id_index' })
+    index({ 'policies.subscriber_hbx_id': 1 }, { name: 'subscribers_hbx_id_index' })
+    index({ 'policies.insurer.hios_id': 1 }, { name: 'insurers_hios_id_index' })
+    index({ 'policies.start_on': 1 }, { name: 'policies_start_on_index' })
+    index({ 'policies.end_on': 1 }, { sparse: true, name: 'policies_end_on_index' })
 
     def account
       Account.find(self.account_id)

@@ -21,7 +21,7 @@ RSpec.shared_context 'customer_account_params' do
       },
       # customer_id: '1055668',
       customer_role: 'subscriber',
-      tax_households: [{ aptc_amount: 850.0, csr: 0, start_on: '20220101', end_on: '20221231' }],
+      tax_households: [{ id: '100', aptc_amount: 850.0, csr: 0, start_on: '20220101', end_on: '20221231' }],
       policies: [
         {
           exchange_assigned_id: '50836',

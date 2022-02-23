@@ -13,6 +13,6 @@ module UserFees
     field :total_premium_responsibility_amount, type: BigDecimal
 
     embedded_in :policy, class_name: '::UserFees::Policy'
-    embeds_many :enrolled_members, class_name: '::UserFees::EnrolledMember'
+    embeds_many :enrolled_members, class_name: '::UserFees::EnrolledMember', cascade_callbacks: true
   end
 end

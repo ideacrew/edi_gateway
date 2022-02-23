@@ -8,7 +8,7 @@ module UserFees
     include Mongoid::Timestamps
 
     embedded_in :customer_account, inverse_of: :customer, class_name: '::UserFees::CustomerAccount'
-    embeds_one :person_name, class_name: '::UserFees::PersonName'
+    embeds_one :person_name, class_name: '::UserFees::PersonName', cascade_callbacks: true
     accepts_nested_attributes_for :person_name
 
     # belongs_to :enrolled_member, class_name: '::UserFees::EnrolledMember'

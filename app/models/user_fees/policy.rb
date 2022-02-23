@@ -15,9 +15,9 @@ module UserFees
     field :start_on, type: Date
     field :end_on, type: Date
 
-    embeds_one :insurer, class_name: '::UserFees::Insurer'
-    embeds_one :product, class_name: '::UserFees::Product'
-    embeds_many :marketplace_segments, class_name: '::UserFees::MarketplaceSegment'
+    embeds_one :insurer, class_name: '::UserFees::Insurer', cascade_callbacks: true
+    embeds_one :product, class_name: '::UserFees::Product', cascade_callbacks: true
+    embeds_many :marketplace_segments, class_name: '::UserFees::MarketplaceSegment', cascade_callbacks: true
     accepts_nested_attributes_for :insurer, :product, :marketplace_segments
   end
 end
