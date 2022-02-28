@@ -7,12 +7,11 @@ module UserFees
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embedded_in :customer_account, inverse_of: :customer, class_name: '::UserFees::CustomerAccount'
+    embedded_in :enrolled_member, class_name: '::UserFees::EnrolledMember'
     embeds_one :person_name, class_name: '::UserFees::PersonName', cascade_callbacks: true
     accepts_nested_attributes_for :person_name
 
-    # belongs_to :enrolled_member, class_name: '::UserFees::EnrolledMember'
-
+    field :account_id, type: String
     field :hbx_id, type: String
     field :insurer_assigned_id, type: String
     field :subscriber_hbx_id, type: String
@@ -25,5 +24,13 @@ module UserFees
     field :tax_household_id, type: String
     field :is_subscriber, type: Boolean
     field :is_tobacco_user, type: Boolean
+
+    def id
+      _id.to_s
+    end
+
+    def account
+      Account.find(self.account_id)
+    end
   end
 end
