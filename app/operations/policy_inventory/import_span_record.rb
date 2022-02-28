@@ -87,10 +87,12 @@ module PolicyInventory
       subscriber_id = params[:subscriber_hbx_id]
       product_hios_id = params[:product][:hios_id]
       product_year = params[:product][:coverage_year]
+      rating_area = params[:rating_area]
       Policies::PolicyRecord.where(
         subscriber_hbx_id: subscriber_id,
         product_hios_id: product_hios_id,
-        product_coverage_year: product_year
+        product_coverage_year: product_year,
+        rating_area: rating_area
       )
     end
 
@@ -109,6 +111,7 @@ module PolicyInventory
         build_coverage_span(params),
         nil,
         ::Policies::ValueObjects::Product.new(params[:product]),
+        params[:rating_area],
         params[:responsible_party_hbx_id]
       )
       command.valid? ? Success(command) : Failure(command.errors)

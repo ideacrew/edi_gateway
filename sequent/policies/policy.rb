@@ -10,7 +10,8 @@ module Policies
           sponsor: command.sponsor,
           product: command.product,
           coverage_span: command.coverage_span,
-          responsible_party_hbx_id: command.responsible_party_hbx_id
+          responsible_party_hbx_id: command.responsible_party_hbx_id,
+          rating_area: command.rating_area
         }
       )
     end

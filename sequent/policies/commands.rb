@@ -7,13 +7,15 @@ module Policies
         coverage_span: ::Policies::ValueObjects::CoverageSpan,
         sponsor: ::Policies::ValueObjects::Sponsor,
         product: ::Policies::ValueObjects::Product,
-        responsible_party_hbx_id: String
+        responsible_party_hbx_id: String,
+        rating_area: String
       })
 
       validates_presence_of :subscriber_hbx_id
       validates_presence_of :policy_identifier
       validates_presence_of :coverage_span
       validates_presence_of :product
+      validates_presence_of :rating_area
       validates_with(
         ActiveRecord::Validations::AssociatedValidator,
         attributes: :coverage_span
@@ -23,7 +25,7 @@ module Policies
         attributes: :product
       )
 
-      def self.create(policy_id, subscriber_hbx_id, span, sponsor, product, responsible_party_hbx_id)
+      def self.create(policy_id, subscriber_hbx_id, span, sponsor, product, rating_area, responsible_party_hbx_id)
         aggregate_id = "::Policies::Policy__#{policy_id}"
         self.new({
           aggregate_id: aggregate_id,
@@ -32,7 +34,8 @@ module Policies
           coverage_span: span,
           sponsor: sponsor,
           product: product,
-          responsible_party_hbx_id: responsible_party_hbx_id
+          responsible_party_hbx_id: responsible_party_hbx_id,
+          rating_area: rating_area
         })
       end
     end

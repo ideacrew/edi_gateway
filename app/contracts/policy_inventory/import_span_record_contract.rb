@@ -5,6 +5,7 @@ module PolicyInventory
     params do
       required(:subscriber_hbx_id).filled(:string)
       required(:policy_identifier).filled(:string)
+      required(:rating_area).filled(:string)
       optional(:responsible_party_hbx_id).maybe(:string)
       required(:product).filled(:hash) do
         required(:hios_id).filled(:string)

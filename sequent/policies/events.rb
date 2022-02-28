@@ -7,7 +7,8 @@ module Policies
         sponsor: ::Policies::ValueObjects::Sponsor,
         product: ::Policies::ValueObjects::Product,
         coverage_span: ::Policies::ValueObjects::CoverageSpan,
-        responsible_party_hbx_id: String
+        responsible_party_hbx_id: String,
+        rating_area: String
       })
     end
 

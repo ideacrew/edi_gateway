@@ -35,7 +35,7 @@ describe PolicyInventory::ImportSpanRecord, "given a new span" do
       subscriber_hbx_id: "897982",
       policy_identifier: "23897982314",
       coverage_span: coverage_span,
-      product: product
+      product: product,rating_area: "ME-0"
     }
   end
 
@@ -80,7 +80,8 @@ describe PolicyInventory::ImportSpanRecord, "given a span that already exists" d
       subscriber_hbx_id: "89782",
       policy_identifier: "23897314",
       coverage_span: coverage_span,
-      product: product
+      product: product,
+      rating_area: "ME-0"
     }
   end
 
@@ -152,7 +153,8 @@ describe PolicyInventory::ImportSpanRecord, "given a span that matches datewise,
       subscriber_hbx_id: subscriber_id,
       policy_identifier: enrollment_id1,
       coverage_span: coverage_span1,
-      product: product
+      product: product,
+      rating_area: "ME-0"
     }
   end
 
@@ -161,7 +163,8 @@ describe PolicyInventory::ImportSpanRecord, "given a span that matches datewise,
       subscriber_hbx_id: subscriber_id,
       policy_identifier: enrollment_id2,
       coverage_span: coverage_span2,
-      product: product
+      product: product,
+      rating_area: "ME-0"
     }
   end
 
@@ -239,7 +242,8 @@ describe PolicyInventory::ImportSpanRecord, "given a span that matches datewise,
       subscriber_hbx_id: subscriber_id,
       policy_identifier: enrollment_id1,
       coverage_span: coverage_span1,
-      product: product
+      product: product,
+      rating_area: "ME-0"
     }
   end
 
@@ -248,7 +252,8 @@ describe PolicyInventory::ImportSpanRecord, "given a span that matches datewise,
       subscriber_hbx_id: subscriber_id,
       policy_identifier: enrollment_id2,
       coverage_span: coverage_span2,
-      product: product
+      product: product,
+      rating_area: "ME-0"
     }
   end
 

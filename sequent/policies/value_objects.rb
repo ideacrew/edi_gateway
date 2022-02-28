@@ -12,7 +12,6 @@ module Policies
       attrs({
         hios_id: String,
         coverage_year: String,
-        coverage_kind: String,
         product_name: String,
         provider_name: String
       })

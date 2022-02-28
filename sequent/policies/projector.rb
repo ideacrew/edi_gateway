@@ -14,7 +14,8 @@ module Policies
           policy_end: span.coverage_end,
           product_hios_id: event.product.hios_id,
           product_coverage_year: event.product.coverage_year,
-          responsible_party_hbx_id: event.responsible_party_hbx_id
+          responsible_party_hbx_id: event.responsible_party_hbx_id,
+          rating_area: event.rating_area
         }
       )
       coverage_span_record = create_record(

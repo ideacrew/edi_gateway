@@ -7,6 +7,7 @@ CREATE TABLE policies_policy_records%SUFFIX% (
   policy_expires timestamp without time zone,
   subscriber_hbx_id varchar(1024) NOT NULL,
   product_hios_id varchar(1024) NOT NULL,
+  rating_area varchar(1024) NOT NULL,
   product_coverage_year varchar(1024) NOT NULL,
   responsible_party_hbx_id varchar(1024)
 );
@@ -16,3 +17,4 @@ CREATE INDEX policies_policy_records_pi_id%SUFFIX% ON policies_policy_records%SU
 CREATE INDEX policies_policy_records_sub_id%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (subscriber_hbx_id);
 CREATE INDEX policies_policy_records_rp_id%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (responsible_party_hbx_id);
 CREATE INDEX policies_policy_records_product_search%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (product_hios_id, product_coverage_year);
+CREATE INDEX policies_policy_records_ra_search%SUFFIX% ON policies_policy_records%SUFFIX% USING btree (rating_area);
