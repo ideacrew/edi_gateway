@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ideacrew/aca_entities.git
-  revision: 4fe210bbbc35220f06a4fb9f5f1696173b564475
+  revision: 6d2244d61e5054bd3b83ce9abaab9fbb97ccc795
   branch: create_user_fee_model_181271601
   specs:
     aca_entities (0.10.0)

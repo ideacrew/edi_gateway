@@ -4,20 +4,19 @@ module UserFees
   # A person on the ACA Individual Market who is responsible for paying a family group's insurance premiums
   class Customer < ::ApplicationRecord
     belongs_to :account, class_name: '::Keepr::Account'
+
     validates_associated :account
     validates :insurance_coverage_id, presence: true
     validate :insurance_coverage_is_valid
 
     after_save :persist_insurance_coverage
 
-    # around_save :persist_insurance_coverage
-
     def insurance_coverage
       return @insurance_coverage if defined?(@insurance_coverage)
       @insurance_coverage = ::UserFees::InsuranceCoverage.find(insurance_coverage_id) unless insurance_coverage_id.nil?
     end
 
-    # Creates a 'has_one' association between an ActiveRecord UserFees::Customer and a Mongoid ActiveModel
+    # Supports a 'has_one' association between an ActiveRecord UserFees::Customer and a Mongoid ActiveModel
     #   {UserFees::InsuranceCoverage} instance
     # @param [Hash] opts the options for referencing the InsuranceCoverage instance
     # @param opts [Hash] :obj a hash that will validate using: {::AcaEntities::Ledger::Contracts::InsuranceCoverageContract}
