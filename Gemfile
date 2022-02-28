@@ -3,18 +3,17 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-gem 'aca_entities', git:  'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
+gem 'aca_entities', git:  'https://github.com/ideacrew/aca_entities.git', branch: 'create_user_fee_model_181271601'
+# gem 'aca_entities', path:  'vendor/plugins/aca_entities'
 # gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false
+
 # Use Active Model has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
 gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
-
-# Double Entry Accounting model
-gem 'double_entry'
 
 gem 'dry-matcher',          '~> 0.8'
 gem 'dry-monads',           '~> 1.3'
@@ -28,6 +27,9 @@ gem 'event_source',  git:  'https://github.com/ideacrew/event_source.git', branc
 
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 2.7'
+
+# gem 'keepr', path: 'vendor/plugins/keepr'
+gem 'keepr', '~> 0.7.0'
 
 # MongoDB Database
 gem 'mongoid',             '~> 7.3.1'
@@ -61,6 +63,8 @@ gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 gem 'webpacker', '~> 5.0'
 
 group :development, :test do
+  gem 'database_cleaner-active_record'
+  gem 'database_cleaner-mongoid'
   gem 'factory_bot_rails'
   gem 'pry-byebug'
   gem 'rspec-rails',            '~> 5.0'

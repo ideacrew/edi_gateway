@@ -1,3 +1,5 @@
+# # frozen_string_literal: true
+
 # require 'double_entry'
 
 # DoubleEntry.configure do |config|
@@ -5,19 +7,18 @@
 #   # config.json_metadata = true
 
 #   config.define_accounts do |accounts|
-#     customer_account_scope =
-#       lambda(customer_account) do
-#         raise 'not a UserFee::CustomerAccount' unless customer_account.instance_of?(UserFee::CustomerAccount)
-#         person.id
-#       end
-#     accounts.define(identifier: :user_fee, scope_identifier: customer_account_scope)
+#     member_scope = ->(member) do
+#       raise 'not a UserFee::Member' unless member.instance_of?(UserFees::Member)
+#       member.id
+#     end
+#     accounts.define(identifier: :user_fee, scope_identifier: member_scope)
 
-#     vendor_scope =
-#       lambda(vendor) do
-#         raise 'not a Vendor' unless vendor.instance_of?(Vendor)
-#         vendor.id
-#       end
-#     accounts.define(identifier: :accounts_receivable, scope_identifier: vendor_scope)
+#     # vendor_scope =
+#     #   lambda(vendor) do
+#     #     raise 'not a Vendor' unless vendor.instance_of?(Vendor)
+#     #     vendor.id
+#     #   end
+#     # accounts.define(identifier: :accounts_receivable, scope_identifier: vendor_scope)
 #   end
 
 #   # config.define_transfers do |transfers|

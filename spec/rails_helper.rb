@@ -28,7 +28,7 @@ Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f 
 
 RSpec.configure do |config|
   # Remove this line to enable support for ActiveRecord
-  config.use_active_record = false
+  # config.use_active_record = false
 
   # If you enable ActiveRecord support you should unncomment these lines,
   # note if you'd prefer not to run each example within a transaction, you
