@@ -30,15 +30,6 @@ RSpec.configure do |config|
   # Remove this line to enable support for ActiveRecord
   # config.use_active_record = false
 
-  config.around(:each, :testing_transactions => true) do |ex|
-    DatabaseCleaner.strategy = nil
-    ex.run
-    DatabaseCleaner.strategy = :truncation
-  end
-  config.before(:each) do |test|
-    DatabaseCleaner.clean_with(:truncation) unless test.metadata[:testing_transactions]
-  end
-
   # If you enable ActiveRecord support you should unncomment these lines,
   # note if you'd prefer not to run each example within a transaction, you
   # should set use_transactional_fixtures to false.

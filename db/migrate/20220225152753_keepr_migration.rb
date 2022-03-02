@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 require 'keepr'
-
+# Keepr gem migration
+# rubocop:disable Metrics/MethodLength
 class KeeprMigration < Keepr::MIGRATION_BASE_CLASS
   def self.up
     create_table Keepr::Group, force: true do |t|
@@ -66,3 +67,4 @@ class KeeprMigration < Keepr::MIGRATION_BASE_CLASS
     drop_table Keepr::Group
   end
 end
+# rubocop:enable Metrics/MethodLength

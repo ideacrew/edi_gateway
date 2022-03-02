@@ -27,7 +27,7 @@ module UserFees
       end
 
       def create(values)
-        attrs = values.to_h
+        _attrs = values.to_h
         # customer_attrs = attrs.slice(:first_name, :last_name, :hbx_id, :customer_role, :insurance_coverage, :is_active)
         # account = ::Keepr::Account.new(attrs[:account])
 
