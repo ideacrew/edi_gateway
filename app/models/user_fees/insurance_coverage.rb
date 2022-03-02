@@ -19,11 +19,11 @@ module UserFees
     validates :hbx_id, presence: true
 
     scope :policy,
-          ->(customer: nil, policy: nil) {
+          ->(customer, policy) {
             where(hbx_id: customer[:hbx_id]).and('policies.exchange_assigned_id': policy[:exchange_assigned_id])
           }
     scope :tax_household,
-          ->(customer: nil, tax_houshold: nil) {
+          ->(customer, tax_houshold) {
             where(hbx_id: customer[:hbx_id]).and(
               'tax_housholds.exchange_assigned_id': tax_household[:exchange_assigned_id]
             )
