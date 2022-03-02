@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ideacrew/aca_entities.git
-  revision: 6d2244d61e5054bd3b83ce9abaab9fbb97ccc795
+  revision: 32caa19926dcba50651d94a2730ceea15b2104e9
   branch: create_user_fee_model_181271601
   specs:
     aca_entities (0.10.0)
@@ -15,6 +15,20 @@ GIT
       oj (~> 3.11)
       rbnacl (~> 7.1)
       smartystreets_ruby_sdk
+
+GIT
+  remote: https://github.com/ideacrew/aca_x12_entities.git
+  revision: 8ff3b0ec52f968d91d807052697dec48d102a723
+  branch: trunk
+  specs:
+    aca_x12_entities (0.1.0)
+      activesupport
+      dry-monads (~> 1.2)
+      dry-struct (~> 1.0)
+      dry-transformer (~> 0.1.1)
+      dry-types (~> 1.0)
+      dry-validation (~> 1.2)
+      nokogiri-happymapper
 
 GIT
   remote: https://github.com/ideacrew/event_source.git
@@ -474,6 +488,7 @@ PLATFORMS
 
 DEPENDENCIES
   aca_entities!
+  aca_x12_entities!
   bootsnap (>= 1.4.4)
   carrierwave-mongoid
   database_cleaner-active_record

@@ -10,13 +10,8 @@ module UserFees
 
     validate :contract_validates
 
-    def contract_validates
-      result = AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(self.to_hash)
-      errors.add(:base, result.errors) if result.failure?
-    end
-
-    # validates :customer_id, presence: true
-    field :customer_id, type: Integer
+    validates :hbx_id, presence: true
+    field :hbx_id, type: String
 
     field :is_active, type: Boolean, default: true
 
@@ -45,6 +40,13 @@ module UserFees
 
     def to_hash
       serializable_hash.merge('_id' => id.to_s).deep_symbolize_keys
+    end
+
+    private
+
+    def contract_validates
+      result = AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(self.to_hash)
+      errors.add(:base, result.errors) if result.failure?
     end
   end
 end
