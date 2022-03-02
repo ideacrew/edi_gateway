@@ -8,19 +8,32 @@ module UserFees
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    validate :contract_validates
-
-    validates :hbx_id, presence: true
-    field :hbx_id, type: String
-
-    field :is_active, type: Boolean, default: true
-
     embeds_many :tax_households, class_name: '::UserFees::TaxHousehold', cascade_callbacks: true
     embeds_many :policies, class_name: 'UserFees::Policy', cascade_callbacks: true
     accepts_nested_attributes_for :policies, :tax_households
 
-    scope :by_active, -> { where(is_active: true) }
-    scope :by_subscriber_id, ->(value) { where('policies.subscriber_hbx_id': value[:value]) }
+    field :hbx_id, type: String
+    field :is_active, type: Boolean, default: true
+
+    validate :passes_contract_validation
+    validates :hbx_id, presence: true
+
+    scope :policy,
+          ->(customer: nil, policy: nil) {
+            where(hbx_id: customer[:hbx_id]).and('policies.exchange_assigned_id': policy[:exchange_assigned_id])
+          }
+    scope :tax_household,
+          ->(customer: nil, tax_houshold: nil) {
+            where(hbx_id: customer[:hbx_id]).and(
+              'tax_housholds.exchange_assigned_id': tax_household[:exchange_assigned_id]
+            )
+          }
+
+    scope :subscriber_id,
+          ->(hbx_id, subscriber_hbx_id) { where(hbx_id: hbx_id).and('policies.subscriber_hbx_id': subscriber_hbx_id) }
+    scope :insurer_hios_id, ->(hios_id) { where('policies.insurer.hios_id': hios_id) }
+    scope :product_id, ->(hbx_qhp_id) { where('policies.product.hbx_qhp_id': hbx_qhp_id) }
+    scope :active, -> { where(is_active: true) }
 
     # scope :by_start_on, lambda do |value|
     #   where({ 'policies.start_on': value[:value] })
@@ -29,14 +42,14 @@ module UserFees
     # scope :by_end_on, lambda do |value|
     #   where('policies.end_on': value[:value])
     # end
-    scope :by_insurer_hios_id, ->(value) { where('policies.insurer.hios_id': value[:value]) }
 
-    # index({ customer_id: 1 }, { name: 'customer_id_index' })
-    index({ is_active: 1 }, { name: 'is_active_index' })
-    index({ 'policies.subscriber_hbx_id': 1 }, { name: 'subscribers_hbx_id_index' })
+    index({ hbx_id: 1, 'policies.exchange_assigned_id': 1 }, { unique: true, name: 'hbx_id_policy_id_index' })
+    index({ hbx_id: 1, 'policies.subscriber_hbx_id': 1 }, { name: 'subscribers_hbx_id_index' })
+    index({ hbx_id: 1, 'policies.start_on': 1 }, { name: 'policies_start_on_index' })
+    index({ hbx_id: 1, 'policies.end_on': 1 }, { sparse: true, name: 'policies_end_on_index' })
     index({ 'policies.insurer.hios_id': 1 }, { name: 'insurers_hios_id_index' })
-    index({ 'policies.start_on': 1 }, { name: 'policies_start_on_index' })
-    index({ 'policies.end_on': 1 }, { sparse: true, name: 'policies_end_on_index' })
+    index({ 'policies.product.hbx_qhp_id': 1 }, { name: 'product_id_index' })
+    index({ is_active: 1 }, { name: 'is_active_index' })
 
     def to_hash
       serializable_hash.merge('_id' => id.to_s).deep_symbolize_keys
@@ -44,7 +57,7 @@ module UserFees
 
     private
 
-    def contract_validates
+    def passes_contract_validation
       result = AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(self.to_hash)
       errors.add(:base, result.errors) if result.failure?
     end

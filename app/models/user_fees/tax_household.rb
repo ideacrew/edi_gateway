@@ -5,8 +5,9 @@ module UserFees
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embedded_in :customer_account, class_name: '::UserFees::CustomerAccount'
+    embedded_in :insurance_coverage, class_name: '::UserFees::InsuranceCoverage'
 
+    field :exchange_assigned_id, type: Integer
     field :aptc_amount, type: BigDecimal
     field :csr, type: Integer
     field :start_on, type: Date

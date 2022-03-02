@@ -4,7 +4,7 @@ module Events
   module UserFees
     module Enrollments
       # This class will register event
-      class EnrollmentUpdated < EventSource::Event
+      class EnrollmentChanged < EventSource::Event
         publisher_path 'publishers.user_fees.enrollment_publisher'
       end
     end

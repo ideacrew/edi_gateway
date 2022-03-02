@@ -7,6 +7,11 @@ module UserFees
 
     embedded_in :customer_account, class_name: '::UserFees::CustomerAccount'
 
+    embeds_one :insurer, class_name: '::UserFees::Insurer', cascade_callbacks: true
+    embeds_one :product, class_name: '::UserFees::Product', cascade_callbacks: true
+    embeds_many :marketplace_segments, class_name: '::UserFees::MarketplaceSegment', cascade_callbacks: true
+    accepts_nested_attributes_for :insurer, :product, :marketplace_segments
+
     field :exchange_assigned_id, type: String
     field :insurer_assigned_id, type: String
     field :subscriber_hbx_id, type: String
@@ -14,10 +19,5 @@ module UserFees
     field :rating_area_id, type: String
     field :start_on, type: Date
     field :end_on, type: Date
-
-    embeds_one :insurer, class_name: '::UserFees::Insurer', cascade_callbacks: true
-    embeds_one :product, class_name: '::UserFees::Product', cascade_callbacks: true
-    embeds_many :marketplace_segments, class_name: '::UserFees::MarketplaceSegment', cascade_callbacks: true
-    accepts_nested_attributes_for :insurer, :product, :marketplace_segments
   end
 end

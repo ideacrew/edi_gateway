@@ -21,7 +21,7 @@ module UserFees
     field :ssn, type: String
     field :dob, type: Date
     field :gender, type: String
-    field :tax_household_id, type: String
+    field :tax_household_id, type: Integer
     field :is_subscriber, type: Boolean
     field :is_tobacco_user, type: Boolean
 
