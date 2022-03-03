@@ -23,7 +23,7 @@ module UserFees
             where(hbx_id: customer[:hbx_id]).and('policies.exchange_assigned_id': policy[:exchange_assigned_id])
           }
     scope :tax_household,
-          ->(customer, tax_houshold) {
+          ->(customer, tax_household) {
             where(hbx_id: customer[:hbx_id]).and(
               'tax_housholds.exchange_assigned_id': tax_household[:exchange_assigned_id]
             )

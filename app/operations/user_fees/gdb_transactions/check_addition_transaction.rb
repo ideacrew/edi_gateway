@@ -29,10 +29,39 @@ module UserFees
       end
 
       def classify_transaction(message)
-        # add_insurance_coverage
-        # add_tax_household
-        # add_policy
-        # add_enrolled_member
+        binding.pry
+        hbx_id = message[:customer][:hbx_id]
+        new_customer = detect_new_customer(message[:customer])
+        new_policies = detect_new_policies(message[:customer])
+        new_tax_households = detect_new_tax_households(message[:customer])
+        new_enrolled_members = detect_new_enrolled_members(message[:customer])
+      end
+
+      # add initial policy
+      def detect_new_customer(customer)
+        ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id]) ? nil : customer
+      end
+
+      # add policies
+      def detect_new_policies(customer)
+        customer[:policies].reduce([]) do |new_policies, policy|
+          new_policies << policy unless customer_policy_exists?(customer, policy)
+        end
+      end
+
+      def customer_policy_exists?(customer, policy)
+        ::UserFee::InsuranceCoverage.policy_id(customer, policy)
+      end
+
+      # add tax households
+      def detect_new_tax_households(customer)
+        customer[:tax_households].reduce([]) do |new_tax_households, tax_household|
+          new_tax_households << tax_household unless customer_tax_household_exists?(hbx_id, message[:customer])
+        end
+      end
+
+      def customer_tax_household_exists?(customer, tax_household)
+        ::UserFee::InsuranceCoverage.tax_household(customer, tax_household)
       end
     end
   end
