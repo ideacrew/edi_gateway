@@ -126,6 +126,39 @@ RSpec.describe UserFees::Customer, type: :model, db_clean: :before do
           end
         end
       end
+
+      context '#to_hash' do
+        context 'given a new instance' do
+          let(:account) { ::Keepr::Account.new(number: number, name: name, kind: account_kind) }
+
+          let(:validated_insurance_coverage_hash) do
+            AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(insurance_coverage).to_h
+          end
+          let(:account_hash) do
+            {
+              id: nil,
+              number: 1_100_001,
+              ancestry: nil,
+              name: 'Accounts Receivable',
+              kind: 'asset',
+              keepr_group_id: nil,
+              accountable_type: nil,
+              accountable_id: nil,
+              keepr_tax_id: nil,
+              created_at: nil,
+              updated_at: nil
+            }
+          end
+
+          it 'should return customer and child model attributes in hash structure' do
+            result =
+              subject.new(local_attrs.merge(account: account, insurance_coverage: validated_insurance_coverage_hash))
+            expect(result.to_hash[:hbx_id]).to eq validated_insurance_coverage_hash[:hbx_id]
+            expect(result.to_hash.dig(:insurance_coverage, :hbx_id)).to eq validated_insurance_coverage_hash[:hbx_id]
+            expect(result.to_hash[:account]).to eq account_hash
+          end
+        end
+      end
     end
   end
 end

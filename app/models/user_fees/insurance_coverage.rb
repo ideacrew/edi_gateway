@@ -55,6 +55,8 @@ module UserFees
       serializable_hash.merge('_id' => id.to_s).deep_symbolize_keys
     end
 
+    alias to_h to_hash
+
     private
 
     def passes_contract_validation

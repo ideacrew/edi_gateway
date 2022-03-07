@@ -29,6 +29,15 @@ module UserFees
       @insurance_coverage = coverage
     end
 
+    def to_hash
+      self.serializable_hash.symbolize_keys.merge(
+        account: self.account.serializable_hash.symbolize_keys,
+        insurance_coverage: self.insurance_coverage.to_hash
+      )
+    end
+
+    alias to_h to_hash
+
     private
 
     def insurance_coverage_is_valid
