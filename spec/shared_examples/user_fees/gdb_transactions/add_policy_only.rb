@@ -3,8 +3,8 @@
 require 'bigdecimal'
 require 'bigdecimal/util'
 
-RSpec.shared_context 'add_policy' do
-  let(:jetson_add_dental_policy) do
+RSpec.shared_context 'add_policy_only' do
+  let(:jetson_add_policy_only) do
     {
       meta: {
         code: 1,
@@ -25,9 +25,6 @@ RSpec.shared_context 'add_policy' do
         },
         insurance_coverage: {
           hbx_id: '1055668',
-          tax_households: [
-            { exchange_assigned_id: 6161, aptc_amount: 850.0.to_d, csr: 0, start_on: '20220101', end_on: '20221231' }
-          ],
           policies: [
             {
               exchange_assigned_id: '50836',

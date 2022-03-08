@@ -2,20 +2,23 @@
 
 require 'rails_helper'
 require 'shared_examples/user_fees/gdb_transactions/initial_transaction'
-require 'shared_examples/user_fees/gdb_transactions/add_policy'
-# require 'shared_examples/user_fees/gdb_transactions/add_tax_household'
+require 'shared_examples/user_fees/gdb_transactions/add_policy_only'
+require 'shared_examples/user_fees/gdb_transactions/add_tax_household_only'
+require 'shared_examples/user_fees/gdb_transactions/add_policy_and_tax_household'
 require 'shared_examples/user_fees/gdb_transactions/add_enrolled_member'
 
 RSpec.describe UserFees::GdbTransactions::CheckAdditionTransaction do
   subject { described_class.new }
   include_context 'initial_transaction'
-  include_context 'add_policy'
-  include_context 'add_enrolled_member'
+  include_context 'add_policy_only'
+  include_context 'add_tax_household_only'
+  include_context 'add_policy_and_tax_household'
 
   context 'Given a transaction for a new Customer ' do
     let(:customer) { jetson_initial_transaction }
     let(:old_state) { { customer: {} } }
     let(:hbx_id) { customer.dig(:customer, :hbx_id) }
+    let(:uuid_regex) { /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/ }
 
     it 'should generate an initial_enrollment_added event' do
       result = subject.call(customer)
@@ -24,13 +27,14 @@ RSpec.describe UserFees::GdbTransactions::CheckAdditionTransaction do
       expect(result.success.size).to eq 1
       expect(result.success.first.success).to be_an_instance_of Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded
       expect(result.success.first.success.payload[:old_state]).to eq old_state
+      expect(result.success.first.success.payload.dig(:meta, :correlation_id)).to match uuid_regex
       expect(result.success.first.success.payload.dig(:meta, :change_set)).to eq Hash.new
       expect(result.success.first.success.payload.dig(:new_state, :customer, :hbx_id)).to eq hbx_id
     end
   end
 
-  context 'Given a transaction with a new policy for an existing Customer' do
-    let(:customer_dental_policy) { jetson_add_dental_policy }
+  context 'Given a transaction with a new Policy for an existing Customer' do
+    let(:customer_dental_policy) { jetson_add_policy_only }
     let(:policy_change_set) do
       [
         {
@@ -130,15 +134,58 @@ RSpec.describe UserFees::GdbTransactions::CheckAdditionTransaction do
       result = subject.call(customer_dental_policy)
 
       expect(result.success?).to be_truthy
+
       expect(result.success.size).to eq 1
       expect(result.success.first.success).to be_an_instance_of Events::UserFees::EnrollmentAdds::PoliciesAdded
       expect(result.success.first.success.payload.dig(:meta, :change_set)).to eq policy_change_set
     end
   end
 
-  context 'Given a transaction with a new enrolled member for an existing Customer' do
-    let(:customer_add_dependent) { jetson_add_dependent }
+  context 'Given a transaction with a new Tax Household for an existing Customer' do
+    let(:customer_add_tax_household) { jetson_add_tax_household_only }
+    let(:tax_household_change_set) do
+      [{ aptc_amount: 0.85e3, csr: 0, end_on: '20221231', exchange_assigned_id: 6161, start_on: '20220101' }]
+    end
 
-    it 'should generate an enrollment_dependent_added event'
+    before { UserFees::Customers::Create.new.call(customer: jetson_initial_transaction[:customer]) }
+
+    it 'should generate an enrollment_dependent_added event' do
+      expect(::UserFees::Customer.all.size).to eq 1
+      result = subject.call(customer_add_tax_household)
+
+      expect(result.success?).to be_truthy
+      expect(result.success.size).to eq 1
+      expect(result.success.first.success).to be_an_instance_of Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded
+      expect(result.success.first.success.payload.dig(:meta, :change_set)).to eq tax_household_change_set
+    end
+  end
+
+  context 'Given a transaction with both a new Policy and new Tax Household for an existing Customer' do
+    let(:customer_add_tax_household) { jetson_add_policy_and_tax_household }
+    let(:tax_household_change_set) do
+      [{ aptc_amount: 0.85e3, csr: 0, end_on: '20221231', exchange_assigned_id: 6161, start_on: '20220101' }]
+    end
+    let(:policy_and_thh_class_names) do
+      %w[Events::UserFees::EnrollmentAdds::PoliciesAdded Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded]
+    end
+
+    before { UserFees::Customers::Create.new.call(customer: jetson_initial_transaction[:customer]) }
+
+    it 'should generate an enrollment_dependent_added event' do
+      expect(::UserFees::Customer.all.size).to eq 1
+      result = subject.call(customer_add_tax_household)
+
+      expect(result.success?).to be_truthy
+      expect(result.success.size).to eq 2
+
+      expect(
+        result
+          .success
+          .reduce([]) { |list, monad|
+            list << monad.success.class.name
+            list
+          }
+      ).to eq policy_and_thh_class_names
+    end
   end
 end

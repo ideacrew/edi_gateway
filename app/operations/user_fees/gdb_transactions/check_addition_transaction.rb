@@ -2,6 +2,7 @@
 
 require 'dry/monads'
 require 'dry/monads/do'
+require 'securerandom'
 
 module UserFees
   module GdbTransactions
@@ -37,10 +38,11 @@ module UserFees
         return Success([detect_new_customer(customer_state, customer_new_state)]) unless customer_state.present?
 
         policy_events = detect_new_policies(customer_state, customer_new_state)
-        _tax_household_events = detect_new_tax_households(customer_state, customer_new_state)
+        tax_household_events = detect_new_tax_households(customer_state, customer_new_state)
         _enrolled_member_events = detect_new_enrollment_members(customer_state, customer_new_state)
 
-        Success([policy_events]) #, tax_household_events, enrolled_member_events].compact)
+        Success([policy_events, tax_household_events].compact)
+        # Success([policy_events]) #, tax_household_events, enrolled_member_events].compact)
       rescue StandardError => e
         Failure("error parsing transaction:\n    #{customer_new_state}\n    #{e}")
         # Failure("error parsing transaction:\n    #{customer_new_state}\n    #{e.backtrace}")
@@ -49,7 +51,7 @@ module UserFees
       def publish_events(events)
         Success(events.each { |event| event.success.publish })
       rescue StandardError => e
-        Failure("error publshing events:\n    #{e}\n    events: #{events}\n    backtrace: #{e.backtrace}")
+        Failure("error publshing events:\n    #{e}\n    events: #{events}\n    #{e}")
       end
 
       def fetch_customer(customer)
@@ -72,6 +74,7 @@ module UserFees
             list
           end
 
+        return nil if new_policy_set.empty?
         build_event('policies_added', new_policy_set, customer_state, customer_new_state) || []
       end
 
@@ -85,6 +88,8 @@ module UserFees
             list << nthh if tax_hhs.none? { |tax_hh| tax_hh.exchange_assigned_id == nthh.fetch(:exchange_assigned_id) }
             list
           end
+
+        return nil if new_tax_household_set.empty?
         build_event('tax_households_added', new_tax_household_set, customer_state, customer_new_state) || []
       end
 
@@ -120,7 +125,7 @@ module UserFees
       end
 
       def build_meta_content(change_set, customer_new_state)
-        correlation_id = AcaEntities::Types::CorrelationId
+        correlation_id = SecureRandom.uuid
         time = DateTime.now
         {
           correlation_id: correlation_id,
