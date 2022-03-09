@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-
+=begin
 RSpec.describe Inbound834Transaction, "given valid parameters" do
 
   let(:params) do
@@ -82,3 +82,4 @@ RSpec.describe Inbound834Transaction, "given a duplicate one time tag" do
     described_class.delete_all
   end
 end
+=end

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-
+=begin
 RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers and a payload for a transaction it has never seen" do
   let(:headers) do
     {
@@ -138,3 +138,4 @@ RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers an
     expect(subject.failure).to eq :already_processed
   end
 end
+=end

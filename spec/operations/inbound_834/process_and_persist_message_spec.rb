@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "rails_helper"
-
+=begin
 RSpec.describe Inbound834::ProcessAndPersistMessage, "given valid headers and a payload for a transaction it has never seen" do
   let(:headers) do
     {
@@ -86,3 +86,4 @@ RSpec.describe Inbound834::ProcessAndPersistMessage, "given valid headers and a 
     expect(subject.value!.first.is_a?(Inbound834Transaction)).to be_truthy
   end
 end
+=end
