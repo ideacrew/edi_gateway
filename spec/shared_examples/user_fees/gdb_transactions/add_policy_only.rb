@@ -4,12 +4,18 @@ require 'bigdecimal'
 require 'bigdecimal/util'
 
 RSpec.shared_context 'add_policy_only' do
+  let(:moment) { DateTime.now }
+  let(:start_on) { Date.new(moment.to_date.year, 1, 1) }
+  let(:end_on) { Date.new(moment.to_date.year, 12, 31) }
+
   let(:jetson_add_policy_only) do
     {
       meta: {
-        code: 1,
-        application_extract_time: 'Wed, 01 Mar 2022 12:05:52 -0500',
-        policy_maintenance_time: 'Wed, 01 Mar 2022 12:05:52 -0500'
+        transaction_header: {
+          code: 1,
+          application_extract_time: moment,
+          policy_maintenance_time: moment
+        }
       },
       customer: {
         hbx_id: '1055668',
@@ -62,8 +68,7 @@ RSpec.shared_context 'add_policy_only' do
                         },
                         ssn: '012859874',
                         dob: '19781219',
-                        gender: 'male',
-                        tax_household_id: 6161
+                        gender: 'male'
                       },
                       premium: {
                         amount: 423.86.to_d
@@ -85,8 +90,7 @@ RSpec.shared_context 'add_policy_only' do
                         },
                         ssn: '012859875',
                         dob: '19830906',
-                        gender: 'female',
-                        tax_household_id: 6161
+                        gender: 'female'
                       },
                       premium: {
                         amount: 410.06.to_d
@@ -109,7 +113,6 @@ RSpec.shared_context 'add_policy_only' do
                         ssn: '012859876',
                         dob: '20070215',
                         gender: 'female',
-                        tax_household_id: 6161,
                         emails: 'jetsons@example.com'
                       },
                       premium: {

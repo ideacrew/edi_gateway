@@ -66,7 +66,9 @@ RSpec.shared_context 'customer_params' do
   let(:marketplace_segments) { [marketplace_segment] }
 
   # Tax Household
-  let(:tax_household) { { exchange_assigned_id: 6161, aptc_amount: 585.6.to_d, start_on: start_on } }
+  let(:tax_household) do
+    { assistance_year: moment.year, exchange_assigned_id: '6161', aptc_amount: 585.6.to_d, start_on: start_on }
+  end
   let(:tax_households) { [tax_household] }
 
   # InsuranceCoverage
@@ -92,7 +94,14 @@ RSpec.shared_context 'customer_params' do
       insurance_coverage: {
         hbx_id: '1055668',
         tax_households: [
-          { exchange_assigned_id: 6161, aptc_amount: 850.0.to_d, csr: 0, start_on: '20220101', end_on: '20221231' }
+          {
+            assistance_year: moment.year,
+            exchange_assigned_id: '6161',
+            aptc_amount: 850.0.to_d,
+            csr: 0,
+            start_on: start_on,
+            end_on: end_on
+          }
         ],
         policies: [
           {
@@ -100,8 +109,8 @@ RSpec.shared_context 'customer_params' do
             insurer_assigned_id: 'HP5977620',
             rating_area_id: 'R-ME003',
             subscriber_hbx_id: '1055668',
-            start_on: '20220101',
-            end_on: '20221231',
+            start_on: start_on,
+            end_on: end_on,
             insurer: {
               hios_id: '96667'
             },
@@ -115,7 +124,7 @@ RSpec.shared_context 'customer_params' do
                 segment: '1055668-50836-20220101',
                 total_premium_amount: 1104.58.to_d,
                 total_premium_responsibility_amount: 254.58.to_d,
-                start_on: '20220101',
+                start_on: start_on,
                 enrolled_members: [
                   {
                     member: {
@@ -132,13 +141,13 @@ RSpec.shared_context 'customer_params' do
                       ssn: '012859874',
                       dob: '19781219',
                       gender: 'male',
-                      tax_household_id: 6161
+                      tax_household_id: '6161'
                     },
                     premium: {
                       amount: 423.86.to_d
                     },
-                    start_on: '20220101',
-                    end_on: '20221231'
+                    start_on: start_on,
+                    end_on: end_on
                   },
                   {
                     member: {
@@ -155,13 +164,13 @@ RSpec.shared_context 'customer_params' do
                       ssn: '012859875',
                       dob: '19830906',
                       gender: 'female',
-                      tax_household_id: 6161
+                      tax_household_id: '6161'
                     },
                     premium: {
                       amount: 410.06.to_d
                     },
-                    start_on: '20220101',
-                    end_on: '20221231'
+                    start_on: start_on,
+                    end_on: end_on
                   },
                   {
                     member: {
@@ -178,14 +187,14 @@ RSpec.shared_context 'customer_params' do
                       ssn: '012859876',
                       dob: '20070215',
                       gender: 'female',
-                      tax_household_id: 6161,
+                      tax_household_id: '6161',
                       emails: 'jetsons@example.com'
                     },
                     premium: {
                       amount: 270.66.to_d
                     },
-                    start_on: '20220101',
-                    end_on: '20221231'
+                    start_on: start_on,
+                    end_on: end_on
                   }
                 ]
               }

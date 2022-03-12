@@ -7,7 +7,8 @@ module UserFees
 
     embedded_in :insurance_coverage, class_name: '::UserFees::InsuranceCoverage'
 
-    field :exchange_assigned_id, type: Integer
+    field :assistance_year, type: Integer
+    field :exchange_assigned_id, type: String
     field :aptc_amount, type: BigDecimal
     field :csr, type: Integer
     field :start_on, type: Date

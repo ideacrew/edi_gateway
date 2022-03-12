@@ -4,12 +4,18 @@ require 'bigdecimal'
 require 'bigdecimal/util'
 
 RSpec.shared_context 'add_tax_household_only' do
+  let(:moment) { DateTime.now }
+  let(:start_on) { Date.new(moment.to_date.year, 1, 1) }
+  let(:end_on) { Date.new(moment.to_date.year, 12, 31) }
+
   let(:jetson_add_tax_household_only) do
     {
       meta: {
-        code: 1,
-        application_extract_time: 'Wed, 01 Mar 2022 11:05:52 -0500',
-        policy_maintenance_time: 'Wed, 01 Mar 2022 11:05:52 -0500'
+        transaction_header: {
+          code: 1,
+          application_extract_time: moment,
+          policy_maintenance_time: moment
+        }
       },
       customer: {
         hbx_id: '1055668',
@@ -26,7 +32,14 @@ RSpec.shared_context 'add_tax_household_only' do
         insurance_coverage: {
           hbx_id: '1055668',
           tax_households: [
-            { exchange_assigned_id: 6161, aptc_amount: 850.0.to_d, csr: 0, start_on: '20220101', end_on: '20221231' }
+            {
+              assistance_year: moment.year,
+              exchange_assigned_id: '6161',
+              aptc_amount: 850.0.to_d,
+              csr: 0,
+              start_on: start_on,
+              end_on: end_on
+            }
           ],
           policies: [
             {
@@ -34,8 +47,8 @@ RSpec.shared_context 'add_tax_household_only' do
               insurer_assigned_id: 'HP5977620',
               rating_area_id: 'R-ME003',
               subscriber_hbx_id: '1055668',
-              start_on: '20220101',
-              end_on: '20221231',
+              start_on: start_on,
+              end_on: end_on,
               insurer: {
                 hios_id: '96667'
               },
@@ -49,7 +62,7 @@ RSpec.shared_context 'add_tax_household_only' do
                   segment: '1055668-50836-20220101',
                   total_premium_amount: 1104.58.to_d,
                   total_premium_responsibility_amount: 254.58.to_d,
-                  start_on: '20220101',
+                  start_on: start_on,
                   enrolled_members: [
                     {
                       member: {
@@ -66,13 +79,13 @@ RSpec.shared_context 'add_tax_household_only' do
                         ssn: '012859874',
                         dob: '19781219',
                         gender: 'male',
-                        tax_household_id: 6161
+                        tax_household_id: '6161'
                       },
                       premium: {
                         amount: 423.86.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     },
                     {
                       member: {
@@ -89,13 +102,13 @@ RSpec.shared_context 'add_tax_household_only' do
                         ssn: '012859875',
                         dob: '19830906',
                         gender: 'female',
-                        tax_household_id: 6161
+                        tax_household_id: '6161'
                       },
                       premium: {
                         amount: 410.06.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     },
                     {
                       member: {
@@ -112,14 +125,14 @@ RSpec.shared_context 'add_tax_household_only' do
                         ssn: '012859876',
                         dob: '20070215',
                         gender: 'female',
-                        tax_household_id: 6161,
+                        tax_household_id: '6161',
                         emails: 'jetsons@example.com'
                       },
                       premium: {
                         amount: 270.66.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     }
                   ]
                 }
