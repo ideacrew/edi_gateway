@@ -1,0 +1,27 @@
+--title 'EdiGateway Microservice'
+--markup markdown
+--output-dir doc
+--plugin yard-doctest
+--plugin yard-mongoid
+--private
+--protected
+--embed-mixin ClassMethods
+--exclude /server/templates/
+--exclude /templates/
+--tag nodoc --query '!@nodoc'
+--tag yard.signature:"YARD Tag Signature"
+--type-name-tag yard.tag:"YARD Tag"
+--type-name-tag yard.directive:"YARD Directive"
+--hide-tag yard.tag
+--hide-tag yard.directive
+--hide-tag yard.signature
+--hide-tag todo
+act*/lib/**/*.rb
+act*/app/**/*.rb
+railties/lib/**/*.rb
+-
+app/**/*.rb
+/rubygems/aca_entities/lib/**/*.rb
+LICENSE.txt
+ChangeLog.md
+CODE_OF_CONDUCT.md

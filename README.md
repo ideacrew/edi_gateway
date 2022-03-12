@@ -1,24 +1,27 @@
-# README
+# EdiGateway: Electronic Data Interchange services for State-based Marketplaces
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+The EdiGateway is an enrollment database and integration service. It connects IdeaCrew's second generation internal SBM services with one another and integrates with commercial services like Oracle's B2B gateway to exchange enrollment transactions with trading partners.
 
-Things you may want to cover:
+The EdiGateway will replace the EDI Database (GlueDB). All EDI-related new development
+will occur in the EdiGateway project. Toward this objective the ::UserFees code includes a feature that periodically polls the EDI Database for changed enrollment records, compares new with existing record states, interprets addition, termination and change kinds, and publishes corresponding events using EventSource.
 
-* Ruby version
+## System Dependencies
 
-* System dependencies
+### AcaEntities
 
-* Configuration
+Domain entities and contracts used in ::UserFees are defined primarily under ::AcaEntities::Ledger namespace
 
-* Database creation
+## Configuration
 
-* Database initialization
+## Database
 
-* How to run the test suite
+Like other IdeaCrew SBM solution services EdiGateway uses MongoDB as the primary database.
 
-* Services (job queues, cache servers, search engines, etc.)
+PostgreSql is installed for a narrow UserFees use case and is planned to be removed. Do not develop using ActiveRecord or PostgreSql without prior authorization from senior leadership.
 
-* Deployment instructions
+- Database creation
+- Database initialization
 
-* ...
+## Services
+
+EdiGateway uses EventSource exclusively for event-based communication intra- and inter-service publish/subscribe messages over AMQP and HTTP protocols. Do not install or use deprecated tools, including Acapi and/or sneakers gems.

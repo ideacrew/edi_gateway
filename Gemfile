@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 gem 'aca_entities', git:  'https://github.com/ideacrew/aca_entities.git', branch: 'create_user_fee_model_181271601'
-# gem 'aca_entities', path:  'vendor/plugins/aca_entities'
 gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
 
 # Reduces boot times through caching; required in config/boot.rb
@@ -70,6 +69,7 @@ group :development, :test do
   gem 'rspec-rails',            '~> 5.0'
   gem 'shoulda-matchers',       '~> 3'
   gem 'yard'
+  gem 'yard-mongoid'
 end
 
 group :development do
