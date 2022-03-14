@@ -6,16 +6,18 @@ require 'securerandom'
 
 module UserFees
   module GdbTransactions
-    # Resolve whether passed transaction message is an enrollment addition
-    #
+    # Inspect a GlueDB enrollment transaction comparing it against the
+    # existing state to determine whether it indicates enrollment
+    # add activities. If so, publish a corresponding enrollment add event
     class PublishEnrollmentAdds
       include Dry::Monads[:result, :do, :try]
       include EventSource::Command
 
-      # @param [Hash] params the parameters to resolve message type
-      # @option params [Hash] :message EDI Database transaction (required)
-      # @return [Dry::Monads::Success] message is a addition
-      # @return [Dry::Monads::Failure] message is not a addition
+      # @param [AcaEntities::Ledger::GdbTransaction] params a GlueDB enrollment transaction
+      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded>] if transaction is an initial enrollment
+      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::PoliciesAdded>] if transaction includes one or more policy adds
+      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded>] if transaction includes one or more tax household adds
+      # @return [Dry::Monads::Failure] unable to process GdbTransaction
       def call(params)
         params = yield validate(params)
         events = yield inspect_transaction(params)
@@ -26,42 +28,47 @@ module UserFees
 
       private
 
-      def validate(message)
-        AcaEntities::Ledger::Contracts::GdbTransactionContract.new.call(message)
+      # Schema-verify the integrity of the passed parameters
+      # @param [Hash] :params a GlueDB enrollment transaction
+      # @return [Dry::Validation::Result]
+      def validate(params)
+        AcaEntities::Ledger::Contracts::GdbTransactionContract.new.call(params)
       end
 
-      def inspect_transaction(message)
-        customer_new_state = (message[:customer])
+      def inspect_transaction(params)
+        customer_new_state = (params[:customer])
         customer_state = fetch_customer(customer_new_state)
 
-        return Success([detect_new_customer(customer_state, customer_new_state)]) unless customer_state.present?
+        return Success([detect_initial_enrollment(customer_state, customer_new_state)]) unless customer_state.present?
         policy_events = detect_new_policies(customer_state, customer_new_state)
         tax_household_events = detect_new_tax_households(customer_state, customer_new_state)
-        enrolled_member_events = nil #detect_new_enrollment_members(customer_state, customer_new_state)
 
-        Success([policy_events, tax_household_events, enrolled_member_events].compact)
+        Success([policy_events, tax_household_events].compact)
       rescue StandardError => e
         Failure[:transaction_parse_error, params: customer_new_state, error: e.to_s, backtrace: e.backtrace]
       end
 
-      def publish_events(events)
-        Success(events.each { |event| event.success.publish })
-      rescue StandardError => e
-        Failure[:event_publish_error, params: customer_new_state, error: e.to_s, backtrace: e.backtrace]
-      end
-
       def fetch_customer(customer)
-        ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id]).to_h #|| {}
+        ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id]).to_h
       end
 
-      # Detect initial enrollment added
-      def detect_new_customer(customer_state, customer_new_state)
+      # Compare existing with new customer states and detect an added initial enrollment
+      #
+      # @param [AcaEntities::Ledger::Customer] :customer_state existing customer attributes
+      # @param [AcaEntities::Ledger::Customer] :customer_new_state new customer attributes
+      #
+      # @return [Dry::Monads::Result::Success, Array<Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded>] if a new enrollment is detected
+      # @return [Dry::Monads::Result::Success, nil] if initial enrollment isn't detected
+      # @return [Dry::Monads::Result::Failure, Hash] if an error is encountered
+      def detect_initial_enrollment(customer_state, customer_new_state)
         build_event('initial_enrollment_added', {}, customer_state, customer_new_state) if customer_state.empty?
       end
 
-      # Detect if customer_new_state has added tax_households compared to customer_state
-      # @param [Hash] :customer_state existing customer attributes from persisted record
-      # @param [Hash] :customer_new_state new customer attributes from the incoming transaction
+      # Compare existing with new customer states and detect added tax_households
+      #
+      # @param [AcaEntities::Ledger::Customer] :customer_state existing customer attributes
+      # @param [AcaEntities::Ledger::Customer] :customer_new_state new customer attributes
+      #
       # @return [Dry::Monads::Result::Success, Array<Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded>] if new tax_housholeds are detected
       # @return [Dry::Monads::Result::Success, nil] if no new tax_households are detected
       # @return [Dry::Monads::Result::Failure, Hash] if an error is encountered
@@ -80,7 +87,14 @@ module UserFees
         build_event('tax_households_added', new_tax_household_set, customer_state, customer_new_state) || []
       end
 
-      # Detect policies added
+      # Compare existing with new customer states and detect added policies
+      #
+      # @param [AcaEntities::Ledger::Customer] :customer_state existing customer attributes
+      # @param [AcaEntities::Ledger::Customer] :customer_new_state new customer attributes
+      #
+      # @return [Dry::Monads::Result::Success, Array<Events::UserFees::EnrollmentAdds::PoliciesAdded>] if new policies are detected
+      # @return [Dry::Monads::Result::Success, nil] if no new policies are detected
+      # @return [Dry::Monads::Result::Failure, Hash] if an error is encountered
       def detect_new_policies(customer_state, customer_new_state)
         policies = customer_state.dig(:insurance_coverage, :policies) || []
         new_policies = customer_new_state.dig(:insurance_coverage, :policies) || []
@@ -96,36 +110,10 @@ module UserFees
         build_event('policies_added', new_policy_set, customer_state, customer_new_state) || []
       end
 
-      # Detect enrollment_members added
-      def detect_new_enrollment_members(customer_state, customer_new_state)
-        enrolled_members = enrolled_members_for_insurance_coverage(customer_state[:insurance_coverage])
-        new_enrolled_members = enrolled_members_for_insurance_coverage(customer_new_state[:insurance_coverage])
-        return if enrolled_members == new_enrolled_members
-
-        new_enrolled_member_set = diff_enrolled_members(enrolled_members, new_enrolled_members)
-
-        return nil if new_enrolled_member_set.empty?
-        build_event('enrolled_members_added', new_enrolled_member_set, customer_state, customer_new_state) || []
-      end
-
-      def diff_enrolled_members(base_set, compare_set)
-        base_set - compare_set
-        # new_enrolled_members.reduce([]) do |list, nm|
-        #   list << nm if enrolled_members.none? { |em| em.dig(:member, :hbx_id) == nm.dig(:member, :hbx_id) }
-        #   list
-        # end
-      end
-
-      def enrolled_members_for_insurance_coverage(coverage)
-        coverage[:policies].reduce([]) do |policy_enrolled_members, policy|
-          pol_members =
-            policy[:marketplace_segments].reduce([]) do |mkt_enrolled_members, marketplace_segment|
-              mkt_enrolled_members += marketplace_segment[:enrolled_members]
-              mkt_enrolled_members
-            end
-          policy_enrolled_members += pol_members
-          policy_enrolled_members
-        end
+      def publish_events(events)
+        Success(events.each { |event| event.success.publish })
+      rescue StandardError => e
+        Failure[:event_publish_error, params: customer_new_state, error: e.to_s, backtrace: e.backtrace]
       end
 
       def build_event(event_name, change_set, customer_state, customer_new_state)

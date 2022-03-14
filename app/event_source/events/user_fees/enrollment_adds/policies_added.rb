@@ -3,7 +3,7 @@
 module Events
   module UserFees
     module EnrollmentAdds
-      # This class will register event
+      # Notification that one or more {UserFees::Policy Policies} was added to a {UserFees::Customer Customer}
       class PoliciesAdded < EventSource::Event
         publisher_path 'publishers.user_fees.enrollment_adds_publisher'
       end

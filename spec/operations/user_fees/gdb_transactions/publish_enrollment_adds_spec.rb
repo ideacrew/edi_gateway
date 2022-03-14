@@ -159,10 +159,6 @@ RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
       end
     end
 
-    context 'and a transaction with a dependent added to an existing Policy for an existing Customer' do
-      it 'should detect the added dependent'
-    end
-
     context 'and a transaction with a new Tax Household for an existing Customer' do
       let(:customer_add_tax_household) { jetson_add_tax_household_only }
       let(:tax_household_change_set) do

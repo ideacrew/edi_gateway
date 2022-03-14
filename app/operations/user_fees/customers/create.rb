@@ -5,14 +5,14 @@ require 'dry/monads/do'
 
 module UserFees
   module Customers
-    # Persist a new {UserFees::Customer record in the database
+    # Persist a new {UserFees::Customer} record in the database
     class Create
-      include Dry::Monads[:result, :do, :try]
+      send(:include, Dry::Monads[:result, :do])
 
-      # @param [Hash] opts the parameters used to create a new Customer
-      # @option opts [Hash] :customer required
-      # @return [Dry::Monad::Success] customer record created
-      # @return [Dry::Monad::Failure] failed to create customer record
+      # @param [Hash] params the parameters used to create a new Customer
+      # @option params [AcaEntities::Ledger::Customer] :customer required
+      # @return [Dry::Monad::Success] Customer record created
+      # @return [Dry::Monad::Failure] failed to create Customer record
       def call(params)
         values = yield validate(params)
         customer = yield create(values)

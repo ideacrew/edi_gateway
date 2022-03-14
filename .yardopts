@@ -1,7 +1,6 @@
 --title 'EdiGateway Microservice'
 --markup markdown
 --output-dir doc
---plugin yard-doctest
 --plugin yard-mongoid
 --private
 --protected
@@ -16,12 +15,12 @@
 --hide-tag yard.directive
 --hide-tag yard.signature
 --hide-tag todo
+app/**/*.rb
 act*/lib/**/*.rb
 act*/app/**/*.rb
 railties/lib/**/*.rb
--
-app/**/*.rb
 /rubygems/aca_entities/lib/**/*.rb
+-
 LICENSE.txt
 ChangeLog.md
 CODE_OF_CONDUCT.md

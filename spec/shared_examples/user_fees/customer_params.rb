@@ -7,6 +7,8 @@ RSpec.shared_context 'customer_params' do
   let(:is_active) { true }
   let(:moment) { DateTime.now }
   let(:timestamps) { { created_at: moment, modified_at: moment } }
+  let(:start_on) { Date.new(moment.to_date.year, 1, 1) }
+  let(:end_on) { Date.new(moment.to_date.year, 12, 31) }
 
   # Member
   let(:hbx_id) { '1138345' }
@@ -63,6 +65,7 @@ RSpec.shared_context 'customer_params' do
       total_premium_responsibility_amount: amount
     }
   end
+
   let(:marketplace_segments) { [marketplace_segment] }
 
   # Tax Household
