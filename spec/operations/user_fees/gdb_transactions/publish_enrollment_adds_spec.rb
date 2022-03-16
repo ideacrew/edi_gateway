@@ -14,36 +14,17 @@ RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
   include_context 'add_tax_household_only'
   include_context 'add_policy_and_tax_household'
 
-  context 'Given an assistance_year and start/end dates' do
+  context 'Given an existing customer, assistance_year and start/end dates' do
     let(:today) { Date.today }
     let(:assistance_year) { today.year }
     let(:start_on) { Date.new(today.year, 1, 1) }
     let(:end_on) { Date.new(today.year, 12, 31) }
 
-    context 'and a transaction for a new Customer ' do
-      let(:customer) { jetson_initial_transaction }
-      let(:old_state) { { customer: {} } }
-      let(:hbx_id) { customer.dig(:customer, :hbx_id) }
-      let(:uuid_regex) { /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/ }
-
-      it 'should generate an initial_enrollment_added event' do
-        result = subject.call(customer)
-
-        expect(result.success?).to be_truthy
-        expect(result.success.size).to eq 1
-        expect(
-          result.success.first.success
-        ).to be_an_instance_of Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded
-        expect(result.success.first.success.payload[:old_state]).to eq old_state
-        expect(result.success.first.success.payload.dig(:meta, :correlation_id)).to match uuid_regex
-        expect(result.success.first.success.payload.dig(:meta, :change_set)).to eq Hash.new
-        expect(result.success.first.success.payload.dig(:new_state, :customer, :hbx_id)).to eq hbx_id
-      end
-    end
+    # before { UserFees::Customers::Create.new.call(jetson_initial_transaction) }
+    before { UserFees::Customers::Create.new.call(customer: jetson_initial_transaction[:customer]) }
 
     context 'and a transaction with no changes for an existing Customer' do
       let(:duplicate_transaction_result) { [] }
-      before { UserFees::Customers::Create.new.call(jetson_initial_transaction) }
 
       it 'should not publish an event for the transaction with no changes' do
         expect(::UserFees::Customer.all.size).to eq 1
@@ -146,9 +127,7 @@ RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
         ]
       end
 
-      before { UserFees::Customers::Create.new.call(jetson_initial_transaction) }
-
-      it 'should generate an enrollment_policy_added event' do
+      it 'should generate an policies_added event' do
         expect(::UserFees::Customer.all.size).to eq 1
         result = subject.call(customer_dental_policy)
 
@@ -174,9 +153,7 @@ RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
         ]
       end
 
-      before { UserFees::Customers::Create.new.call(jetson_initial_transaction) }
-
-      it 'should generate an enrollment_dependent_added event' do
+      it 'should generate an tax_households_added event' do
         expect(::UserFees::Customer.all.size).to eq 1
         result = subject.call(customer_add_tax_household)
 
@@ -196,9 +173,7 @@ RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
         %w[Events::UserFees::EnrollmentAdds::PoliciesAdded Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded]
       end
 
-      before { UserFees::Customers::Create.new.call(customer: jetson_initial_transaction[:customer]) }
-
-      it 'should generate an enrollment_dependent_added event' do
+      it 'should generate an policies_added and tax_houeholds added events' do
         expect(::UserFees::Customer.all.size).to eq 1
         result = subject.call(customer_add_tax_household)
 

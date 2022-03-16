@@ -37,14 +37,14 @@ RSpec.shared_context 'add_policy_only' do
               insurer_assigned_id: 'HP5977620',
               rating_area_id: 'R-ME003',
               subscriber_hbx_id: '1055668',
-              start_on: '20220101',
-              end_on: '20221231',
+              start_on: start_on,
+              end_on: end_on,
               insurer: {
                 hios_id: '96667'
               },
               product: {
                 hbx_qhp_id: '96667ME031005806',
-                effective_year: 2022,
+                effective_year: moment.year,
                 kind: 'health'
               },
               marketplace_segments: [
@@ -52,7 +52,7 @@ RSpec.shared_context 'add_policy_only' do
                   segment: '1055668-50836-20220101',
                   total_premium_amount: 1104.58.to_d,
                   total_premium_responsibility_amount: 254.58.to_d,
-                  start_on: '20220101',
+                  start_on: start_on,
                   enrolled_members: [
                     {
                       member: {
@@ -73,8 +73,8 @@ RSpec.shared_context 'add_policy_only' do
                       premium: {
                         amount: 423.86.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     },
                     {
                       member: {
@@ -95,8 +95,8 @@ RSpec.shared_context 'add_policy_only' do
                       premium: {
                         amount: 410.06.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     },
                     {
                       member: {
@@ -118,8 +118,8 @@ RSpec.shared_context 'add_policy_only' do
                       premium: {
                         amount: 270.66.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     }
                   ]
                 }
@@ -130,14 +130,14 @@ RSpec.shared_context 'add_policy_only' do
               insurer_assigned_id: 'HP5977621',
               rating_area_id: 'R-ME003',
               subscriber_hbx_id: '1055668',
-              start_on: '20220101',
-              end_on: '20221231',
+              start_on: start_on,
+              end_on: end_on,
               insurer: {
                 hios_id: '96668'
               },
               product: {
                 hbx_qhp_id: '96667ME031005807',
-                effective_year: 2022,
+                effective_year: moment.year,
                 kind: 'dental'
               },
               marketplace_segments: [
@@ -145,7 +145,7 @@ RSpec.shared_context 'add_policy_only' do
                   segment: '1055668-50837-20220101',
                   total_premium_amount: 120.12.to_d,
                   total_premium_responsibility_amount: 120.12.to_d,
-                  start_on: '20220101',
+                  start_on: start_on,
                   enrolled_members: [
                     {
                       member: {
@@ -164,8 +164,8 @@ RSpec.shared_context 'add_policy_only' do
                       premium: {
                         amount: 40.03.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     },
                     {
                       member: {
@@ -184,8 +184,8 @@ RSpec.shared_context 'add_policy_only' do
                       premium: {
                         amount: 40.07.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     },
                     {
                       member: {
@@ -205,8 +205,8 @@ RSpec.shared_context 'add_policy_only' do
                       premium: {
                         amount: 40.02.to_d
                       },
-                      start_on: '20220101',
-                      end_on: '20221231'
+                      start_on: start_on,
+                      end_on: end_on
                     }
                   ]
                 }

@@ -2,7 +2,7 @@
 
 module Publishers
   module UserFees
-    # Publish {UserFees::Enrollment} events
+    # Publish {Events::UserFees::EnrollmentTerminations} events
     class EnrollmentTerminationsPublisher
       include ::EventSource::Publisher[amqp: 'edi_gateway.user_fees.enrollment_terminations.events']
 

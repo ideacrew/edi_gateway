@@ -79,7 +79,7 @@ RSpec.shared_context 'add_policy_and_tax_household' do
                         ssn: '012859874',
                         dob: '19781219',
                         gender: 'male',
-                        tax_household_id: 6161
+                        tax_household_id: '6161'
                       },
                       premium: {
                         amount: 423.86.to_d
@@ -102,7 +102,7 @@ RSpec.shared_context 'add_policy_and_tax_household' do
                         ssn: '012859875',
                         dob: '19830906',
                         gender: 'female',
-                        tax_household_id: 6161
+                        tax_household_id: '6161'
                       },
                       premium: {
                         amount: 410.06.to_d
@@ -125,7 +125,7 @@ RSpec.shared_context 'add_policy_and_tax_household' do
                         ssn: '012859876',
                         dob: '20070215',
                         gender: 'female',
-                        tax_household_id: 6161,
+                        tax_household_id: '6161',
                         emails: 'jetsons@example.com'
                       },
                       premium: {

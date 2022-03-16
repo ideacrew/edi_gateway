@@ -49,7 +49,7 @@ module UserFees
       end
 
       def fetch_customer(customer)
-        ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id]).to_h
+        ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id]).to_entity.to_h
       end
 
       # Compare existing with new customer states and detect an added initial enrollment

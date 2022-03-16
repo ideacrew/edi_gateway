@@ -30,13 +30,24 @@ module UserFees
     end
 
     def to_hash
-      self.serializable_hash.symbolize_keys.merge(
-        account: self.account.serializable_hash.symbolize_keys,
-        insurance_coverage: self.insurance_coverage.to_hash
-      )
+      values =
+        self.serializable_hash.symbolize_keys.merge(
+          id: id.to_s,
+          account: self.account.serializable_hash.symbolize_keys.merge(id: id.to_s),
+          insurance_coverage: self.insurance_coverage.to_hash
+        )
+      AcaEntities::Ledger::Contracts::CustomerContract.new.call(values).to_h
+    rescue StandardError => e
+      raise EdiGateway.error::ContractError, "class: #{e.class}, messge: #{e.message}\n #{e.backtrace}"
     end
 
     alias to_h to_hash
+
+    def to_entity
+      AcaEntities::Ledger::Customer.new(self.to_hash)
+    rescue StandardError => e
+      raise EdiGateway::Error::EntityError, "class: #{e.class}, messge: #{e.message}\n #{e.backtrace}"
+    end
 
     private
 
