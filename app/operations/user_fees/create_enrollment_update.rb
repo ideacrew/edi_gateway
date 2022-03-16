@@ -7,7 +7,7 @@ module UserFees
   # Accept an EDI Database enrollment transaction, classify into transaction types,
   # and publish correllated {EnrollmentUpdated} events
   class CreateEnrollmentUpdate
-    include Dry::Monads[:result, :do, :try]
+    send(:include, Dry::Monads[:result, :do])
 
     # @param [Hash] opts a {GlueDbEnrollmentTransactionReceived} event
     # @option opts [Hash] :gdb_enrollment_transaction required

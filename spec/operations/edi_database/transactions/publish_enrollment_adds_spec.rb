@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 require 'rails_helper'
-require 'shared_examples/user_fees/gdb_transactions/initial_transaction'
-require 'shared_examples/user_fees/gdb_transactions/add_policy_only'
-require 'shared_examples/user_fees/gdb_transactions/add_tax_household_only'
-require 'shared_examples/user_fees/gdb_transactions/add_policy_and_tax_household'
-require 'shared_examples/user_fees/gdb_transactions/add_enrolled_member'
+require 'shared_examples/edi_database/transactions/initial_transaction'
+require 'shared_examples/edi_database/transactions/add_policy_only'
+require 'shared_examples/edi_database/transactions/add_tax_household_only'
+require 'shared_examples/edi_database/transactions/add_policy_and_tax_household'
+require 'shared_examples/edi_database/transactions/add_enrolled_member'
 
-RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
+RSpec.describe EdiDatabase::Transactions::PublishEnrollmentAdds do
   subject { described_class.new }
   include_context 'initial_transaction'
   include_context 'add_policy_only'
@@ -29,6 +29,7 @@ RSpec.describe UserFees::GdbTransactions::PublishEnrollmentAdds do
       it 'should not publish an event for the transaction with no changes' do
         expect(::UserFees::Customer.all.size).to eq 1
         result = subject.call(jetson_initial_transaction)
+
         expect(result.success?).to be_truthy
         expect(result.success).to eq duplicate_transaction_result
       end

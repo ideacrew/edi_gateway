@@ -7,7 +7,7 @@ module UserFees
   module InsuranceCoverages
     # Persist a new {UserFees::Customer record in the database
     class Create
-      include Dry::Monads[:result, :do, :try]
+      send(:include, Dry::Monads[:result, :do])
 
       # @param [Hash] opts the parameters used to create a new Customer
       # @option opts [Hash] :customer required

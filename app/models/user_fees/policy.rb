@@ -19,5 +19,12 @@ module UserFees
     field :rating_area_id, type: String
     field :start_on, type: Date
     field :end_on, type: Date
+
+    def to_hash
+      values = self.serializable_hash.deep_symbolize_keys.merge(id: id.to_s)
+      AcaEntities::Ledger::Contracts::PolicyContract.new.call(values).to_h
+    end
+
+    alias to_h to_hash
   end
 end

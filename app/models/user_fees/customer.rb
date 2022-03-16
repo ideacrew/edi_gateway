@@ -30,6 +30,7 @@ module UserFees
     end
 
     def to_hash
+      # .serializable_hash(methods: :sanitize_hash)
       values =
         self.serializable_hash.symbolize_keys.merge(
           id: id.to_s,
@@ -38,15 +39,19 @@ module UserFees
         )
       AcaEntities::Ledger::Contracts::CustomerContract.new.call(values).to_h
     rescue StandardError => e
-      raise EdiGateway.error::ContractError, "class: #{e.class}, messge: #{e.message}\n #{e.backtrace}"
+      raise EdiGateway::Error::ContractError, "class: #{e.class}, message: #{e.message}\n #{e.backtrace}"
     end
 
     alias to_h to_hash
 
+    def sanitize_hash
+      # update_attribute(:first_name, 'Bill')
+    end
+
     def to_entity
       AcaEntities::Ledger::Customer.new(self.to_hash)
     rescue StandardError => e
-      raise EdiGateway::Error::EntityError, "class: #{e.class}, messge: #{e.message}\n #{e.backtrace}"
+      raise EdiGateway::Error::EntityError, "class: #{e.class}, message: #{e.message}\n #{e.backtrace}"
     end
 
     private

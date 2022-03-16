@@ -12,5 +12,12 @@ module UserFees
     field :hbx_qhp_id, type: String
     field :effective_year, type: Integer
     field :kind, type: String
+
+    def to_hash
+      values = self.serializable_hash.deep_symbolize_keys.merge(id: id.to_s)
+      AcaEntities::Ledger::Contracts::ProductContract.new.call(values).to_h
+    end
+
+    alias to_h to_hash
   end
 end

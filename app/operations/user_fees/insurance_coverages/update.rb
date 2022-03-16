@@ -7,7 +7,7 @@ module UserFees
   module InsuranceCoverages
     # Update an existing {UserFees::InsuranceCoverage} record in the database
     class Update
-      include Dry::Monads[:result, :do, :try]
+      send(:include, Dry::Monads[:result, :do])
 
       # @param [Hash] opts an {EnrollmentUpdated} event
       # @option opts [Hash] :customer required

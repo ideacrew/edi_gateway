@@ -4,19 +4,22 @@ require 'dry/monads'
 require 'dry/monads/do'
 require 'securerandom'
 
-module UserFees
-  module GdbTransactions
+module EdiDatabase
+  module Transactions
     # Inspect a GlueDB enrollment transaction comparing it against the
     # existing state to determine whether it indicates enrollment
     # add activities. If so, publish a corresponding enrollment add event
     class PublishEnrollmentAdds
-      include Dry::Monads[:result, :do, :try]
+      send(:include, Dry::Monads[:result, :do])
       include EventSource::Command
 
       # @param [AcaEntities::Ledger::GdbTransaction] params a GlueDB enrollment transaction
-      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded>] if transaction is an initial enrollment
-      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::PoliciesAdded>] if transaction includes one or more policy adds
-      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded>] if transaction includes one or more tax household adds
+      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded>] if transaction
+      #   is an initial enrollment
+      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::PoliciesAdded>] if transaction includes
+      #   one or more policy adds
+      # @return [Dry::Monads::Success, Array<Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded>] if transaction
+      #   includes one or more tax household adds
       # @return [Dry::Monads::Failure] unable to process GdbTransaction
       def call(params)
         params = yield validate(params)

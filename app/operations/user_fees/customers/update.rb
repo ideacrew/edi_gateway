@@ -7,7 +7,7 @@ module UserFees
   module Customers
     # Update an existing {UserFees::Customer} record in the database
     class Update
-      include Dry::Monads[:result, :do, :try]
+      send(:include, Dry::Monads[:result, :do])
 
       # @param [Hash] opts the parameters to update the Customer
       # @option opts [Hash] :customer required

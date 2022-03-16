@@ -96,16 +96,7 @@ RSpec.shared_context 'customer_params' do
       },
       insurance_coverage: {
         hbx_id: '1055668',
-        tax_households: [
-          {
-            assistance_year: moment.year,
-            exchange_assigned_id: '6161',
-            aptc_amount: 850.0.to_d,
-            csr: 0,
-            start_on: start_on,
-            end_on: end_on
-          }
-        ],
+        tax_households: tax_households,
         policies: [
           {
             exchange_assigned_id: '50836',

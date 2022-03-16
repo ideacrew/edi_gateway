@@ -52,7 +52,8 @@ module UserFees
     index({ is_active: 1 }, { name: 'is_active_index' })
 
     def to_hash
-      serializable_hash.merge('_id' => id.to_s).deep_symbolize_keys
+      values = self.serializable_hash.deep_symbolize_keys.merge(id: id.to_s)
+      AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(values).to_h
     end
 
     alias to_h to_hash
