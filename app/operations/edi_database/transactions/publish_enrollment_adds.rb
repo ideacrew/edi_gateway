@@ -40,9 +40,9 @@ module EdiDatabase
 
       def inspect_transaction(params)
         customer_new_state = (params[:customer])
-        customer_state = fetch_customer(customer_new_state)
+        customer_state = fetch_customer(customer_new_state) || {}
 
-        return Success([detect_initial_enrollment(customer_state, customer_new_state)]) unless customer_state.present?
+        return Success([detect_initial_enrollment(customer_state, customer_new_state)]) if customer_state.empty?
         policy_events = detect_new_policies(customer_state, customer_new_state)
         tax_household_events = detect_new_tax_households(customer_state, customer_new_state)
 
@@ -52,7 +52,8 @@ module EdiDatabase
       end
 
       def fetch_customer(customer)
-        ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id]).to_entity.to_h
+        customer = ::UserFees::Customer.find_by(hbx_id: customer[:hbx_id])
+        customer.to_entity.to_h unless customer.nil?
       end
 
       # Compare existing with new customer states and detect an added initial enrollment

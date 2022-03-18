@@ -4,7 +4,7 @@ EventSource.configure do |config|
   config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('app', 'event_source')
   config.server_key = ENV['RAILS_ENV'] || Rails.env.to_sym
-  config.app_name = :enroll
+  config.app_name = :edi_gateway
 
   config.servers do |server|
     server.amqp do |rabbitmq|
