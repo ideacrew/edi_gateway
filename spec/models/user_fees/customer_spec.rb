@@ -72,7 +72,6 @@ RSpec.describe UserFees::Customer, type: :model, db_clean: :before do
           it 'should associate the InsuranceCoverage and be valid' do
             customer =
               subject.new(local_attrs.merge(account: account, insurance_coverage: validated_insurance_coverage_hash))
-
             expect(customer.insurance_coverage).to be_an_instance_of ::UserFees::InsuranceCoverage
             expect(customer.insurance_coverage_id).to eq customer.insurance_coverage.id.to_s
             expect(customer.valid?).to be_truthy
@@ -134,25 +133,12 @@ RSpec.describe UserFees::Customer, type: :model, db_clean: :before do
           let(:validated_insurance_coverage_hash) do
             AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(insurance_coverage).to_h
           end
-          let(:account_hash) do
-            {
-              id: nil,
-              number: 1_100_001,
-              ancestry: nil,
-              name: 'Accounts Receivable',
-              kind: 'asset',
-              keepr_group_id: nil,
-              accountable_type: nil,
-              accountable_id: nil,
-              keepr_tax_id: nil,
-              created_at: nil,
-              updated_at: nil
-            }
-          end
+          let(:account_hash) { { id: nil, kind: 'asset', name: 'Accounts Receivable', number: 1_100_001 } }
 
           it 'should return customer and child model attributes in hash structure' do
             result =
               subject.new(local_attrs.merge(account: account, insurance_coverage: validated_insurance_coverage_hash))
+
             expect(result.to_hash[:hbx_id]).to eq validated_insurance_coverage_hash[:hbx_id]
             expect(result.to_hash.dig(:insurance_coverage, :hbx_id)).to eq validated_insurance_coverage_hash[:hbx_id]
             expect(result.to_hash[:account]).to eq account_hash

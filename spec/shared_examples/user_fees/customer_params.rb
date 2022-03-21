@@ -13,8 +13,9 @@ RSpec.shared_context 'customer_params' do
   # Member
   let(:hbx_id) { '1138345' }
   let(:subscriber_hbx_id) { hbx_id }
+  let(:dob) { '19781219' }
   let(:person_name) { { first_name: 'George', last_name: 'Jetson' } }
-  let(:member) { { hbx_id: hbx_id, subscriber_hbx_id: subscriber_hbx_id, person_name: person_name } }
+  let(:member) { { hbx_id: hbx_id, subscriber_hbx_id: subscriber_hbx_id, person_name: person_name, dob: dob } }
 
   # Product
   let(:hbx_qhp_id) { '96667ME031005806' }
