@@ -52,12 +52,7 @@ module Domain
 
     def content
       attributes.reduce('') do |block, attr|
-        param =
-          if attr.key_required?
-            optimize_indentation(required_attribute(attr), 2)
-          else
-            optimize_indentation(optional_attribute(attr), 2)
-          end
+        param = attr.key_required? ? required_attribute(attr) : optional_attribute(attr)
         block + param
       end
     end

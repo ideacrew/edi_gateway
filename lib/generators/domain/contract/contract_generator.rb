@@ -31,7 +31,7 @@ module Domain
       @params_content = ''
       @local_class_name = class_name.to_s.split('::').last
       @indentation = 2
-      @params_block_string = "# optional(:id).maybe(:string)\n"
+      @params_block_string = ''
       @doc_block_string = "# @param [Hash] opts the parameters to validate using this contract\n"
     end
 
@@ -55,11 +55,11 @@ module Domain
     private
 
     def params_text(attr)
-      attr.key_required? ? "#{required_attribute(attr)}\n" : "#{optional_attribute(attr)}\n"
+      attr.key_required? ? "#{required_attribute(attr)}" : "#{optional_attribute(attr)}"
     end
 
     def doc_text(attr)
-      attr.key_required? ? "#{required_doc(attr)}\n" : "#{optional_doc(attr)}\n"
+      attr.key_required? ? "#{required_doc(attr)}" : "#{optional_doc(attr)}"
     end
 
     def contract_filename
@@ -68,22 +68,22 @@ module Domain
 
     def required_attribute(attr)
       data_type = attr.type
-      "required(:#{attr.name}).filled(:#{data_type})\n"
+      "\nrequired(:#{attr.name}).filled(:#{data_type})"
     end
 
     def optional_attribute(attr)
       data_type = attr.type.to_s
-      "optional(:#{attr.name}).maybe(:#{data_type})\n"
+      "\noptional(:#{attr.name}).maybe(:#{data_type})"
     end
 
     def required_doc(attr)
       data_type = attr.type.to_s.classify
-      "# @option opts [#{data_type}] :#{attr.name.to_sym} (required)\n"
+      "\n# @option opts [#{data_type}] :#{attr.name.to_sym} (required)"
     end
 
     def optional_doc(attr)
       data_type = attr.type.to_s.classify
-      "# @option opts [#{data_type}] :#{attr.name.to_sym} (optional)\n"
+      "\n# @option opts [#{data_type}] :#{attr.name.to_sym} (optional)"
     end
   end
 end

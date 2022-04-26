@@ -5,8 +5,9 @@ require 'dry-struct'
 <% class_path.each_with_index do |path_fragment, index| -%>
 <%= indent("module #{path_fragment.to_s.camelcase}", index * @indentation) %>
 <% end -%>
+<%= indent("# REPLACE with Entity Definition", class_path.size * @indentation) %>
 <%= indent("class #{@local_class_name} < Dry::Struct", class_path.size * @indentation) %>
-<%= indent(content, class_path.size * @indentation) %>
+<%= indent(content.strip, class_path.size * (@indentation + 2)) %>
 <% (0...(class_path.size + 1)).reverse_each do |index| -%>
 <%= indent('end', index * @indentation) %>
 <% end -%>
