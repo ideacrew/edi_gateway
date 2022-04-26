@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 <% module_namespacing do -%>
-RRSpec.describe <%= class_name %> do
+RSpec.describe <%= class_name %> do
   subject { described_class.new }
 
   let(:required_params) { {} }
