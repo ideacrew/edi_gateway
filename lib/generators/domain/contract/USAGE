@@ -1,0 +1,10 @@
+Usage
+
+Description:
+   Generate a Domain Entity file with optional [ATTRIBUTES]
+
+Example:
+    bin/rails generate contract Thing
+
+    This will create:
+        what/will/it/create
