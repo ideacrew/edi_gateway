@@ -7,6 +7,7 @@ module Domain
   class ContractGenerator < Rails::Generators::NamedBase # :nodoc:
     source_root File.expand_path('templates', __dir__)
 
+    ENTITY_CONTRACT_PATH = 'app/domain/contracts'
     ENTITY_CONTRACT_TEMPLATE_FILENAME = 'entity_contract.rb'
     DOC_PREFIX_TEXT = <<~ATTR.chomp.strip
       # @!method call(opts)
@@ -27,12 +28,10 @@ module Domain
       @local_args = args[0].dup
       super(*args, &blk)
 
+      @local_class_name = class_name.to_s.split('::').last
       @doc_content = DOC_PREFIX_TEXT
       @params_content = ''
-      @local_class_name = class_name.to_s.split('::').last
       @indentation = 2
-      @params_block_string = ''
-      @doc_block_string = "# @param [Hash] opts the parameters to validate using this contract\n"
     end
 
     # Convert attributes array into GeneratedDryAttribute objects
@@ -54,16 +53,16 @@ module Domain
 
     private
 
+    def contract_filename
+      File.join(ENTITY_CONTRACT_PATH, class_path, "#{file_name}_contract.rb")
+    end
+
     def params_text(attr)
-      attr.key_required? ? "#{required_attribute(attr)}" : "#{optional_attribute(attr)}"
+      attr.key_required? ? required_attribute(attr) : optional_attribute(attr)
     end
 
     def doc_text(attr)
-      attr.key_required? ? "#{required_doc(attr)}" : "#{optional_doc(attr)}"
-    end
-
-    def contract_filename
-      File.join('app/domain/contracts', class_path, "#{file_name}_contract.rb")
+      attr.key_required? ? required_doc(attr) : optional_doc(attr)
     end
 
     def required_attribute(attr)

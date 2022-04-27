@@ -7,14 +7,12 @@ module Domain
   class EntityGenerator < Rails::Generators::NamedBase
     source_root File.expand_path('templates', __dir__)
 
-    # namespace 'domain'
-
-    OptionalMeta = 'meta(ommitable: true)'
-    RequiredMeta = 'meta(ommitable: false)'
+    ENTITY_PATH = 'app/domain'
+    ENTITY_TEMPLATE_FILENAME = 'entity.rb'
+    OPTIONAL_META = 'meta(ommitable: true)'
+    REQUIRED_META = 'meta(ommitable: false)'
 
     desc 'Generate a Domain Entity file with optional attributes'
-
-    # readme 'README'
 
     argument :attributes,
              type: :array,
@@ -25,7 +23,7 @@ module Domain
     check_class_collision
 
     def initialize(*args, &blk)
-      @local_args = args[0].dup
+      @local_args = args[0]
       super(*args, &blk)
 
       @local_class_name = class_name.to_s.split('::').last
@@ -39,14 +37,19 @@ module Domain
     end
 
     def copy_entity_file
-      template 'entity.rb', entity_filename
+      template ENTITY_TEMPLATE_FILENAME, entity_filename
+    end
+
+    def generate_contract
+      case self.behavior
+      when :invoke
+        generate 'domain:contract', @local_args
+      when :revoke
+        Rails::Generators.invoke 'domain:contract', @local_args, behavior: :revoke
+      end
     end
 
     hook_for :test_framework, in: :rspec, as: :entity
-
-    def generate_contract
-      generate 'domain:contract', @local_args
-    end
 
     private
 
@@ -58,7 +61,7 @@ module Domain
     end
 
     def entity_filename
-      File.join('app/domain', class_path, "#{file_name}.rb")
+      File.join(ENTITY_PATH, class_path, "#{file_name}.rb")
     end
 
     def required_attribute(attr)
@@ -69,7 +72,7 @@ module Domain
         # @!attribute [r] #{attr_name}
         # ** REPLACE WITH DEFINITION FOR ATTRIBUTE: :#{attr_name} **
         # @return [#{data_type}]
-        attribute :#{attr_name}, Types::#{data_type}.#{RequiredMeta}
+        attribute :#{attr_name}, Types::#{data_type}.#{REQUIRED_META}
 
       ATTR
     end
@@ -82,7 +85,7 @@ module Domain
         # @!attribute [r] #{attr_name}
         # ** REPLACE WITH DEFINITION FOR ATTRIBUTE: :#{attr_name} **
         # @return [#{data_type}]
-        attribute? :#{attr_name}, Types::#{data_type}.#{OptionalMeta}\n
+        attribute? :#{attr_name}, Types::#{data_type}.#{OPTIONAL_META}\n
       ATTR
     end
   end

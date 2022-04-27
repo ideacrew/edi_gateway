@@ -13,11 +13,11 @@ module Domain
     desc 'Create Domain folder, Contract subfolder, Application folder and copy a custom Types file'
 
     def create_contract_file
-      template 'contract.rb', File.join('app/domain/contracts', 'contract.rb') if behavior == :invoke
+      template 'contract.rb', File.join('app/domain/contracts', 'contract.rb')
     end
 
     def create_types_file
-      template 'types.rb', File.join("app/domain/#{@app_name}", 'types.rb') if behavior == :invoke
+      template 'types.rb', File.join("app/domain/#{@app_name}", 'types.rb')
     end
 
     hook_for :test_framework, in: :rspec, as: :install

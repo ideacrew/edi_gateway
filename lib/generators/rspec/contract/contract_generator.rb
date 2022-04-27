@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'generators/rspec'
+
 module Rspec
   module Generators
     # Generate a Domain Contract rspec file
