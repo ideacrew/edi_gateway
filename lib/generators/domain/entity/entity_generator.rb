@@ -40,7 +40,7 @@ module Domain
       template ENTITY_TEMPLATE_FILENAME, entity_filename
     end
 
-    def generate_contract_file
+    def generate_contract
       case self.behavior
       when :invoke
         generate 'domain:contract', @local_args
