@@ -1,0 +1,15 @@
+title = 'EDI Gateway Microservice'
+name = 'EDI Gateway'
+homepage = 'https://github.com/ideacrew/edi_gateway'
+license = 'MIT'
+licenselink = 'https://github.com/ideacrew/edi_gateway/blob/trunk/LICENSE.md'
+theme = "docsy"
+languageCode = 'en-us'
+
+[menu]
+  [[menu.main]]
+    identifier = "documentation"
+    name = "Documentation"
+    pre = "<i class='fa fa-heart'></i>"
+    url = "/documentation/"
+    weight = 20
