@@ -1,9 +1,0 @@
-# frozen_string_literal: true
-
-require 'rails_helper'
-
-module <%= @app_name.classify %>
-RSpec.describe EdiGateway::Types do
-  pending "add some scenarios (or delete) #{__FILE__}"
-end
-<% end -%>
