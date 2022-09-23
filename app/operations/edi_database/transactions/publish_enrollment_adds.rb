@@ -32,7 +32,7 @@ module EdiDatabase
       private
 
       # Schema-verify the integrity of the passed parameters
-      # @param [Hash] :params a GlueDB enrollment transaction
+      # @param [Hash] params a GlueDB enrollment transaction
       # @return [Dry::Validation::Result]
       def validate(params)
         AcaEntities::Ledger::Contracts::GdbTransactionContract.new.call(params)
@@ -58,8 +58,8 @@ module EdiDatabase
 
       # Compare existing with new customer states and detect an added initial enrollment
       #
-      # @param [AcaEntities::Ledger::Customer] :customer_state existing customer attributes
-      # @param [AcaEntities::Ledger::Customer] :customer_new_state new customer attributes
+      # @param [AcaEntities::Ledger::Customer] customer_state existing customer attributes
+      # @param [AcaEntities::Ledger::Customer] customer_new_state new customer attributes
       #
       # @return [Dry::Monads::Result::Success, Array<Events::UserFees::EnrollmentAdds::InitialEnrollmentAdded>] if a new enrollment is detected
       # @return [Dry::Monads::Result::Success, nil] if initial enrollment isn't detected
@@ -70,8 +70,8 @@ module EdiDatabase
 
       # Compare existing with new customer states and detect added tax_households
       #
-      # @param [AcaEntities::Ledger::Customer] :customer_state existing customer attributes
-      # @param [AcaEntities::Ledger::Customer] :customer_new_state new customer attributes
+      # @param [AcaEntities::Ledger::Customer] customer_state existing customer attributes
+      # @param [AcaEntities::Ledger::Customer] customer_new_state new customer attributes
       #
       # @return [Dry::Monads::Result::Success, Array<Events::UserFees::EnrollmentAdds::TaxHouseholdsAdded>] if new tax_housholeds are detected
       # @return [Dry::Monads::Result::Success, nil] if no new tax_households are detected
@@ -93,8 +93,8 @@ module EdiDatabase
 
       # Compare existing with new customer states and detect added policies
       #
-      # @param [AcaEntities::Ledger::Customer] :customer_state existing customer attributes
-      # @param [AcaEntities::Ledger::Customer] :customer_new_state new customer attributes
+      # @param [AcaEntities::Ledger::Customer] customer_state existing customer attributes
+      # @param [AcaEntities::Ledger::Customer] customer_new_state new customer attributes
       #
       # @return [Dry::Monads::Result::Success, Array<Events::UserFees::EnrollmentAdds::PoliciesAdded>] if new policies are detected
       # @return [Dry::Monads::Result::Success, nil] if no new policies are detected

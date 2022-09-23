@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
 require 'shared_examples/user_fees/customer_params'
 
 RSpec.describe UserFees::Customer, type: :model, db_clean: :before do
@@ -133,7 +132,7 @@ RSpec.describe UserFees::Customer, type: :model, db_clean: :before do
           let(:validated_insurance_coverage_hash) do
             AcaEntities::Ledger::Contracts::InsuranceCoverageContract.new.call(insurance_coverage).to_h
           end
-          let(:account_hash) { { id: nil, kind: 'asset', name: 'Accounts Receivable', number: 1_100_001 } }
+          let(:account_hash) { { id: nil, kind: :asset, name: 'Accounts Receivable', number: 1_100_001 } }
 
           it 'should return customer and child model attributes in hash structure' do
             result =

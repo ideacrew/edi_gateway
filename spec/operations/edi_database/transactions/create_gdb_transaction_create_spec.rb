@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
 require 'shared_examples/edi_database/transactions/initial_transaction'
 
 RSpec.describe EdiDatabase::Transactions::CreateGdbTransaction do

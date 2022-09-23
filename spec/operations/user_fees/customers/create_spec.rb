@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
 require 'shared_examples/user_fees/customer_params'
 
 RSpec.describe UserFees::Customers::Create, db_clean: :before do

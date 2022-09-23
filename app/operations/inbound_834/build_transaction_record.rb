@@ -3,7 +3,7 @@
 module Inbound834
   # Map the inbound Envelope and transaction data to a database record.
   class BuildTransactionRecord
-    include Dry::Monads[:result, :do, :try]
+    send(:include, Dry::Monads[:result, :do])
 
     # Map the inbound Envelope and transaction data to a database record.
     # @param opts [Hash] the operation options

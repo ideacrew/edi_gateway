@@ -4,7 +4,7 @@ module Inbound834
   # Calculate the one-time tag for the inbound 834.
   # This prevents us from processing the same payload more than once.
   class CalculateOneTimeTag
-    include Dry::Monads[:result, :do, :try]
+    send(:include, Dry::Monads[:result, :do, :try])
 
     # Calculate the one-time tag from a given payload and envelope.
     # @param opts [Hash] the operation options

@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_02_26_192900) do
-
+ActiveRecord::Schema[7.0].define(version: 2022_02_26_192900) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -24,8 +23,8 @@ ActiveRecord::Schema.define(version: 2022_02_26_192900) do
     t.string "accountable_type"
     t.integer "accountable_id"
     t.integer "keepr_tax_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
     t.index ["accountable_type", "accountable_id"], name: "index_keepr_accounts_on_accountable"
     t.index ["ancestry"], name: "index_keepr_accounts_on_ancestry"
     t.index ["keepr_group_id"], name: "index_keepr_accounts_on_keepr_group_id"
@@ -56,8 +55,8 @@ ActiveRecord::Schema.define(version: 2022_02_26_192900) do
     t.integer "accountable_id"
     t.text "note"
     t.boolean "permanent", default: false, null: false
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
     t.index ["accountable_type", "accountable_id"], name: "index_keepr_journals_on_accountable"
     t.index ["date"], name: "index_keepr_journals_on_date"
   end
@@ -90,8 +89,8 @@ ActiveRecord::Schema.define(version: 2022_02_26_192900) do
     t.string "customer_role", null: false
     t.boolean "is_active", null: false
     t.string "insurance_coverage_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.bigint "account_id", null: false
     t.index ["account_id"], name: "index_user_fees_customers_on_account_id"
     t.index ["customer_role"], name: "index_user_fees_customers_on_customer_role"

@@ -1,26 +1,9 @@
---title 'EdiGateway Microservice'
---markup markdown
---output-dir doc
---plugin yard-mongoid
---private
---protected
---embed-mixin ClassMethods
---exclude /server/templates/
---exclude /templates/
---tag nodoc --query '!@nodoc'
---tag yard.signature:"YARD Tag Signature"
---type-name-tag yard.tag:"YARD Tag"
---type-name-tag yard.directive:"YARD Directive"
---hide-tag yard.tag
---hide-tag yard.directive
---hide-tag yard.signature
---hide-tag todo
-app/**/*.rb
-act*/lib/**/*.rb
-act*/app/**/*.rb
-railties/lib/**/*.rb
-/rubygems/aca_entities/lib/**/*.rb
--
-LICENSE.txt
-ChangeLog.md
-CODE_OF_CONDUCT.md
+--query '@api.text != "private"'
+--embed-mixins
+-o doc
+-r README.md
+--files CHANGELOG.md
+--markup-provider=redcarpet
+--markup=markdown
+--plugin junk
+--hide-void-return

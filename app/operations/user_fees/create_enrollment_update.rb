@@ -9,8 +9,8 @@ module UserFees
   class CreateEnrollmentUpdate
     send(:include, Dry::Monads[:result, :do])
 
-    # @param [Hash] opts a {GlueDbEnrollmentTransactionReceived} event
-    # @option opts [Hash] :gdb_enrollment_transaction required
+    # @param [Hash] params a {GlueDbEnrollmentTransactionReceived} event
+    # @option params [Hash] :gdb_enrollment_transaction (required)
     # @return [Dry::Monad::Success] array of published EnrollmentUpdated events
     # @return [Dry::Monad::Failure] failed to publish EnrollmentUpdated events for this transaction
     def call(params)

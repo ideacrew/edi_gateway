@@ -4,7 +4,7 @@ module Publishers
   module UserFees
     # Publish {Events::UserFees::EnrollmentTerminations} events
     class EnrollmentTerminationsPublisher
-      include ::EventSource::Publisher[amqp: 'edi_gateway.user_fees.enrollment_terminations']
+      send(:include, ::EventSource::Publisher[amqp: 'edi_gateway.user_fees.enrollment_terminations'])
 
       register_event 'enrollment_terminated'
       register_event 'policies_terminated'

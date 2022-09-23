@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
 require 'shared_examples/edi_database/transactions/initial_transaction'
 require 'shared_examples/edi_database/transactions/add_policy_only'
 require 'shared_examples/edi_database/transactions/add_tax_household_only'

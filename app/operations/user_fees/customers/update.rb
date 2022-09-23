@@ -9,8 +9,8 @@ module UserFees
     class Update
       send(:include, Dry::Monads[:result, :do])
 
-      # @param [Hash] opts the parameters to update the Customer
-      # @option opts [Hash] :customer required
+      # @param [Hash] params the parameters to update the Customer
+      # @option params [String] :customer required
       # @return [Dry::Monad::Success] customer record created
       # @return [Dry::Monad::Failure] failed to create customer record
       def call(params)

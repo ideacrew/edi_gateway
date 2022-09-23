@@ -5,7 +5,7 @@ module Publishers
     module Transactions
       # Publish {Events::EdiDatabase::Transactions} events
       class TransactionsPublisher
-        include ::EventSource::Publisher[amqp: 'edi_gateway.edi_database.transactions']
+        send(:include, ::EventSource::Publisher[amqp: 'edi_gateway.edi_database.transactions'])
 
         # register_event 'subscriber_update_list_requested'
         # register_event 'transaction_requested'

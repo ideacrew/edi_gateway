@@ -8,7 +8,7 @@ module UserFees
     # Resolve whether passed transaction message is an enrollment addition
     #
     class InitialPolicy
-      include Dry::Monads[:result, :do, :try]
+      send(:include, Dry::Monads[:result, :do, :try])
 
       # @param [Hash] params the parameters to resolve message type
       # @option params [Hash] :message EDI Database transaction (required)

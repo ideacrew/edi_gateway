@@ -1,0 +1,6 @@
+---
+namespace:
+  - :user_fees
+features:
+  - key: :user_fees_feature
+    is_enabled: true

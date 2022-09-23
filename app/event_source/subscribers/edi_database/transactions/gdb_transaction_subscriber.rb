@@ -5,7 +5,7 @@ module Subscribers
     module Transactions
       # Subscriber will receive a transaction detailing and enrollment create, change, terminate or reinstate
       class GdbTransactionSubscriber
-        include ::EventSource::Subscriber[amqp: 'edi_gateway.edi_database.transactions']
+        send(:include, ::EventSource::Subscriber[amqp: 'edi_gateway.edi_database.transactions'])
 
         subscribe(:on_gdb_transaction_created) do |delivery_info, _metadata, response|
           subscriber_logger = subscriber_logger_for(:on_gdb_transaction_created)

@@ -18,9 +18,10 @@ module UserFees
 
     # Supports a 'has_one' association between an ActiveRecord UserFees::Customer and a Mongoid ActiveModel
     #   {UserFees::InsuranceCoverage} instance
-    # @param [Hash] opts the options for referencing the InsuranceCoverage instance
-    # @param opts [Hash] :obj a hash that will validate using: {::AcaEntities::Ledger::Contracts::InsuranceCoverageContract}
-    # @param opts [::UserFees::InsuranceCoverage] :obj an instance of {UserFees::InsuranceCoverage}
+    # @param [::UserFees::InsuranceCoverage, Hash] obj an instance of {UserFees::InsuranceCoverage} or a valid
+    #   {::AcaEntities::Ledger::Contracts::InsuranceCoverageContract} hash
+    # @return [::UserFees::InsuranceCoverage] the object
+    # @return [ArgumentError] if invalid obj is passed
     def insurance_coverage=(obj)
       coverage = obj if obj.is_a?(::UserFees::InsuranceCoverage)
       coverage = ::UserFees::InsuranceCoverage.new(obj) if obj.is_a?(Hash)

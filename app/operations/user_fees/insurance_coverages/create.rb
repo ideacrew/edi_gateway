@@ -9,8 +9,8 @@ module UserFees
     class Create
       send(:include, Dry::Monads[:result, :do])
 
-      # @param [Hash] opts the parameters used to create a new Customer
-      # @option opts [Hash] :customer required
+      # @param [Hash] params the parameters used to create a new Customer
+      # @option params [Hash] :customer required
       # @return [Dry::Monad::Success] customer record created
       # @return [Dry::Monad::Failure] failed to create customer record
       def call(params)

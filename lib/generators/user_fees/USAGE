@@ -1,0 +1,8 @@
+Description:
+    Initializes a State-based Exchange User Fee Chart of Accounts configuration file at system/config
+
+Example:
+    bin/rails generate user_fees chart_of_accounts
+
+    This will create:
+        system/config/user_fees/chart_of_accounts.yml

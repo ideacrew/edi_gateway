@@ -3,7 +3,7 @@
 module Inbound834
   # Create the inbound transaction record representing an 834.
   class CreateTransactionAndEnvelope
-    include Dry::Monads[:result, :do, :try]
+    send(:include, Dry::Monads[:result, :do, :try])
 
     # Create the transaction from the payload and headers.
     # @param opts [Hash] the operation options

@@ -4,7 +4,8 @@ module Subscribers
   module UserFees
     # Subscriber will receive event detailing a new customer/enrollment
     class EnrollmentAddsSubscriber
-      include ::EventSource::Subscriber[amqp: 'edi_gateway.user_fees.enrollment_adds']
+      send(:include, Dry::Monads[:result, :do])
+      send(:include, ::EventSource::Subscriber[amqp: 'edi_gateway.user_fees.enrollment_adds'])
 
       subscribe(:on_policies_added) { |delivery_info, _metadata, response| ack(delivery_info.delivery_tag) }
 
@@ -17,6 +18,7 @@ module Subscribers
 
         # Add subscriber operations below this line
         update_user_fees(payload)
+        binding.pry
 
         subscriber_logger.info "EnrollmentAddsSubscriber, ack: #{payload}"
         ack(delivery_info.delivery_tag)
@@ -28,7 +30,7 @@ module Subscribers
       end
 
       def update_user_fees(payload)
-        binding.pry
+        UserFees::Customers::Create.new.call(payload)
       end
 
       private
