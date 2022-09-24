@@ -167,7 +167,6 @@ RSpec.describe EdiDatabase::Transactions::PublishEnrollmentTerminations, db_clea
         expect(::UserFees::Customer.all.size).to eq 1
         result = subject.call(jetson_term_policy_only)
 
-        # binding.pry
         expect(result.success?).to be_truthy
         expect(result.success.size).to eq 1
         expect(

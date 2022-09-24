@@ -29,7 +29,6 @@ module UserFees
         end
 
         def enter_transaction(values)
-          binding.pry
           values[:journal].update! permanent: true
           post = Keepr::Posting.new values[:account_entry][:debits].first
         end

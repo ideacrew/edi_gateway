@@ -18,7 +18,6 @@ module Subscribers
 
         # Add subscriber operations below this line
         update_user_fees(payload)
-        binding.pry
 
         subscriber_logger.info "EnrollmentAddsSubscriber, ack: #{payload}"
         ack(delivery_info.delivery_tag)
