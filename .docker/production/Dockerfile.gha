@@ -127,7 +127,7 @@ ARG RABBITMQ_HOST=amqp://${HOSTNAME}
 ARG RABBITMQ_VHOST=event_source
 
 COPY --chown=$USERNAME:$USERNAME package.json $HOME/
-COPY --chown=$USERNAME:$USERNAME yarn.lock $HOME/
+#COPY --chown=$USERNAME:$USERNAME yarn.lock $HOME/
 
 RUN yarn install \
   && (rm -rf /tmp/* || true)
