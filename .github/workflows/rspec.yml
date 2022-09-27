@@ -3,12 +3,28 @@ on: push
 
 jobs:
   rspec:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v2
       - uses: wbari/start-mongoDB@v0.2
         with:
           mongoDBVersion: '4.2'
+      - uses: getong/rabbitmq-action@v1.2
+        with:
+          rabbitmq version: '3.8.2-management-alpine'
+          host port: 5672
+          rabbitmq user: 'guest'
+          rabbitmq password: 'guest'
+          rabbitmq vhost: '/'
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: 2.7.4
@@ -29,6 +45,19 @@ jobs:
           git config diff.renameLimit 800
           git fetch --no-tags --depth=1 origin trunk
           bundle exec rubocop-git origin/trunk | grep "no offenses detected"
+      - name: Setup Database
+        run: |
+          cp config/database.yml.example config/database.yml
+          bundle exec rake db:create
+          bundle exec rake db:schema:load
+        env:
+          RAILS_ENV: test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
       - name: run tests
         run: |
           bundle exec rspec
+        env:
+          RAILS_ENV: test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres

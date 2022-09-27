@@ -76,6 +76,7 @@ gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 group :development, :test do
   gem 'database_cleaner-active_record'
   gem 'database_cleaner-mongoid'
+  gem 'rspec-rails'
 
   gem 'factory_bot_rails'
   gem 'pry-byebug'
@@ -108,7 +109,6 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
-  gem 'rspec-rails'
   gem "selenium-webdriver"
   gem "webdrivers"
 end
