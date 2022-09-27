@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "trunk"
+      - "build_image_branch"
   pull_request:
     branches:
-      - "trunk"
+      - "build_image_branch"
 
 concurrency:
   group: docker-${{ github.ref }}

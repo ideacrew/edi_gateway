@@ -132,10 +132,6 @@ COPY --chown=$USERNAME:$USERNAME yarn.lock $HOME/
 RUN yarn install \
   && (rm -rf /tmp/* || true)
 
-COPY --chown=$USERNAME:$USERNAME ./project_gems/effective_datatables-2.6.14/effective_datatables-2.6.14.gemspec $HOME/project_gems/effective_datatables-2.6.14/effective_datatables-2.6.14.gemspec
-COPY --chown=$USERNAME:$USERNAME ./project_gems/liquid-5.0.1/liquid.gemspec $HOME/project_gems/liquid-5.0.1/liquid.gemspec
-COPY --chown=$USERNAME:$USERNAME ./project_gems/liquid-5.0.1/lib/liquid/version.rb $HOME/project_gems/liquid-5.0.1/lib/liquid/version.rb
-
 COPY --chown=$USERNAME:$USERNAME ./Gemfile $HOME/Gemfile
 COPY --chown=$USERNAME:$USERNAME ./Gemfile.lock $HOME/Gemfile.lock
 
