@@ -7,12 +7,12 @@ ARG RUBY_VERSION=2.7.4
 FROM ruby:$RUBY_VERSION-slim-buster as base
 LABEL author="IdeaCrew"
 
-ENV USERNAME=polypress
+ENV USERNAME=edi_gateway
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Taken from Gemfile.lock
-ARG BUNDLER_VERSION=2.1.4
+ARG BUNDLER_VERSION=2.3.3
 
 # Must be set as ENV variable to overrride the default
 ENV BUNDLER_VERSION=$BUNDLER_VERSION
@@ -53,7 +53,7 @@ ENV BUNDLE_RETRY=3
 
 ENV LANG=C.UTF-8
 
-ENV HOME=/polypress
+ENV HOME=/edi_gateway
 
 ENV PATH=$HOME/bin:$BUNDLE_BIN:$GEM_HOME/gems/bin:$PATH
 
@@ -115,10 +115,10 @@ FROM builder as prod_gems_and_assets
 
 ARG HOSTNAME=localhost
 
-# Polypress Specific Config
-ENV POLYPRESS_DB_HOST=${HOSTNAME}
-ENV POLYPRESS_DB_NAME=polypress_production
-ENV POLYPRESS_DB_PORT=27017
+# EDI Gateway Specific Config
+ENV EDI_GATEWAY_DB_HOST=${HOSTNAME}
+ENV EDI_GATEWAY_DB_NAME=edi_gateway_production
+ENV EDI_GATEWAY_DB_PORT=27017
 
 # Needed for most repos, not service-specific
 ARG RABBITMQ_URL=amqp://${HOSTNAME}:5672
@@ -169,13 +169,13 @@ FROM base as deploy
 
 ARG HOSTNAME=localhost
 
-ENV POLYPRESS_DB_AUTH=true
-ENV POLYPRESS_DB_NAME=anything
-ENV POLYPRESS_DB_HOST=anything
-ENV POLYPRESS_DB_PORT=anything
-ENV POLYPRESS_DB_REPLICA_SET_NAME=anything
-ENV POLYPRESS_DB_USERNAME=anything
-ENV POLYPRESS_DB_PASSWORD=anything
+ENV EDI_GATEWAY_DB_AUTH=true
+ENV EDI_GATEWAY_DB_NAME=anything
+ENV EDI_GATEWAY_DB_HOST=anything
+ENV EDI_GATEWAY_DB_PORT=anything
+ENV EDI_GATEWAY_DB_REPLICA_SET_NAME=anything
+ENV EDI_GATEWAY_DB_USERNAME=anything
+ENV EDI_GATEWAY_DB_PASSWORD=anything
 
 ENV RABBITMQ_URL=amqp://${HOSTNAME}:5672
 ENV RABBITMQ_URL_EVENT_SOURCE=amqp://${HOSTNAME}

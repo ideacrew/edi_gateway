@@ -2,15 +2,9 @@
 ###    app config    ###
 ########################
 
-FROM ruby:2.7.2 AS app
+FROM ruby:2.7.4 AS app
 
 LABEL author="IdeaCrew"
-
-ENV HOME /edi_gateway
-
-RUN mkdir -p $HOME
-
-WORKDIR $HOME
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 
@@ -30,71 +24,47 @@ RUN apt-get update && \
     gem install bundler && \
     npm install --global yarn
 
+ENV HOME /edi_gateway
+
+RUN mkdir -p $HOME
+
+WORKDIR $HOME
+COPY . $HOME
+
 COPY package.json package.json
 COPY yarn.lock yarn.lock
 RUN yarn install
 
 # Setting env up
+ARG SECRET_KEY_BASE
+ARG EDI_GATEWAY_DB_HOST
+ARG EDI_GATEWAY_DB_PORT
+ARG EDI_GATEWAY_DB_NAME
+ARG RABBITMQ_URL
+ARG RABBITMQ_URL_EVENT_SOURCE
+ARG RABBITMQ_HOST
+ARG RABBITMQ_PORT
+ARG RABBITMQ_VHOST
 ENV RAILS_ENV='production'
 ENV NODE_ENV='production'
+ENV MEDICAID_GATEWAY_DB_HOST=$EDI_GATEWAY_DB_HOST
+ENV MEDICAID_GATEWAY_DB_PORT=$EDI_GATEWAY_DB_PORT
+ENV MEDICAID_GATEWAY_DB_NAME=$EDI_GATEWAY_DB_NAME
+ENV RABBITMQ_URL=$RABBITMQ_URL
+ENV RABBITMQ_URL_EVENT_SOURCE=$RABBITMQ_URL_EVENT_SOURCE
+ENV RABBITMQ_HOST=$RABBITMQ_HOST
+ENV RABBITMQ_PORT=$RABBITMQ_PORT
+ENV RABBITMQ_VHOST=$RABBITMQ_VHOST
+ENV SECRET_KEY_BASE=$SECRET_KEY_BASE
 
-COPY . .
+#RUN rm -f /edi_gateway/config/master.key && rm -f /edi_gateway/config/credentials.yml.enc
 
-RUN bundle config set without 'development test'
-RUN bundle install --jobs 20 --retry 5
+# Adding gems
+COPY Gemfile Gemfile
+COPY Gemfile.lock Gemfile.lock
 
-ARG DB_DATABASE
-ARG DB_USERNAME
-ARG DB_PASSWORD
-ARG DB_HOST
-ARG ACTION_MAILER_HOST
-ARG SMTP_PORT
-ARG SMTP_HOST
-ARG SMTP_DOMAIN
-ARG SMTP_USERNAME
-ARG SMTP_PASSWORD
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
-ARG AWS_REGION
-ARG AWS_BUCKET_ROOT_NAMESPACE
-ARG AWS_CONNECT_INSTANCE_ID
-ARG AWS_CONNECT_INSTANCE_URL
-
-RUN export DB_DATABASE=$DB_DATABASE && \
-    export DB_USERNAME=$DB_USERNAME && \
-    export DB_PASSWORD=$DB_PASSWORD && \
-    export DB_HOST=$DB_HOST && \
-    export ACTION_MAILER_HOST=$ACTION_MAILER_HOST && \
-    export SMTP_PORT=$SMTP_PORT && \
-    export SMTP_HOST=$SMTP_HOST && \
-    export SMTP_DOMAIN=$SMTP_DOMAIN && \
-    export SMTP_USERNAME=$SMTP_USERNAME && \
-    export SMTP_PASSWORD=$SMTP_PASSWORD && \
-    export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID && \
-    export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY && \
-    export AWS_REGION=$AWS_REGION && \
-    export AWS_BUCKET_ROOT_NAMESPACE=$AWS_BUCKET_ROOT_NAMESPACE && \
-    export AWS_CONNECT_INSTANCE_ID=$AWS_CONNECT_INSTANCE_ID && \
-    export AWS_CONNECT_INSTANCE_URL=$AWS_CONNECT_INSTANCE_URL && \
-    bundle exec rake assets:precompile && \
-    unset DB_DATABASE && \
-    unset DB_USERNAME && \
-    unset DB_PASSWORD && \
-    unset DB_HOST && \
-    unset ACTION_MAILER_HOST && \
-    unset SMTP_PORT && \
-    unset SMTP_HOST && \
-    unset SMTP_DOMAIN && \
-    unset SMTP_USERNAME && \
-    unset SMTP_PASSWORD && \
-    unset AWS_ACCESS_KEY_ID && \
-    unset AWS_SECRET_ACCESS_KEY && \
-    unset AWS_REGION && \
-    unset AWS_BUCKET_ROOT_NAMESPACE && \
-    unset AWS_CONNECT_INSTANCE_ID && \
-    unset AWS_CONNECT_INSTANCE_URL
-
-RUN rm -f /edi_gateway/config/master.key && rm -f /edi_gateway/config/credentials.yml.enc
+RUN bundle install --jobs 20 --retry 5 --without development test
+RUN bundle exec rake assets:precompile
 
 
 ########################
