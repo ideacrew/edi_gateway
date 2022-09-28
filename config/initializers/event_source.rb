@@ -21,15 +21,23 @@ EventSource.configure do |config|
       warn rabbitmq.user_name
       rabbitmq.password = ENV['RABBITMQ_PASSWORD'] || 'guest'
       warn rabbitmq.password
+      rabbitmq.default_content_type =
+        ENV['RABBITMQ_CONTENT_TYPE'] || 'application/json'
+    end
+
+    server.http do |http|
+      http.ref = 'https://reporting-edidb.priv.cme.openhbx.org'
+      http.host = ENV['GLUE_HOST'] || 'http://localhost'
+      http.port = ENV['GLUE_PORT'] || '3000'
+      http.url = ENV['GLUE_URL'] || 'https://reporting-edidb.priv.cme.openhbx.org'
+      http.default_content_type = 'application/json'
     end
   end
 
   async_api_resources =
     ::AcaEntities.async_api_config_find_by_service_name({ protocol: :amqp, service_name: nil }).success
-  # async_api_resources +=
-  #   ::AcaEntities.async_api_config_find_by_service_name({ protocol: :http, service_name: :enroll }).success
-  # async_api_resources +=
-  #   ::AcaEntities.async_api_config_find_by_service_name({ protocol: :http, service_name: :edi_gateway }).success
+  async_api_resources +=
+    ::AcaEntities.async_api_config_find_by_service_name({ protocol: :http, service_name: :edi_gateway }).success
 
   config.async_api_schemas = async_api_resources.collect { |resource| EventSource.build_async_api_resource(resource) }
 end

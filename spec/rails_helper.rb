@@ -38,6 +38,15 @@ RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_path = "#{::Rails.root}/spec/fixtures"
 
+  config.around(:each, :testing_transactions => true) do |ex|
+    DatabaseCleaner.strategy = nil
+    ex.run
+    DatabaseCleaner.strategy = :truncation
+  end
+  config.before(:each) do |test|
+    DatabaseCleaner.clean_with(:truncation) unless test.metadata[:testing_transactions]
+  end
+
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false
   # instead of true.

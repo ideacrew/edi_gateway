@@ -1,0 +1,17 @@
+---
+registry:
+  - namespace:
+      - :features
+    features:
+      - key: :gluedb_integration
+        is_enabled: true
+        settings:
+          - key: :gluedb_user_access_token
+            item: <%= ENV['GLUEDB_USER_ACCESS_TOKEN'] %>
+          - key: :gluedb_enrolled_subjects_uri
+            item: <%= ENV['GLUEDB_ENROLLED_SUBJECTS_URI'] %>
+      - key: :pre_audit_report
+        is_enabled: true
+        settings:
+          - key: :carrier_hios_ids
+            item: [ "96667", "48396", "33653", "50165" ]
