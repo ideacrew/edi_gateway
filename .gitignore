@@ -202,3 +202,5 @@ docs/doc/css/style.css
 docs/doc/js/app.js
 docs/doc/js/full_list.js
 docs/doc/js/jquery.js
+
+.env
