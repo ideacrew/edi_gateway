@@ -77,7 +77,7 @@ group :development, :test do
   gem 'database_cleaner-active_record'
   gem 'database_cleaner-mongoid'
   gem 'rspec-rails'
-
+  gem 'dotenv-rails'
   gem 'factory_bot_rails'
   gem 'pry-byebug'
   gem 'shoulda-matchers'
