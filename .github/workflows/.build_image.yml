@@ -39,12 +39,12 @@ jobs:
           REPO=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')
           TAG=${{ env.GIT_BRANCH_NAME }}-$(echo $GITHUB_SHA | head -c7)
           IMAGE=ideacrew/$REPO
-          echo ::set-output name=tagged_image::${IMAGE}:${TAG}
+          echo ::set-output name=tagged_image::ghcr.io/${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
           echo ::set-output name=short_sha::$SHORT_SHA
           echo ::set-output name=branch_name::${{ env.GIT_BRANCH_NAME }}
           echo ::set-output name=repository_name::$REPO
-          echo ::set-output name=latest_tag::${IMAGE}:latest
+          echo ::set-output name=latest_tag::ghcr.io/${IMAGE}:latest
 
   # Uses buildx to build and push the image
   build-and-upload-image:
