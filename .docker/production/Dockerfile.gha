@@ -24,6 +24,7 @@ RUN apt-get update \
       fontconfig \
       libcurl4-openssl-dev \
       libffi6 \
+      libpq5 \
       libsodium23 \
       libxext6 \
       libxrender1 \
