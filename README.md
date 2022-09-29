@@ -25,3 +25,7 @@ PostgreSql is installed for a narrow UserFees use case and is planned to be remo
 ## Services
 
 EdiGateway uses EventSource exclusively for event-based communication intra- and inter-service publish/subscribe messages over AMQP and HTTP protocols. Do not install or use deprecated tools, including Acapi and/or sneakers gems.
+
+## Installing Dependencies
+
+This applications depends on gems from private repositories. Before running `bundle` you must have a Personal Access Token (PAT) with . The PAT must be stored in the environment variable `BUNDLE_GITHUB__COM`.

@@ -26,8 +26,6 @@ jobs:
           rabbitmq password: 'guest'
           rabbitmq vhost: '/'
       - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 2.7.4
       - name: Cache Gems
         uses: actions/cache@v1
         with:
