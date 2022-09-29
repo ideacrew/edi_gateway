@@ -38,14 +38,14 @@ jobs:
           SHORT_SHA=$(echo $GITHUB_SHA | head -c7)
           REPO=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')
           TAG=${{ env.GIT_BRANCH_NAME }}-$(echo $GITHUB_SHA | head -c7)
-          IMAGE=public.ecr.aws/ideacrew/$REPO
+          IMAGE=ideacrew/$REPO
           echo ::set-output name=tagged_image::${IMAGE}:${TAG}
           echo ::set-output name=tag::${TAG}
-          echo ::set-output name=registry::public.ecr.aws
           echo ::set-output name=short_sha::$SHORT_SHA
           echo ::set-output name=branch_name::${{ env.GIT_BRANCH_NAME }}
           echo ::set-output name=repository_name::$REPO
           echo ::set-output name=latest_tag::${IMAGE}:latest
+          echo ::set-output name=registry_ghcr::ghcr.io
 
   # Uses buildx to build and push the image
   build-and-upload-image:
@@ -75,10 +75,12 @@ jobs:
           --health-retries 5
     steps:
       # Check out repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Add git HEAD info to docker image
-        run: git show --quiet HEAD > release.txt
+        run: |
+          git show --quiet HEAD > release.txt
+          git show --quiet HEAD > public/release.txt
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -86,7 +88,7 @@ jobs:
           install: true
 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           # Key is named differently to avoid collision
@@ -94,27 +96,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-multi-buildx
 
-      # Add vhosts to RabbitMQ
-      - run: |
-          docker exec rabbitmq rabbitmqctl add_vhost /
-          docker exec rabbitmq rabbitmqctl add_vhost event_source
-          docker exec rabbitmq rabbitmqctl set_permissions -p event_source guest ".*" ".*" ".*"
-
-      # Provide credentials for AWS
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Login to GHCR
+        uses: docker/login-action@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      # Must use docker login in order to specify public registry
-      - name: Login to Public ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ needs.prep.outputs.registry }}
-          username: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          registry: ${{ needs.prep.outputs.registryGhcr }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Image
         uses: docker/build-push-action@v2
@@ -138,22 +125,7 @@ jobs:
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
           build-args: |
             HOSTNAME=172.17.0.1
-
-      - name: Scan Docker image
-        if: github.event_name != 'pull_request'
-        id: scan
-        uses: anchore/scan-action@main
-        with:
-          image: ${{ needs.prep.outputs.taggedImage }}
-          acs-report-enable: true
-          fail-build: false
-          severity-cutoff: critical
-
-      - name: upload Anchore scan SARIF report
-        if: github.event_name != 'pull_request'
-        uses: github/codeql-action/upload-sarif@v1
-        with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+            BUNDLE_GITHUB__COM=${{ secrets.IDEACREW_GEM_TOKEN }}
 
       - name: Move cache
         run: |

@@ -8,7 +8,7 @@ production:
       hosts:
         - <%= ENV['EDI_GATEWAY_DB_HOST'] %>:<%= ENV['EDI_GATEWAY_DB_PORT'] %>
       options:
-      <% if ENV['PEDI_GATEWAY_DB_AUTH'] %>
+      <% if ENV['EDI_GATEWAY_DB_AUTH'] %>
       replica_set: <%= ENV['EDI_GATEWAY_DB_REPLICA_SET_NAME'] %>
 
       user: <%= ENV['EDI_GATEWAY_DB_USERNAME'] %>
