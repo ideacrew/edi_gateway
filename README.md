@@ -28,4 +28,4 @@ EdiGateway uses EventSource exclusively for event-based communication intra- and
 
 ## Installing Dependencies
 
-This applications depends on gems from private repositories. Before running `bundle` you must have a Personal Access Token (PAT) with . The PAT must be stored in the environment variable `BUNDLE_GITHUB__COM`.
+This applications depends on gems from private repositories. Before running `bundle` you must have a Personal Access Token (PAT) with `admin:org, repo` permissions. The PAT must be stored in the environment variable `BUNDLE_GITHUB__COM`.
