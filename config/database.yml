@@ -30,3 +30,9 @@ test:
   encoding: unicode
   database: edi_gateway_test
   pool: 5
+
+production:
+  adapter: postgresql
+  encoding: unicode
+  database: edi_gateway_production
+  pool: 5
