@@ -58,3 +58,5 @@ jenkins
 .gitignore
 
 .bash_history
+config/mongoid.yml
+config/database.yml
