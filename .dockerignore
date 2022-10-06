@@ -56,3 +56,5 @@ docs
 jenkins
 .git
 .gitignore
+
+.bash_history

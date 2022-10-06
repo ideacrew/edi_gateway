@@ -1,12 +1,12 @@
-FROM ruby:2.7.4 AS edi_gateway
+FROM ruby:2.7.6 AS edi_gateway
 
 LABEL author="IdeaCrew"
 
-ENV HOME /edi_gateway
+ENV WORKDIR /edi_gateway
 
-RUN mkdir -p $HOME
+RUN mkdir -p $WORKDIR
 
-WORKDIR $HOME
+WORKDIR $WORKDIR
 
 RUN curl -sL https://deb.nodesource.com/setup_12.x | bash -
 
@@ -20,20 +20,24 @@ ENV BUNDLE_APP_CONFIG=$BUNDLE_PATH \
     BUNDLE_BIN=$BUNDLE_PATH/bin
 ENV PATH /edi_gateway/bin:$BUNDLE_BIN:$PATH
 
-ARG BUNDLER_VERSION_OVERRIDE
-RUN echo $BUNDLER_VERSION_OVERRIDE
 RUN apt-get update && \
     apt-get -yq dist-upgrade && \
-    apt-get install -y tzdata build-essential nodejs vim && \
+    apt-get install -y tzdata build-essential nodejs libsodium-dev libsodium23 && \
     apt-get autoremove -y && \
-    gem install bundler:$BUNDLER_VERSION_OVERRIDE && \
     npm install --global yarn
 
-COPY . $HOME
+ARG GEM_OAUTH_TOKEN
+ENV BUNDLE_GITHUB__COM=x-access-token:"$GEM_OAUTH_TOKEN"
+
+ARG BUNDLER_VERSION_OVERRIDE
+RUN echo $BUNDLER_VERSION_OVERRIDE
+
+COPY .docker/development/database.yml $WORKDIR/config/database.yml
+COPY Gemfile.lock $WORKDIR/Gemfile.lock
+COPY Gemfile $WORKDIR/Gemfile
 
 # Setting env up
 ENV RAILS_ENV='development'
 ENV NODE_ENV='development'
 
-RUN bundle config set deployment 'true' && \
-    bundle install
+RUN gem install bundler:$BUNDLER_VERSION_OVERRIDE && bundle install

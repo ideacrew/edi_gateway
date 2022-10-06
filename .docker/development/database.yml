@@ -1,0 +1,19 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: postgres
+  username: postgres
+  password: password
+  pool: 5
+
+development:
+  <<: *default
+  database: edi_gateway_development
+
+test:
+  <<: *default
+  database: edi_gateway_test
+
+production:
+  <<: *default
+  database: edi_gateway_production
