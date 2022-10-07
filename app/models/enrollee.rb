@@ -3,6 +3,7 @@
 # Encapsulate an Enrollee, embedded in a GlueDB policy.
 class Enrollee
   include Mongoid::Document
+  include Mongoid::Timestamps
   store_in client: :edidb
 
   field :m_id, as: :hbx_member_id, type: String
