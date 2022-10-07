@@ -8,6 +8,12 @@ require "rails_helper"
 
 STORAGE_CLIENT_NAME = :edidb
 
+describe Address do
+  it "is read from the correct database context" do
+    expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
+  end
+end
+
 describe AptcCredit do
   it "is read from the correct database context" do
     expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
@@ -32,6 +38,12 @@ describe CarrierProfile do
   end
 end
 
+describe Email do
+  it "is read from the correct database context" do
+    expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
+  end
+end
+
 describe Enrollee do
   it "is read from the correct database context" do
     expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
@@ -45,6 +57,12 @@ describe Member do
 end
 
 describe Person do
+  it "is read from the correct database context" do
+    expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
+  end
+end
+
+describe Phone do
   it "is read from the correct database context" do
     expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
   end

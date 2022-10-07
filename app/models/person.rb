@@ -15,6 +15,12 @@ class Person
 
   embeds_many :responsible_parties
 
+  embeds_many :addresses, :inverse_of => :person
+
+  embeds_many :emails, :inverse_of => :person
+
+  embeds_many :phones, :inverse_of => :person
+
   index({ name_last:  1 })
   index({ name_first: 1 })
   index({ name_last: 1, name_first: 1 })
