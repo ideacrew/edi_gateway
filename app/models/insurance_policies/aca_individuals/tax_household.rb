@@ -6,14 +6,14 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      embedded_in :insurance_agreement, class_name: "InsurancePolicies::AcaIndividuals::InsuranceAgreement"
+      embedded_in :insurance_agreement, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceAgreement"
 
-      field :allocated_aptc, type: BigDecimal
-      field :max_aptc, type: BigDecimal
+      field :allocated_aptc, type: Money
+      field :max_aptc, type: Money
       field :start_date, type: Date
       field :end_date, type: Date
 
-      embeds_many :tax_household_members, class_name: "InsurancePolicies::AcaIndividuals::TaxHouseholdMember"
+      embeds_many :tax_household_members, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdMember"
     end
   end
 end

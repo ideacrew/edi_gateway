@@ -16,7 +16,7 @@ module InsurancePolicies
       embeds_one :person_name, class_name: '::InsurancePolicies::AcaIndividuals::PersonName', cascade_callbacks: true
       accepts_nested_attributes_for :person_name
 
-      embeds_many :addresses, class_name: '::InsurancePolicies::AcaIndividuals::Email'
+      embeds_many :emails, class_name: '::InsurancePolicies::AcaIndividuals::Email'
       accepts_nested_attributes_for :emails, allow_destroy: true
 
       embeds_many :addresses, class_name: '::InsurancePolicies::AcaIndividuals::Address'

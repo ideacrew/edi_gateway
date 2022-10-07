@@ -6,7 +6,7 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      field :address_type, type: String
+      field :kind, type: String
       field :address_1, type: String
       field :address_2, type: String, default: ""
       field :address_3, type: String, default: ""

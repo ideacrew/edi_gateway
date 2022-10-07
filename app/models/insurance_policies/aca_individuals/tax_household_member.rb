@@ -6,7 +6,6 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-
       field :is_ia_eligible, type: Boolean, default: false
       field :is_medicaid_chip_eligible, type: Boolean, default: false
       field :is_totally_ineligible, type: Boolean, default: false
@@ -23,9 +22,11 @@ module InsurancePolicies
       field :medicaid_household_size, type: Integer
       field :is_without_assistance, type: Boolean, default: false
       field :csr, type: Integer, default: 0
+      field :person_hbx_id, type: String
+      field :tax_filer_status, type: String
+      field :slcsp_benchmark_premium, type: Money
 
-      embedded_in :tax_household, class_name: "InsurancePolicies::AcaIndividuals::TaxHousehold"
-      embeds_one :member, class_name: "InsurancePolicies::AcaIndividuals::Member"
+      embedded_in :tax_household, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold"
     end
   end
 end

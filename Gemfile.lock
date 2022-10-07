@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/ideacrew/aca_entities.git
-  revision: 47d3a2036e5ad470f150fa9c6ed184df54fbcb49
-  branch: create_user_fee_model_181271601
+  revision: 04447a7a87ffe17c56410626070e85d03ce73ca4
+  branch: define_edi_db_core_domain_model_183405342
   specs:
     aca_entities (0.10.0)
       deep_merge
@@ -14,7 +14,6 @@ GIT
       nokogiri-happymapper
       oj (~> 3.11)
       rbnacl (~> 7.1)
-      smartystreets_ruby_sdk
 
 GIT
   remote: https://github.com/ideacrew/aca_x12_entities.git
@@ -293,6 +292,15 @@ GEM
     mini_mime (1.1.2)
     mini_portile2 (2.8.0)
     minitest (5.16.3)
+    monetize (1.12.0)
+      money (~> 6.12)
+    money (6.16.0)
+      i18n (>= 0.6.4, <= 2)
+    money-rails (1.15.0)
+      activesupport (>= 3.0)
+      monetize (~> 1.9)
+      money (~> 6.13)
+      railties (>= 3.0)
     mongo (2.18.1)
       bson (>= 4.14.1, < 5.0.0)
     mongoid (7.5.1)
@@ -477,7 +485,6 @@ GEM
       rack (~> 2.2)
       rack-protection (= 2.2.2)
       tilt (~> 2.0)
-    smartystreets_ruby_sdk (5.14.14)
     sorted_set (1.0.3)
       rbtree
       set (~> 1.0)
@@ -553,6 +560,7 @@ DEPENDENCIES
   event_source!
   factory_bot_rails
   keepr (~> 0.7.0)
+  money-rails (~> 1.15)
   mongoid (~> 7.4)
   nokogiri-happymapper
   pg

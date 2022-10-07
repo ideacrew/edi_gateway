@@ -10,7 +10,7 @@ module InsurancePolicies
       field :kind, type: String
       field :address, type: String
 
-      embedded_in :member, class_name: 'InsurancePolicies::AcaIndividuals::Member'
+      embedded_in :member, class_name: '::InsurancePolicies::AcaIndividuals::Member'
     end
   end
 end

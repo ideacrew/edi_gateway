@@ -6,7 +6,7 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      field :type, type: String
+      field :kind, type: String
       field :number, type: String
       field :extension, type: String, default: ""
       field :primary, type: Boolean
