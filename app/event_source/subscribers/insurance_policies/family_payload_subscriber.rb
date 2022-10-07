@@ -4,7 +4,8 @@ module Subscribers
   # Receive family payload from enroll
   module InsurancePolicies
     # Parse CV3 Family payload
-    class FamilyUpdateSubscriber
+    class FamilyPayloadSubscriber
+      send(:include, Dry::Monads[:result, :do])
       include ::EventSource::Subscriber[amqp: 'enroll.individual.enrollments']
 
       # rubocop:disable Lint/RescueException
