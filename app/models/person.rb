@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Represents a person as a collection of contact info, members, and responsible parties.
 class Person
   include Mongoid::Document
   store_in client: :edidb
@@ -10,6 +11,8 @@ class Person
   field :name_last, type: String
   field :name_sfx, type: String, default: ""
   field :name_full, type: String
+
+  field :authority_member_id, type: String, default: nil
 
   embeds_many :members
 
@@ -29,4 +32,11 @@ class Person
   index({ "members.hbx_member_id" => 1 })
   index({ "members.ssn" => 1 })
   index({ "members.dob" => 1 })
+  index({ "authority_member_id" => 1 })
+
+  def authority_member
+    return self.members.first if members.length < 2
+
+    members.detect { |m| m.hbx_member_id == self.authority_member_id }
+  end
 end
