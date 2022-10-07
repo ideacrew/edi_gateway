@@ -37,8 +37,8 @@ module IrsGroups
 
     def create_insurance_agreement_and_nested_data(policies)
       group_by_carriers = policies.group_by(&:carrier_id)
-      group_by_carriers.each do |id, policies|
-        PersistInsuranceAgreementAndNestedData.new.call({ policies: policies, family: @family_entity,
+      group_by_carriers.each do |_id, enrollments|
+        PersistInsuranceAgreementAndNestedData.new.call({ policies: enrollments, family: @family_entity,
                                                           irs_group: @irs_group, primary_person: @primary_person })
       end
 
