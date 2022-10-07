@@ -26,6 +26,12 @@ describe Carrier do
   end
 end
 
+describe CarrierProfile do
+  it "is read from the correct database context" do
+    expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME
+  end
+end
+
 describe Enrollee do
   it "is read from the correct database context" do
     expect(described_class.persistence_context.client_name).to eq STORAGE_CLIENT_NAME

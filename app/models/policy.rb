@@ -3,6 +3,7 @@
 # Represents a Policy, consisting of individuals and a kind of coverage.
 class Policy
   include Mongoid::Document
+  include Mongoid::Timestamps
   store_in client: :edidb
 
   # auto_increment :_id
