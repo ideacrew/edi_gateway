@@ -10,7 +10,7 @@ module InsurancePolicies
       def call(params)
         validated_params = yield validate(params)
         @family = validated_params[:family]
-        @policy = validated_params[:policy]
+        @policies = validated_params[:policies]
         @irs_group = validated_params[:irs_group]
         @primary_person = validated_params[:primary_person]
         payload = yield construct_insurance_agreement_and_nested_data
@@ -22,7 +22,7 @@ module InsurancePolicies
       private
 
       def validate(params)
-        return Failure("Policy not present") if params[:policy].blank?
+        return Failure("Policies not present") if params[:policies].blank?
         return Failure("Family not present") if params[:family].blank?
         return Failure("Irs group not present") if params[:irs_group].blank?
         return Failure("primary_person not present") if params[:primary_person].blank?
@@ -31,11 +31,11 @@ module InsurancePolicies
       end
 
       def construct_insurance_agreement_and_nested_data
+        start_on = Date.new(@policies.first.plan.year, 1, 1)
         payload = {
-          plan_year: @policy.plan.year,
-          start_on: @policy.policy_start,
-          policy_id: @policy.eg_id,
-          marketplace_segment_id: "#{@primary_person.hbx_id}-#{@policy.id}-#{@policy.policy_start.strftime('%Y%m%d')}",
+          plan_year: @policies.first.plan.year,
+          start_on: start_on,
+          marketplace_segment_id: "#{@primary_person.hbx_id}-#{@policies.first.eg_id}-#{start_on.strftime('%Y%m%d')}",
           contract_holder: construct_member_payload(@primary_person, "self"),
           insurance_provider: construct_insurance_provider_payload,
           tax_households: construct_tax_households_payload
@@ -65,11 +65,13 @@ module InsurancePolicies
       end
 
       def construct_insurance_provider_payload
+        carrier = @policies.first.carrier
+        plan = @policies.first.plan
         {
-          title: @policy.carrier.name,
-          hios_id: @policy.plan.hios_plan_id.split("ME")[0],
-          fein: @policy.carrier.fein,
-          insurance_products: construct_insurance_product
+          title: carrier.name,
+          hios_id: plan.hios_plan_id.split("ME")[0],
+          fein: carrier.fein,
+          insurance_products: construct_insurance_products
         }
       end
 
@@ -179,8 +181,12 @@ module InsurancePolicies
         end
       end
 
-      def construct_insurance_product
-        [{ name: @policy.plan.name }]
+      def construct_insurance_products
+        @policies.collect do |policy|
+          {
+            name: policy.plan.name
+          }
+        end
       end
     end
   end

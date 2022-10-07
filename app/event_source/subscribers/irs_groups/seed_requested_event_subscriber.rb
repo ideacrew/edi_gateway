@@ -2,18 +2,18 @@
 
 module Subscribers
   # Receive family payload from enroll
-  module InsurancePolicies
+  module IrsGroups
     # Parse CV3 Family payload
-    class FamilyPayloadSubscriber
+    class SeedRequestedEventSubscriber
       send(:include, Dry::Monads[:result, :do])
-      include ::EventSource::Subscriber[amqp: 'enroll.individual.enrollments']
+      include ::EventSource::Subscriber[amqp: 'irs_groups.seed_requested']
 
       # rubocop:disable Lint/RescueException
       # rubocop:disable Style/LineEndConcatenation
       # rubocop:disable Style/StringConcatenation
-      subscribe(:on_submitted) do |delivery_info, _properties, payload|
+      subscribe(:on_seed_requested) do |delivery_info, _properties, payload|
 
-        result = ::Operations::InsurancePolicies::AcaIndividuals::HandleFamilyUpdate.new.call(payload)
+        result = ::Operations::IrsGroups::SeedIrsGroup.new.call(payload)
         if result.success?
           logger.info(
             'OK: :family_update successful and acked'
