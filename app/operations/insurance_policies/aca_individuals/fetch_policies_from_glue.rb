@@ -2,6 +2,7 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # Fetch subscriber from CV3 Family payload and fetch policies from glue using the subscriber
     class FetchPoliciesFromGlue
       include Dry::Monads[:result, :do, :try]
       include EventSource::Command
@@ -38,13 +39,12 @@ module InsurancePolicies
 
       # fetching person and policies from Glue by using glue db as a readonly database
       def fetch_active_health_policies_from_glue
-        binding.irb
         glue_person = Person.find_for_member_id(@primary_person.hbx_id)
 
         return Failure("Unable to find person in glue") if glue_person.blank?
 
         active_policies = glue_person.policies.select do |policy|
-          policy.coverage_type == "health" && %w(submitted terminated).include?(policy.aasm_state)
+          policy.coverage_type == "health" && %w[submitted terminated].include?(policy.aasm_state)
         end
 
         return Failure("No active policies") if active_policies.blank?

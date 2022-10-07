@@ -2,6 +2,7 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # persist insurance agreements and nested models
     class PersistInsuranceAgreementAndNestedData
       include Dry::Monads[:result, :do, :try]
       include EventSource::Command
@@ -22,19 +23,19 @@ module InsurancePolicies
 
       def validate(params)
         return Failure("Policy not present") if params[:policy].blank?
-        return Failure ("Family not present") if params[:family].blank?
-        return Failure ("Irs group not present") if params[:irs_group].blank?
-        return Failure ("primary_person not present") if params[:primary_person].blank?
+        return Failure("Family not present") if params[:family].blank?
+        return Failure("Irs group not present") if params[:irs_group].blank?
+        return Failure("primary_person not present") if params[:primary_person].blank?
 
         Success(params)
       end
 
       def construct_insurance_agreement_and_nested_data
-        payload =  {
+        payload = {
           plan_year: @policy.plan.year,
           start_on: @policy.policy_start,
           policy_id: @policy.eg_id,
-          marketplace_segment_id: "#{@primary_person.hbx_id}-#{@policy.id}-#{@policy.policy_start.strftime("%Y%m%d")}",
+          marketplace_segment_id: "#{@primary_person.hbx_id}-#{@policy.id}-#{@policy.policy_start.strftime('%Y%m%d')}",
           contract_holder: construct_member_payload(@primary_person, "self"),
           insurance_provider: construct_insurance_provider_payload,
           tax_households: construct_tax_households_payload
@@ -45,7 +46,6 @@ module InsurancePolicies
 
       def persist_insurance_agreement_and_nested_data(payload)
         @irs_group.insurance_agreements << InsurancePolicies::AcaIndividuals::InsuranceAgreement.new(payload)
-
 
         Success(@irs_group)
       end
@@ -126,7 +126,10 @@ module InsurancePolicies
       end
 
       def fetch_member_hbx_id(member)
-        family_member = @family.family_members.detect{|family_member| family_member.hbx_id == member.family_member_reference.family_member_hbx_id}
+        family_member = @family.family_members.detect do |dependent|
+          dependent.hbx_id == member.family_member_reference.family_member_hbx_id
+        end
+
         person = family_member.person
         person.hbx_id
       end
@@ -148,7 +151,7 @@ module InsurancePolicies
             city: address.city,
             county: address.county,
             state: address.state,
-            zip: address.zip,
+            zip: address.zip
           }
         end
       end

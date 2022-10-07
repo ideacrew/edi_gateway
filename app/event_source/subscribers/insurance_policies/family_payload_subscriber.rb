@@ -3,6 +3,7 @@
 module Subscribers
   # Receive family payload from enroll
   module InsurancePolicies
+    # Parse CV3 Family payload
     class FamilyUpdateSubscriber
       include ::EventSource::Subscriber[amqp: 'enroll.individual.enrollments']
 

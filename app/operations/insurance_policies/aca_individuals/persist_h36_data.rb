@@ -2,6 +2,7 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # Create and Persist IRS group and its data
     class PersistH36Data
       include Dry::Monads[:result, :do, :try]
       include EventSource::Command
@@ -27,17 +28,16 @@ module InsurancePolicies
 
       def create_irs_group
         year = Date.today.year
-        irs_group_id = construct_irs_group_id( year.to_s.last(2), @primary_person.hbx_id)
+        irs_group_id = construct_irs_group_id(year.to_s.last(2), @primary_person.hbx_id)
         irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: Date.today)
         irs_group.save!
         Success(irs_group)
       end
 
       def create_insurance_agreement_and_nested_data(policies)
-        binding.irb
         policies.each do |policy|
-          PersistInsuranceAgreementAndNestedData.new.call({policy: policy, family: @family_entity,
-                                                           irs_group: @irs_group, primary_person: @primary_person})
+          PersistInsuranceAgreementAndNestedData.new.call({ policy: policy, family: @family_entity,
+                                                            irs_group: @irs_group, primary_person: @primary_person })
         end
       end
 
@@ -61,8 +61,8 @@ module InsurancePolicies
         year + hbx_id_number
       end
 
-      def prepend_zeros(number, n)
-        n .times { number.prepend('0') }
+      def prepend_zeros(number, length)
+        length.times { number.prepend('0') }
         number
       end
     end

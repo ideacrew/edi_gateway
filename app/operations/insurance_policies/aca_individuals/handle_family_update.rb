@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-
 module InsurancePolicies
   module AcaIndividuals
+    # Parse CV3 family payload and store necessary information
     class HandleFamilyUpdate
       include Dry::Monads[:result, :do, :try]
       include EventSource::Command
@@ -14,7 +14,7 @@ module InsurancePolicies
         validated_family_hash = yield validate_family_json_hash(json_hash)
         family = yield build_family(validated_family_hash)
         policies = yield FetchPoliciesFromGlue.new.call(family)
-        PersistH36Data.new.call({family: family, policies: policies})
+        PersistH36Data.new.call({ family: family, policies: policies })
       end
 
       private

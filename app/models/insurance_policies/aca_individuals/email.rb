@@ -6,7 +6,6 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-
       field :kind, type: String
       field :address, type: String
 
