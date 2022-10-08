@@ -111,6 +111,15 @@ development:
         
         # Whether to truncate long log lines. (default: true)
         # truncate_logs: true
+    edidb:
+      database: edidb_development
+      hosts:
+        - edidb:27017
+      options:
+        read:
+          mode: :primary
+        max_pool_size: 1
+
 
   # Configure Mongoid specific options. (optional)
   options:
@@ -173,6 +182,14 @@ test:
       database: edi_gateway_test
       hosts:
         - db:27017
+      options:
+        read:
+          mode: :primary
+        max_pool_size: 1
+    edidb:
+      database: edidb_test
+      hosts:
+        - edidb:27017
       options:
         read:
           mode: :primary
