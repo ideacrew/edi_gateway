@@ -36,4 +36,12 @@ class Member
   field :lui, as: :language_code, type: String
 
   embedded_in :person
+
+  def person
+    Queries::PersonByHbxIdQuery.new(m_id).execute
+  end
+
+  def member
+    Queries::MemberByHbxIdQuery.new(m_id).execute
+  end
 end

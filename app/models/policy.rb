@@ -63,4 +63,45 @@ class Policy
   def subscriber
     enrollees.detect { |m| m.relationship_status_code == "self" }
   end
+
+  def coverage_type
+    self.plan.coverage_type
+  end
+
+  def policy_start
+    subscriber.coverage_start
+  end
+
+  def policy_end
+    subscriber.coverage_end
+  end
+
+  def reported_tot_res_amt_on(date)
+    return self.tot_res_amt unless multi_aptc?
+    return 0.0 unless self.aptc_record_on(date)
+
+    self.aptc_record_on(date).tot_res_amt
+  end
+
+  def reported_pre_amt_tot_on(date)
+    return self.pre_amt_tot unless multi_aptc?
+    return 0.0 unless self.aptc_record_on(date)
+
+    self.aptc_record_on(date).pre_amt_tot
+  end
+
+  def reported_aptc_on(date)
+    return self.applied_aptc unless multi_aptc?
+    return 0.0 unless self.aptc_record_on(date)
+
+    self.aptc_record_on(date).aptc
+  end
+
+  def multi_aptc?
+    self.aptc_credits.any?
+  end
+
+  def aptc_record_on(date)
+    self.aptc_credits.detect { |aptc_rec| aptc_rec.start_on <= date && aptc_rec.end_on >= date }
+  end
 end

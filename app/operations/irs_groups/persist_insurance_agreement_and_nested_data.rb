@@ -2,6 +2,7 @@
 
 module IrsGroups
   # persist insurance agreements and nested models
+  # rubocop:disable Metrics/ClassLength
   class PersistInsuranceAgreementAndNestedData
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
@@ -77,33 +78,45 @@ module IrsGroups
 
     def construct_tax_households_payload
       household = @family.households.first
-      if household.tax_households.present?
-        household.tax_households.collect do |tax_household|
-          {
-            allocated_aptc: Money.new(tax_household.allocated_aptc&.cents, tax_household.allocated_aptc&.currency_iso),
-            max_aptc: Money.new(tax_household.max_aptc&.cents, tax_household.max_aptc&.currency_iso),
-            start_date: tax_household.start_date,
-            end_date: tax_household.end_date,
-            tax_household_members: construct_tax_household_members(tax_household)
-          }
-        end
-      elsif household.coverage_households.present?
-        household.coverage_households.collect do |coverage_household|
-          {
-            start_date: coverage_household.start_date,
-            end_date: coverage_household.end_date,
-            tax_household_members: construct_coverage_household_members(coverage_household)
-          }
-        end
+      return collect_tax_households(household.tax_households) if household.tax_households.present?
+
+      collect_coverage_households(household.coverage_households)
+    end
+
+    def collect_tax_households(tax_households)
+      tax_households.collect do |tax_household|
+        {
+          allocated_aptc: Money.new(tax_household.allocated_aptc&.cents, tax_household.allocated_aptc&.currency_iso),
+          max_aptc: Money.new(tax_household.max_aptc&.cents, tax_household.max_aptc&.currency_iso),
+          start_date: tax_household.start_date,
+          end_date: tax_household.end_date,
+          tax_household_members: construct_tax_household_members(tax_household)
+        }
       end
     end
 
+    def collect_coverage_households(coverage_households)
+      coverage_households.collect do |coverage_household|
+        {
+          start_date: coverage_household.start_date,
+          end_date: coverage_household.end_date,
+          tax_household_members: construct_coverage_household_members(coverage_household)
+        }
+      end
+    end
+
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize
     def construct_tax_household_members(tax_household)
       tax_household.tax_household_members.collect do |member|
-        magi_household_income = Money.new(member.product_eligibility_determination.magi_medicaid_monthly_household_income&.cents,
-                                          member.product_eligibility_determination.magi_medicaid_monthly_household_income&.currency_iso)
-        magi_medicaid_income_limit = Money.new(member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.cents,
-                                               member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.currency_iso)
+        magi_household_income = Money.new(
+          member.product_eligibility_determination.magi_medicaid_monthly_household_income&.cents,
+          member.product_eligibility_determination.magi_medicaid_monthly_household_income&.currency_iso
+        )
+        magi_medicaid_income_limit = Money.new(
+          member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.cents,
+          member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.currency_iso
+        )
         {
           is_ia_eligible: member.product_eligibility_determination.is_ia_eligible,
           is_medicaid_chip_eligible: member.product_eligibility_determination.is_medicaid_chip_eligible,
@@ -122,6 +135,8 @@ module IrsGroups
         }
       end
     end
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize
 
     def construct_coverage_household_members(coverage_household)
       coverage_household.coverage_household_members.collect do |member|
@@ -194,3 +209,4 @@ module IrsGroups
     end
   end
 end
+# rubocop:enable Metrics/ClassLength

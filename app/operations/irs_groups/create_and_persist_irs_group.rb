@@ -60,7 +60,7 @@ module IrsGroups
     # Total length should be 16 digit
     def construct_irs_group_id(year, hbx_id)
       total_length_excluding_year = 14
-      hbx_id_number = "%0#{total_length_excluding_year}d" % hbx_id
+      hbx_id_number = format("%0#{total_length_excluding_year}d", hbx_id)
       year + hbx_id_number
     end
 

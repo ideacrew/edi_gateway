@@ -37,7 +37,6 @@ module Subscribers
       # rubocop:enable Style/LineEndConcatenation
       # rubocop:enable Style/StringConcatenation
 
-
       private
 
       def subscriber_logger_for(event)

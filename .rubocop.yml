@@ -23,6 +23,12 @@ Metrics/MethodLength:
   Max:
     15
 
+Naming/PredicateName:
+  Enabled: false
+
+Naming/VariableNumber:
+  Enabled: false
+
 Style/BlockComments:
   Enabled: false
 

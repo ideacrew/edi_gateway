@@ -47,4 +47,12 @@ class Enrollee
   def coverage_ended?
     !coverage_end.blank?
   end
+
+  def person
+    Queries::PersonByHbxIdQuery.new(m_id).execute
+  end
+
+  def member
+    Queries::MemberByHbxIdQuery.new(m_id).execute
+  end
 end
