@@ -45,8 +45,9 @@ module IrsGroups
 
     def persist_insurance_agreement_and_nested_data(payload)
       @irs_group.insurance_agreements << InsurancePolicies::AcaIndividuals::InsuranceAgreement.new(payload)
-
       Success(@irs_group)
+    rescue StandardError => e
+      Failure("Unable to create Insurance agreements due to #{e}")
     end
 
     def construct_member_payload(person, relation_code)
@@ -79,8 +80,8 @@ module IrsGroups
       if household.tax_households.present?
         household.tax_households.collect do |tax_household|
           {
-            allocated_aptc: tax_household.allocated_aptc,
-            max_aptc: tax_household.max_aptc,
+            allocated_aptc: Money.new(tax_household.allocated_aptc&.cents, tax_household.allocated_aptc&.currency_iso),
+            max_aptc: Money.new(tax_household.max_aptc&.cents, tax_household.max_aptc&.currency_iso),
             start_date: tax_household.start_date,
             end_date: tax_household.end_date,
             tax_household_members: construct_tax_household_members(tax_household)
@@ -99,15 +100,19 @@ module IrsGroups
 
     def construct_tax_household_members(tax_household)
       tax_household.tax_household_members.collect do |member|
+        magi_household_income = Money.new(member.product_eligibility_determination.magi_medicaid_monthly_household_income&.cents,
+                                          member.product_eligibility_determination.magi_medicaid_monthly_household_income&.currency_iso)
+        magi_medicaid_income_limit = Money.new(member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.cents,
+                                               member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.currency_iso)
         {
           is_ia_eligible: member.product_eligibility_determination.is_ia_eligible,
           is_medicaid_chip_eligible: member.product_eligibility_determination.is_medicaid_chip_eligible,
           is_non_magi_medicaid_eligible: member.product_eligibility_determination.is_non_magi_medicaid_eligible,
           is_totally_ineligible: member.product_eligibility_determination.is_totally_ineligible,
           is_without_assistance: member.product_eligibility_determination.is_without_assistance,
-          magi_medicaid_monthly_household_income: member.product_eligibility_determination.magi_medicaid_monthly_household_income,
+          magi_medicaid_monthly_household_income: magi_household_income,
           medicaid_household_size: member.product_eligibility_determination.medicaid_household_size,
-          magi_medicaid_monthly_income_limit: member.product_eligibility_determination.magi_medicaid_monthly_income_limit,
+          magi_medicaid_monthly_income_limit: magi_medicaid_income_limit,
           magi_as_percentage_of_fpl: member.product_eligibility_determination.magi_as_percentage_of_fpl,
           magi_medicaid_category: member.product_eligibility_determination.magi_medicaid_category,
           csr: member.product_eligibility_determination.csr,

@@ -9,8 +9,8 @@ module IrsGroups
     require 'dry/monads/do'
 
     def call(params)
-      json_hash = yield parse_json(params)
-      validated_family_hash = yield validate_family_json_hash(json_hash)
+      input_hash = yield parse_json(params)
+      validated_family_hash = yield validate_family_json_hash(input_hash)
       family = yield build_family_entity(validated_family_hash)
       policies = yield FetchPoliciesFromGlue.new.call(family)
       result = yield CreateAndPersistIrsGroup.new.call({ family: family, policies: policies })
@@ -28,9 +28,9 @@ module IrsGroups
       end
     end
 
-    def validate_family_json_hash(json_hash)
-      validation_result = AcaEntities::Contracts::Families::FamilyContract.new.call(json_hash)
-      validation_result.success? ? Success(validation_result) : Failure(validation_result)
+    def validate_family_json_hash(input_hash)
+      validation_result = AcaEntities::Contracts::Families::FamilyContract.new.call(input_hash)
+      validation_result.success? ? Success(validation_result.values) : Failure(validation_result.errors)
     end
 
     def build_family_entity(family_hash)

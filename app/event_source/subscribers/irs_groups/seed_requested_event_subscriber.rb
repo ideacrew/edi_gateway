@@ -12,23 +12,23 @@ module Subscribers
       # rubocop:disable Style/LineEndConcatenation
       # rubocop:disable Style/StringConcatenation
       subscribe(:on_seed_requested) do |delivery_info, _properties, payload|
-
+        subscriber_logger = subscriber_logger_for(:on_seed_requested)
         result = ::Operations::IrsGroups::SeedIrsGroup.new.call(payload)
         if result.success?
-          logger.info(
-            'OK: :family_update successful and acked'
+          subscriber_logger.info(
+            'OK: :Created IRS Group successfully and acked'
           )
           ack(delivery_info.delivery_tag)
         else
-          logger.error(
-            "Error: :family_update; nacked due to:#{result.inspect}"
+          subscriber_logger.info(
+            "Error: Unable to create IRS group; nacked due to:#{result.inspect}"
           )
           nack(delivery_info.delivery_tag)
         end
 
       rescue Exception => e
-        logger.error(
-          "Exception: :family_update\n Exception: #{e.inspect}" +
+        subscriber_logger.info(
+          "Exception: Unable to create IRS group\n Exception: #{e.inspect}" +
             "\nBacktrace:\n" + e.backtrace.join("\n")
         )
         nack(delivery_info.delivery_tag)
@@ -36,6 +36,15 @@ module Subscribers
       # rubocop:enable Lint/RescueException
       # rubocop:enable Style/LineEndConcatenation
       # rubocop:enable Style/StringConcatenation
+
+
+      private
+
+      def subscriber_logger_for(event)
+        Logger.new(
+          "#{Rails.root}/log/#{event}_#{TimeKeeper.date_of_record.strftime('%Y_%m_%d')}.log"
+        )
+      end
     end
   end
 end
