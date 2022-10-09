@@ -8,7 +8,7 @@ module IrsGroups
 
     # @param params [Hash] The params to parse and construct h36 payload
     def call(params)
-      family = yield validate_family(params)
+      family = yield validate_family(params[:family])
       @primary_person = yield fetch_primary_person(family)
       policies = yield fetch_active_health_policies_from_glue
 
@@ -20,9 +20,7 @@ module IrsGroups
       if family.is_a?(::AcaEntities::Families::Family)
         Success(family)
       else
-        Failure(
-          "Invalid Family, given value is not a ::AcaEntities::Families::Family, input_value:#{family}"
-        )
+        Failure("Invalid Family, given value is not a ::AcaEntities::Families::Family class")
       end
     end
 

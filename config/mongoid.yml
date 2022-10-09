@@ -111,6 +111,15 @@ development:
         
         # Whether to truncate long log lines. (default: true)
         # truncate_logs: true
+    edidb:
+      database: gluedb_development
+      hosts:
+        - localhost:27017
+      options:
+        read:
+          mode: :primary
+        max_pool_size: 1
+
 
   # Configure Mongoid specific options. (optional)
   options:
@@ -171,6 +180,14 @@ test:
   clients:
     default:
       database: edi_gateway_test
+      hosts:
+        - localhost:27017
+      options:
+        read:
+          mode: :primary
+        max_pool_size: 1
+    edidb:
+      database: edidb_test
       hosts:
         - localhost:27017
       options:

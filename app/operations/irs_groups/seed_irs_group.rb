@@ -9,24 +9,14 @@ module IrsGroups
     require 'dry/monads/do'
 
     def call(params)
-      input_hash = yield parse_json(params)
-      validated_family_hash = yield validate_family_json_hash(input_hash)
+      validated_family_hash = yield validate_family_json_hash(params[:payload])
       family = yield build_family_entity(validated_family_hash)
-      policies = yield FetchPoliciesFromGlue.new.call(family)
+      policies = yield FetchPoliciesFromGlue.new.call({ family: family })
       result = yield CreateAndPersistIrsGroup.new.call({ family: family, policies: policies })
       Success(result)
     end
 
     private
-
-    def parse_json(json_string)
-      parsing_result = Try do
-        JSON.parse(json_string, :symbolize_names => true)
-      end
-      parsing_result.or do
-        Failure(:invalid_json)
-      end
-    end
 
     def validate_family_json_hash(input_hash)
       validation_result = AcaEntities::Contracts::Families::FamilyContract.new.call(input_hash)

@@ -43,6 +43,21 @@ RSpec.configure do |config|
   # instead of true.
   config.use_transactional_fixtures = true
 
+  config.before(:suite) do
+    DatabaseCleaner[:mongoid, db: :default].strategy = :deletion
+    DatabaseCleaner[:mongoid, db: :edidb].strategy = :deletion
+  end
+
+  config.after(:example, :dbclean => :after_each) do
+    DatabaseCleaner.clean
+  end
+
+  config.around(:example, :dbclean => :around_each) do |example|
+    DatabaseCleaner.clean
+    example.run
+    DatabaseCleaner.clean
+  end
+
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
 

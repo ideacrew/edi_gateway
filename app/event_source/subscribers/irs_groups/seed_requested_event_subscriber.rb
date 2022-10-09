@@ -13,7 +13,8 @@ module Subscribers
       # rubocop:disable Style/StringConcatenation
       subscribe(:on_seed_requested) do |delivery_info, _properties, payload|
         subscriber_logger = subscriber_logger_for(:on_seed_requested)
-        result = ::Operations::IrsGroups::SeedIrsGroup.new.call(payload)
+        parsed_payload = JSON.parse(payload, symbolize_names: true)
+        result = ::Operations::IrsGroups::SeedIrsGroup.new.call({ payload: parsed_payload })
         if result.success?
           subscriber_logger.info(
             'OK: :Created IRS Group successfully and acked'

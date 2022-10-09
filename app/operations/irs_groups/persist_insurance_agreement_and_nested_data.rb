@@ -22,10 +22,10 @@ module IrsGroups
     private
 
     def validate(params)
-      return Failure("Policies not present") if params[:policies].blank?
-      return Failure("Family not present") if params[:family].blank?
-      return Failure("Irs group not present") if params[:irs_group].blank?
-      return Failure("primary_person not present") if params[:primary_person].blank?
+      return Failure("Policies should not be blank") if params[:policies].blank?
+      return Failure("Family should not be blank") if params[:family].blank?
+      return Failure("Irs group should not be blank") if params[:irs_group].blank?
+      return Failure("Primary person should not be blank") if params[:primary_person].blank?
 
       Success(params)
     end
@@ -118,6 +118,7 @@ module IrsGroups
           member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.currency_iso
         )
         {
+          is_subscriber: member.is_subscriber,
           is_ia_eligible: member.product_eligibility_determination.is_ia_eligible,
           is_medicaid_chip_eligible: member.product_eligibility_determination.is_medicaid_chip_eligible,
           is_non_magi_medicaid_eligible: member.product_eligibility_determination.is_non_magi_medicaid_eligible,
@@ -141,6 +142,7 @@ module IrsGroups
     def construct_coverage_household_members(coverage_household)
       coverage_household.coverage_household_members.collect do |member|
         {
+          is_subscriber: member.is_subscriber,
           person_hbx_id: fetch_member_hbx_id(member)
         }
       end

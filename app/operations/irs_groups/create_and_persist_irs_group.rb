@@ -21,7 +21,7 @@ module IrsGroups
     private
 
     def validate(params)
-      return Failure("Please pas in family entity") if params[:family].blank?
+      return Failure("Please pass in family entity") if params[:family].blank?
       return Failure("Policies are blank") if params[:policies].blank?
 
       Success(params)
