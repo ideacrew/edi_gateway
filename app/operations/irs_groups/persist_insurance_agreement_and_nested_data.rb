@@ -96,10 +96,11 @@ module IrsGroups
     end
 
     def collect_coverage_households(coverage_households)
-      coverage_households.collect do |coverage_household|
+      coverage_households.select { |ch| ch.is_immediate_family == true }.collect do |coverage_household|
         {
           start_date: coverage_household.start_date,
           end_date: coverage_household.end_date,
+          is_immediate_family: coverage_household.is_immediate_family,
           tax_household_members: construct_coverage_household_members(coverage_household)
         }
       end

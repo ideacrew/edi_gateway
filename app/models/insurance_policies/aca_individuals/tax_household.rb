@@ -12,6 +12,7 @@ module InsurancePolicies
       field :max_aptc, type: Money
       field :start_date, type: Date
       field :end_date, type: Date
+      field :is_immediate_family, type: Boolean
 
       embeds_many :tax_household_members, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdMember"
     end
