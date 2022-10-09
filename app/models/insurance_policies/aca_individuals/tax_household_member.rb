@@ -25,6 +25,7 @@ module InsurancePolicies
       field :person_hbx_id, type: String
       field :tax_filer_status, type: String
       field :slcsp_benchmark_premium, type: Money
+      field :relation_with_primary, type: String
 
       embedded_in :tax_household, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold"
     end

@@ -132,7 +132,8 @@ module IrsGroups
           csr: member.product_eligibility_determination.csr,
           slcsp_benchmark_premium: member.slcsp_benchmark_premium,
           tax_filer_status: member.tax_filer_status,
-          person_hbx_id: fetch_member_hbx_id(member)
+          person_hbx_id: member.family_member_reference.person_hbx_id,
+          relation_with_primary: member.family_member_reference.relation_with_primary
         }
       end
     end
@@ -143,18 +144,10 @@ module IrsGroups
       coverage_household.coverage_household_members.collect do |member|
         {
           is_subscriber: member.is_subscriber,
-          person_hbx_id: fetch_member_hbx_id(member)
+          person_hbx_id: member.family_member_reference.person_hbx_id,
+          relation_with_primary: member.family_member_reference.relation_with_primary
         }
       end
-    end
-
-    def fetch_member_hbx_id(member)
-      family_member = @family.family_members.detect do |dependent|
-        dependent.hbx_id == member.family_member_reference.family_member_hbx_id
-      end
-
-      person = family_member.person
-      person.hbx_id
     end
 
     def construct_person_name(person)

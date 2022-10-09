@@ -10,7 +10,8 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
       middle_name: nil,
       last_name: 'last name',
       person_hbx_id: '1000595',
-      is_primary_family_member: true
+      is_primary_family_member: true,
+      relation_with_primary: "self"
     }
   end
 
