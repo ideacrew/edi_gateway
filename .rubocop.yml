@@ -15,9 +15,7 @@ Layout/SpaceInsidePercentLiteralDelimiters:
     - Gemfile
 
 Metrics/BlockLength:
-  Exclude:
-    - spec/**/*_spec.rb
-    - spec/shared_examples/**/*.rb
+  Enabled: false
 
 Metrics/MethodLength:
   Max:

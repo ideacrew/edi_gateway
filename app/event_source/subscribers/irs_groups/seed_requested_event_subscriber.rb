@@ -11,7 +11,7 @@ module Subscribers
       # rubocop:disable Lint/RescueException
       # rubocop:disable Style/LineEndConcatenation
       # rubocop:disable Style/StringConcatenation
-      subscribe(:on_seed_requested) do |delivery_info, _properties, payload|
+      subscribe(:on_built_requested_seed) do |delivery_info, _properties, payload|
         subscriber_logger = subscriber_logger_for(:on_seed_requested)
         parsed_payload = JSON.parse(payload, symbolize_names: true)
         result = ::Operations::IrsGroups::SeedIrsGroup.new.call({ payload: parsed_payload })
