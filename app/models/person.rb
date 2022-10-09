@@ -39,4 +39,18 @@ class Person
 
     members.detect { |m| m.hbx_member_id == self.authority_member_id }
   end
+
+  def self.find_for_member_id(m_id)
+    Queries::PersonByHbxIdQuery.new(m_id).execute
+  end
+
+  def policies
+    query_proxy.policies
+  end
+
+  private
+
+  def query_proxy
+    @query_proxy ||= Queries::PersonAssociations.new(self)
+  end
 end

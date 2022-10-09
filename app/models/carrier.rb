@@ -26,4 +26,8 @@ class Carrier
     search_names = names.map(&:downcase).map { |n| Regexp.compile(n, true) }
     where("name" => { "$in" => search_names }).map(&:id)
   end
+
+  def fein
+    carrier_profiles.first.fein
+  end
 end

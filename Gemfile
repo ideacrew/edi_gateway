@@ -8,7 +8,7 @@ ruby "2.7.6"
 #######################################################
 # Local components/engines
 #######################################################
-gem 'aca_entities', git:  'https://github.com/ideacrew/aca_entities.git', branch: 'create_user_fee_model_181271601'
+gem 'aca_entities', git:  'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
 # gem 'aca_entities',     git: 'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
 gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
 gem 'event_source',       git: 'https://github.com/ideacrew/event_source.git', branch: 'trunk'
@@ -41,6 +41,7 @@ gem 'keepr', '~> 0.7.0'
 
 # MongoDB Database
 gem 'mongoid',             '~> 7.4'
+gem 'money-rails', '~> 1.15'
 
 gem 'nokogiri-happymapper'
 
