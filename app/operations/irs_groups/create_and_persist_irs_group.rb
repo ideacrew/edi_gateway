@@ -12,8 +12,9 @@ module IrsGroups
       validated_params = yield validate(params)
       @family_entity = validated_params[:family]
       @primary_person = yield fetch_primary_person(@family_entity)
+      @policies = validated_params[:policies]
       @irs_group = yield create_irs_group
-      result = yield create_insurance_agreement_and_nested_data(validated_params[:policies])
+      result = yield create_insurance_agreement_and_nested_data
 
       Success(result)
     end
@@ -31,13 +32,15 @@ module IrsGroups
       year = Date.today.year
       hbx_id = @primary_person.hbx_id
       irs_group_id = construct_irs_group_id(year.to_s.last(2), hbx_id)
-      irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: Date.today)
+      policy_start_date = @policies.map(&:subscriber).min_by(&:coverage_start)&.coverage_start
+      start_on = policy_start_date || Date.today.beginning_of_year
+      irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: start_on)
       irs_group.save!
       Success(irs_group)
     end
 
-    def create_insurance_agreement_and_nested_data(policies)
-      group_by_carriers = policies.group_by(&:carrier_id)
+    def create_insurance_agreement_and_nested_data
+      group_by_carriers = @policies.group_by(&:carrier_id)
       group_by_carriers.each do |_id, enrollments|
         PersistInsuranceAgreementAndNestedData.new.call({ policies: enrollments, family: @family_entity,
                                                           irs_group: @irs_group, primary_person: @primary_person })
