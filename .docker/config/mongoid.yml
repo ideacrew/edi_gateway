@@ -8,17 +8,17 @@ production:
       hosts:
         - <%= ENV['EDI_GATEWAY_DB_HOST'] %>:<%= ENV['EDI_GATEWAY_DB_PORT'] %>
       options:
-      <% if ENV['EDI_GATEWAY_DB_AUTH'] %>
-      replica_set: <%= ENV['EDI_GATEWAY_DB_REPLICA_SET_NAME'] %>
+        <% if ENV['EDI_GATEWAY_DB_AUTH'] %>
+        replica_set: <%= ENV['EDI_GATEWAY_DB_REPLICA_SET_NAME'] %>
 
-      user: <%= ENV['EDI_GATEWAY_DB_USERNAME'] %>
-      password: <%= ENV['EDI_GATEWAY_DB_PASSWORD'] %>
-      auth_source: admin
-
-      write:
-        w: 1
-        j: true
-      <% end %>
+        user: <%= ENV['EDI_GATEWAY_DB_USERNAME'] %>
+        password: <%= ENV['EDI_GATEWAY_DB_PASSWORD'] %>
+        auth_source: admin
+       
+        <% end %>
+        write:
+          w: 1
+          j: true
 
     edidb:
       database: <%= ENV['EDIDB_DB_NAME'] %>
