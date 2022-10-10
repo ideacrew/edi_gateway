@@ -46,6 +46,7 @@ module IrsGroups
 
     def persist_insurance_agreement_and_nested_data(payload)
       @irs_group.insurance_agreements << InsurancePolicies::AcaIndividuals::InsuranceAgreement.new(payload)
+      @irs_group.save!
       Success(@irs_group)
     rescue StandardError => e
       Failure("Unable to create Insurance agreements due to #{e}")
@@ -118,6 +119,8 @@ module IrsGroups
           member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.cents,
           member.product_eligibility_determination.magi_medicaid_monthly_income_limit&.currency_iso
         )
+        slcsp_benchmark_premium = Money.new(member.slcsp_benchmark_premium&.cents,
+                                            member.slcsp_benchmark_premium&.currency_iso)
         {
           is_subscriber: member.is_subscriber,
           is_ia_eligible: member.product_eligibility_determination.is_ia_eligible,
@@ -131,7 +134,7 @@ module IrsGroups
           magi_as_percentage_of_fpl: member.product_eligibility_determination.magi_as_percentage_of_fpl,
           magi_medicaid_category: member.product_eligibility_determination.magi_medicaid_category,
           csr: member.product_eligibility_determination.csr,
-          slcsp_benchmark_premium: member.slcsp_benchmark_premium,
+          slcsp_benchmark_premium: slcsp_benchmark_premium,
           tax_filer_status: member.tax_filer_status,
           person_hbx_id: member.family_member_reference.person_hbx_id,
           relation_with_primary: member.family_member_reference.relation_with_primary

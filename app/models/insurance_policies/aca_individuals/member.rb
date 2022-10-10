@@ -16,13 +16,13 @@ module InsurancePolicies
       embeds_one :person_name, class_name: '::InsurancePolicies::AcaIndividuals::PersonName', cascade_callbacks: true
       accepts_nested_attributes_for :person_name
 
-      embeds_many :emails, class_name: '::InsurancePolicies::AcaIndividuals::Email'
+      embeds_many :emails, class_name: '::InsurancePolicies::AcaIndividuals::Email', cascade_callbacks: true
       accepts_nested_attributes_for :emails, allow_destroy: true
 
-      embeds_many :addresses, class_name: '::InsurancePolicies::AcaIndividuals::Address'
+      embeds_many :addresses, class_name: '::InsurancePolicies::AcaIndividuals::Address', cascade_callbacks: true
       accepts_nested_attributes_for :addresses, allow_destroy: true
 
-      embeds_many :phones, class_name: '::InsurancePolicies::AcaIndividuals::Phone'
+      embeds_many :phones, class_name: '::InsurancePolicies::AcaIndividuals::Phone', cascade_callbacks: true
       accepts_nested_attributes_for :phones, allow_destroy: true
     end
   end
