@@ -119,6 +119,7 @@ COPY --chown=$USERNAME:$USERNAME . $HOME
 COPY --chown=$USERNAME:$USERNAME ./.docker/config/master.key $HOME/config
 COPY --chown=$USERNAME:$USERNAME ./.docker/config/credentials.yml.enc $HOME/config
 COPY --chown=$USERNAME:$USERNAME ./.docker/config/mongoid.yml $HOME/config
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/database.yml $HOME/config
 
 RUN (rm -rf /tmp/* || true) \
   # Cleanup
@@ -158,6 +159,7 @@ COPY --chown=$USERNAME:$USERNAME --from=prod_gems_and_assets $BUNDLE_PATH $BUNDL
 COPY --chown=$USERNAME:$USERNAME . $HOME
 
 # Copy environment-based config files
+COPY --chown=$USERNAME:$USERNAME ./.docker/config/database.yml $HOME/config
 COPY --chown=$USERNAME:$USERNAME ./.docker/config/mongoid.yml $HOME/config
 COPY --chown=$USERNAME:$USERNAME ./.docker/config/credentials.yml.enc $HOME/config
 COPY --chown=$USERNAME:$USERNAME ./.docker/config/master.key $HOME/config
