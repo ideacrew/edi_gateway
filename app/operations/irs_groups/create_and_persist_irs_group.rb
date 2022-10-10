@@ -34,7 +34,8 @@ module IrsGroups
       irs_group_id = construct_irs_group_id(year.to_s.last(2), hbx_id)
       policy_start_date = @policies.map(&:subscriber).min_by(&:coverage_start)&.coverage_start
       start_on = policy_start_date || Date.today.beginning_of_year
-      irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: start_on)
+      irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: start_on,
+                                                                  family_assigned_hbx_id: @family_entity.hbx_id)
       irs_group.save!
       Success(irs_group)
     end
