@@ -14,9 +14,10 @@ module InsurancePolicies
       field :plan_year, type: String
 
       embedded_in :irs_group, class_name: "::InsurancePolicies::AcaIndividuals::IrsGroup"
-      embeds_one :contract_holder, class_name: "::InsurancePolicies::AcaIndividuals::Member"
-      embeds_one :insurance_provider, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceProvider"
-      embeds_many :tax_households, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold"
+      embeds_one :contract_holder, class_name: "::InsurancePolicies::AcaIndividuals::Member", cascade_callbacks: true
+      embeds_one :insurance_provider, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceProvider",
+                                      cascade_callbacks: true
+      embeds_many :tax_households, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold", cascade_callbacks: true
 
       accepts_nested_attributes_for :insurance_provider
       accepts_nested_attributes_for :contract_holder

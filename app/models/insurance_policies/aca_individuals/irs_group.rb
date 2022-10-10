@@ -11,7 +11,8 @@ module InsurancePolicies
       field :end_on, type: Date
       field :family_assigned_hbx_id, type: String
 
-      embeds_many :insurance_agreements, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceAgreement"
+      embeds_many :insurance_agreements, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceAgreement",
+                                         cascade_callbacks: true
 
       accepts_nested_attributes_for :insurance_agreements
     end

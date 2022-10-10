@@ -14,7 +14,8 @@ module InsurancePolicies
       field :end_date, type: Date
       field :is_immediate_family, type: Boolean
 
-      embeds_many :tax_household_members, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdMember"
+      embeds_many :tax_household_members, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdMember",
+                                          cascade_callbacks: true
     end
   end
 end
