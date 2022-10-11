@@ -136,7 +136,7 @@ module IrsGroups
           csr: member.product_eligibility_determination.csr,
           slcsp_benchmark_premium: slcsp_benchmark_premium,
           tax_filer_status: member.tax_filer_status,
-          person_hbx_id: member.family_member_reference.person_hbx_id,
+          person_hbx_id: member.family_member_reference.family_member_hbx_id,
           relation_with_primary: member.family_member_reference.relation_with_primary
         }
       end
