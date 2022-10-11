@@ -106,17 +106,26 @@ class Policy
   end
 
   def reported_aptc_month(month)
-    aptc_credits = self.aptc_credits.map { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
-    aptc_credits.sum {|aptc_credit| aptc_credit.aptc}.to_f.round(2) if aptc_credits.count > 0
+    credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
+    credits.sum {|aptc_credit| aptc_credit.aptc}.to_f.round(2) if credits.count > 0
   end
 
   def reported_pre_amt_tot_month(month)
-    aptc_credits = self.aptc_credits.map { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
-    aptc_credits.sum {|aptc_credit| aptc_credit.pre_amt_tot}.to_f.round(2) if aptc_credits.count > 0
+    credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
+    credits.sum {|aptc_credit| aptc_credit.pre_amt_tot}.to_f.round(2) if credits.count > 0
   end
 
-  def policies_for_month(month, calendar_year, policies)
-    end_of_month = Date.new(calendar_year, month, 1).end_of_month
+  def covered_enrollees_as_of(month, year)
+    month_begin = Date.new(year, month, 1)
+    month_end = month_begin.end_of_month
+
+    enrollees.select do |enrollee|
+      enrollee_coverage_end = enrollee.coverage_end.present? ? enrollee.coverage_end : enrollee.coverage_start.end_of_year
+      (enrollee.coverage_start <= month_end) && (enrollee_coverage_end >= month_begin)
+    end
+  end
+
+  def self.policies_for_month(month, calendar_year, policies)
     pols = []
     policies.each do |pol|
       pols << policy_reported_month(month, calendar_year, pol)
@@ -124,7 +133,8 @@ class Policy
     pols.uniq.compact
   end
 
-  def policy_reported_month(month, calendar_year, pol)
+  def self.policy_reported_month(month, calendar_year, pol)
+    end_of_month = Date.new(calendar_year, month, 1).end_of_month
     if pol.subscriber.coverage_start < end_of_month
       start_date = pol.policy_start
       end_date = pol.policy_end.blank? ? Date.new(calendar_year,12,31) : pol.policy_end

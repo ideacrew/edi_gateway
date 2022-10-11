@@ -3,6 +3,7 @@
 require 'dry/monads'
 require 'dry/monads/do'
 require 'securerandom'
+require 'fileutils'
 
 module Generators::Reports
   # Generate a monthly IRS report
@@ -11,10 +12,10 @@ module Generators::Reports
 
     def call(params)
       calender_year, max_month = yield validate(params)
-      h36_root_folder = yield create_h36_folder
-      transmission_folder = yield create_transmission_folder(h36_root_folder)
+      @h36_root_folder = yield create_h36_folder
+      transmission_folder = yield create_transmission_folder
       irs_group_query = yield get_irs_group_query
-      _execute = yield initialize_process(calender_year, max_month, irs_group_query, h36_root_folder)
+      _execute = yield initialize_process(calender_year, max_month, irs_group_query)
       _manifest = yield create_manifest(transmission_folder)
       Success("generated h36 successfully")
     end
@@ -34,8 +35,9 @@ module Generators::Reports
       Success(h36_root_folder)
     end
 
-    def create_transmission_folder(h36_root_folder)
-      transmission_folder = create_directory("#{h36_root_folder}/transmission")
+    def create_transmission_folder
+      transmission_folder = create_directory("#{@h36_root_folder}/transmission")
+
       Success(transmission_folder)
     end
 
@@ -43,14 +45,14 @@ module Generators::Reports
       if Dir.exists?(path)
         FileUtils.rm_rf(path)
       end
-      Dir.mkdir path
+      FileUtils.mkdir_p(path)[0]
     end
 
     def get_irs_group_query
       Success InsurancePolicies::AcaIndividuals::IrsGroup.all.no_timeout
     end
 
-    def initialize_process(calender_year, max_month, get_irs_group_query, h36_root_folder)
+    def initialize_process(calender_year, max_month, get_irs_group_query)
       current = 0
       folder_count = 1
       create_new_irs_folder(folder_count)
@@ -78,12 +80,9 @@ module Generators::Reports
           next
         end
 
-        group_xml = IrsMonthlyXml.new(irs_group, policies, calender_year, max_month)
-        group_xml.folder_path = "#{h36_root_folder}/#{@h36_folder_name}"
+        folder_path = "#{@h36_root_folder}/#{@h36_folder_name}"
+        group_xml = Generators::Reports::IrsMonthlyXml.new(irs_group, policies, calender_year, max_month, folder_path)
         group_xml.serialize
-
-        irs_group = nil
-        group_xml = nil
 
         count += 1
 
@@ -109,26 +108,25 @@ module Generators::Reports
 
     def merge_and_validate_xmls(folder_count)
       folder_num = prepend_zeros(folder_count.to_s, 5)
-      xml_merge = Generators::Reports::IrsXmlMerger.new("#{h36_root_folder}/#{@h36_folder_name}", folder_num)
+      xml_merge = Generators::Reports::IrsXmlMerger.new("#{@h36_root_folder}/#{@h36_folder_name}", folder_num)
       xml_merge.irs_monthly_folder = @h36_root_folder
       xml_merge.process
       xml_merge.validate
     end
 
     def create_manifest(transmission_folder)
-      Generators::Reports::IrsMonthlyManifest.new.create("#{transmission_folder}")
+      Success(Generators::Reports::IrsMonthlyManifest.new.create("#{transmission_folder}"))
     end
 
     def create_new_irs_folder(folder_count)
       folder_number = prepend_zeros(folder_count.to_s, 3)
       @h36_folder_name = "IRS_H36_#{Time.now.strftime('%H_%M_%d_%m_%Y')}_#{folder_number}"
-      create_directory "#{h36_root_folder}/#{@h36_folder_name}"
+      create_directory "#{@h36_root_folder}/#{@h36_folder_name}"
     end
 
     def prepend_zeros(number, n)
       (n - number.to_s.size).times { number.prepend('0') }
       number
     end
-
   end
 end

@@ -28,7 +28,7 @@ module InsurancePolicies
       end
 
       def dependents
-        tax_household_members.where(:relation_with_primary.ne => 'spouse')
+        tax_household_members.where(:relation_with_primary.nin => ['spouse', 'self'])
       end
     end
   end

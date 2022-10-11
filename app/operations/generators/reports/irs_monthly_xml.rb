@@ -14,14 +14,14 @@ module Generators::Reports
 
     def initialize(irs_group, policies, calendar_year, max_month, folder_path)
       @irs_group = irs_group
-      @folder_path = folder_path
       @policies = policies
       @calendar_year = calendar_year
       @max_month = max_month
+      @folder_path = folder_path
     end
-    
+
     def serialize
-      File.open("#{@folder_path}/#{@irs_group.identification_num}.xml", 'w') do |file|
+      File.open("#{@folder_path}/#{@irs_group.irs_group_id}.xml", 'w') do |file|
         file.write builder.to_xml(:indent => 2)
       end
     end
@@ -52,7 +52,7 @@ module Generators::Reports
       tax_household = irs_group.insurance_agreements.first.tax_households.where(end_date: nil).last
       xml.TaxHousehold do |xml|
         (1..max_month).each do |calendar_month|
-          next if policies_for_month(calendar_month, calendar_year, policies).empty?
+          next if Policy.policies_for_month(calendar_month, calendar_year, policies).empty?
           serialize_taxhousehold_coverage(xml, tax_household, calendar_month)
         end
       end
@@ -63,7 +63,7 @@ module Generators::Reports
         xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
         xml.Household do |xml|
           serialize_household_members(xml, tax_household)
-          policies_for_month(calendar_month, calendar_year, policies).each do |policy|
+          Policy.policies_for_month(calendar_month, calendar_year, policies).each do |policy|
             serialize_associated_policy(xml, tax_household, calendar_month, policy)
           end
         end
@@ -79,8 +79,9 @@ module Generators::Reports
     end
 
     def serialize_tax_individual(xml, tax_household_member, relation)
-      individual = tax_household_member.thm_individual
+      individual = tax_household_member&.thm_individual
       return if individual.blank?
+
       xml.send("#{relation}Grp") do |xml|
         relation = 'DependentPerson' if relation == 'Dependent'          
         xml.send(relation) do |xml|
@@ -103,7 +104,8 @@ module Generators::Reports
     end
 
     def serialize_address(xml, address)
-      next if address.empty?
+      return if address.blank?
+
       xml.PersonAddressGrp do |xml|
         xml.USAddressGrp do |xml|
           xml.AddressLine1Txt address.street_1
@@ -120,33 +122,13 @@ module Generators::Reports
       th_mems = tax_household.tax_household_members.where(:hbx_member_id.in => hbx_ids)
       slscp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
       aptc_credit = policy.reported_aptc_month(calendar_month)
-      pre_amt_tot = reported_pre_amt_tot_month(calendar_month)
+      pre_amt_tot = policy.reported_pre_amt_tot_month(calendar_month)
       xml.AssociatedPolicy do |xml|
         xml.QHPPolicyNum policy.eg_id
         xml.QHPIssuerEIN policy&.carrier&.fein
-        xml.SLCSPAdjMonthlyPremiumAmt slcsp
+        xml.SLCSPAdjMonthlyPremiumAmt slscp
         xml.HouseholdAPTCAmt aptc_credit
         xml.TotalHsldMonthlyPremiumAmt pre_amt_tot
-      end
-    end
-
-    def serialize_taxhouseholds(xml)
-      tax_household = irs_group.insurance_agreements.first.tax_households.where(end_date: nil).last
-      xml.TaxHousehold do |xml|
-        (1..max_month).each do |calendar_month|
-          next if policies_for_month(calendar_month, calendar_year, policies).empty?
-          serialize_taxhousehold_coverage(xml, tax_household, calendar_month)
-        end
-      end
-    end
-
-    def serialize_taxhouseholds(xml)
-      tax_household = irs_group.insurance_agreements.first.tax_households.where(end_date: nil).last
-      xml.TaxHousehold do |xml|
-        (1..max_month).each do |calendar_month|
-          next if policies_for_month(calendar_month, calendar_year, policies).empty?
-          serialize_taxhousehold_coverage(xml, tax_household, calendar_month)
-        end
       end
     end
 
@@ -161,16 +143,17 @@ module Generators::Reports
 
     def serialize_insurance_coverages(xml, policy, tax_household)
       (1..max_month).each do |calendar_month|
-        next if policy_reported_month(calendar_month, calendar_year, policy).nil?
+        next if Policy.policy_reported_month(calendar_month, calendar_year, policy).nil?
+
         hbx_ids = policy.enrollees.map(&:m_id)
         th_mems = tax_household.tax_household_members.where(:hbx_member_id.in => hbx_ids)
         slscp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
         aptc_credit = policy.reported_aptc_month(calendar_month)
-        pre_amt_tot = reported_pre_amt_tot_month(calendar_month)
+        pre_amt_tot = policy.reported_pre_amt_tot_month(calendar_month)
         end_date = policy.policy_end.blank? ? Date.new(calendar_year,12,31) : policy.policy_end
         xml.InsuranceCoverage do |xml|
           xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
-          xml.QHPPolicyNum policy.policy_id
+          xml.QHPPolicyNum policy.eg_id
           xml.QHPIssuerEIN policy.carrier.fein
           xml.IssuerNm policy.carrier.name
           xml.PolicyCoverageStartDt date_formatter(policy.policy_start)
@@ -178,11 +161,11 @@ module Generators::Reports
           xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
           xml.APTCPaymentAmt aptc_credit 
 
-          if covered_enrollees_as_of(calendar_month, calendar_year, policy).empty?
+          if policy.covered_enrollees_as_of(calendar_month, calendar_year).empty?
             raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
           end
 
-          covered_enrollees_as_of(calendar_month, calendar_year, policy).each do |enrollee|
+          policy.covered_enrollees_as_of(calendar_month, calendar_year).each do |enrollee|
             serialize_covered_individual(xml, enrollee)
           end
         end
@@ -190,17 +173,18 @@ module Generators::Reports
     end
 
     def serialize_covered_individual(xml, enrollee)
-      individual = enrollee.person
-      auth_mem = indvidual.authority_member
-      next if auth_mem.nil?
+      individual = enrollee&.person
+      auth_mem = individual&.authority_member
+      return if auth_mem.nil?
+
       xml.CoveredIndividual do |xml|
         xml.InsuredPerson do |xml|
           serialize_names(xml, individual)
           xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
           xml.BirthDt date_formatter(auth_mem.dob)
         end
-        xml.CoverageStartDt date_formatter(enrollee.coverage_start_date)
-        xml.CoverageEndDt date_formatter(enrollee.coverage_termination_date)
+        xml.CoverageStartDt date_formatter(enrollee.coverage_start)
+        xml.CoverageEndDt date_formatter(enrollee.coverage_end_date)
       end
     end
 
@@ -213,7 +197,12 @@ module Generators::Reports
 
     def date_formatter(date)
       return if date.nil?
-      Date.strptime(date,'%m/%d/%Y').strftime("%Y-%m-%d")
+
+      if date.is_a?(Date)
+        date.strftime("%Y-%m-%d")
+      else
+        Date.strptime(date,'%m/%d/%Y').strftime("%Y-%m-%d")
+      end
     end
   end
 end

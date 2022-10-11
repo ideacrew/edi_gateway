@@ -25,9 +25,7 @@ module Generators::Reports
     end
 
     def process
-      @xml_validator = XmlValidator.new
-      @xml_validator.folder_path = @irs_monthly_folder.to_s
-
+      @xml_validator = Generators::Reports::IrsXmlValidator.new(@irs_monthly_folder.to_s)
       read
       merge
       write
@@ -95,13 +93,13 @@ module Generators::Reports
 
     def chop_special_characters(node)
       node.xpath("//SSN", NS).each do |ssn_node|
-        update_ssn = Maybe.new(ssn_node.content).strip.gsub("-","").value
+        update_ssn = ::Maybe.new(ssn_node.content).strip.gsub("-","").value
         ssn_node.content = update_ssn
       end
-      
+
       ["PersonFirstName", "PersonMiddleName", "PersonLastName", "AddressLine1Txt", "AddressLine2Txt", "CityNm"].each do |ele|
         node.xpath("//#{ele}", NS).each do |xml_tag|
-          update_ele = Maybe.new(xml_tag.content).strip.gsub(/(\-{2}|\'|\#|\"|\&|\<|\>)/,"").value
+          update_ele = ::Maybe.new(xml_tag.content).strip.gsub(/(\-{2}|\'|\#|\"|\&|\<|\>)/,"").value
           if xml_tag.content.match(/(\-{2}|\'|\#|\"|\&|\<|\>)/)
             puts xml_tag.content.inspect
             puts update_ele

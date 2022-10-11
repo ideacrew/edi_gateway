@@ -56,12 +56,13 @@ class Enrollee
     Queries::MemberByHbxIdQuery.new(m_id).execute
   end
 
-  def covered_enrollees_as_of(month, year, policy)
-    month_begin = Date.new(year, month, 1)
-    month_end = month_begin.end_of_month
-
-    policy.enrollees.select do |enrollee|
-      (enrollee.coverage_start <= month_end) && (enrollee.coverage_end >= month_begin)
+  def coverage_end_date
+    if coverage_end.present?
+      coverage_end
+    elsif policy.subscriber.coverage_end.present?
+      policy.subscriber.coverage_end
+    else
+      policy.subscriber.coverage_start.end_of_year
     end
   end
 end
