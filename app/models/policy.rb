@@ -104,4 +104,33 @@ class Policy
   def aptc_record_on(date)
     self.aptc_credits.detect { |aptc_rec| aptc_rec.start_on <= date && aptc_rec.end_on >= date }
   end
+
+  def reported_aptc_month(month)
+    aptc_credits = self.aptc_credits.map { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
+    aptc_credits.sum {|aptc_credit| aptc_credit.aptc}.to_f.round(2) if aptc_credits.count > 0
+  end
+
+  def reported_pre_amt_tot_month(month)
+    aptc_credits = self.aptc_credits.map { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
+    aptc_credits.sum {|aptc_credit| aptc_credit.pre_amt_tot}.to_f.round(2) if aptc_credits.count > 0
+  end
+
+  def policies_for_month(month, calendar_year, policies)
+    end_of_month = Date.new(calendar_year, month, 1).end_of_month
+    pols = []
+    policies.each do |pol|
+      pols << policy_reported_month(month, calendar_year, pol)
+    end
+    pols.uniq.compact
+  end
+
+  def policy_reported_month(month, calendar_year, pol)
+    if pol.subscriber.coverage_start < end_of_month
+      start_date = pol.policy_start
+      end_date = pol.policy_end.blank? ? Date.new(calendar_year,12,31) : pol.policy_end
+      coverage_end_month = end_date.month
+      coverage_end_month = 12 if calendar_year != end_date.year
+      (start_date.month..coverage_end_month).include?(month) ? pol : nil
+    end
+  end
 end

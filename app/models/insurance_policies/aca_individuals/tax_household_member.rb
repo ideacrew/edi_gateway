@@ -28,6 +28,10 @@ module InsurancePolicies
       field :relation_with_primary, type: String
 
       embedded_in :tax_household, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold"
+
+      def thm_individual
+        Person.where(authority_member_id: self.person_hbx_id).first
+      end
     end
   end
 end
