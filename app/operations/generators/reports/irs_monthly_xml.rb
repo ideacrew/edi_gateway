@@ -122,9 +122,9 @@ module Generators::Reports
       xml.AssociatedPolicy do |xml|
         xml.QHPPolicyNum policy.eg_id
         xml.QHPIssuerEIN policy&.carrier&.fein
-        xml.SLCSPAdjMonthlyPremiumAmt '%.2f'%slcsp
-        xml.HouseholdAPTCAmt '%.2f'%aptc
-        xml.TotalHsldMonthlyPremiumAmt '%.2f'%pre_amt_tot
+        xml.SLCSPAdjMonthlyPremiumAmt slcsp
+        xml.HouseholdAPTCAmt aptc
+        xml.TotalHsldMonthlyPremiumAmt pre_amt_tot
       end
     end
 
@@ -148,8 +148,8 @@ module Generators::Reports
           xml.IssuerNm policy.carrier.name
           xml.PolicyCoverageStartDt date_formatter(policy.policy_start)
           xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
-          xml.TotalQHPMonthlyPremiumAmt '%.2f'%pre_amt_tot
-          xml.APTCPaymentAmt '%.2f'%aptc
+          xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
+          xml.APTCPaymentAmt aptc
 
           if policy.covered_enrollees_as_of(calendar_month, calendar_year).empty?
             raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
@@ -158,7 +158,7 @@ module Generators::Reports
           policy.covered_enrollees_as_of(calendar_month, calendar_year).each do |enrollee|
             serialize_covered_individual(xml, enrollee)
           end
-          xml.SLCSPMonthlyPremiumAmt '%.2f'%slcsp
+          xml.SLCSPMonthlyPremiumAmt slcsp
         end
       end
     end

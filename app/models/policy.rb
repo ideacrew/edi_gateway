@@ -76,6 +76,10 @@ class Policy
     subscriber.coverage_end
   end
 
+  def canceled?
+    subscriber.canceled?
+  end
+
   def policy_end_on
     subscriber.coverage_end.present? ? subscriber.coverage_end : subscriber.coverage_start.end_of_year
   end
@@ -152,13 +156,19 @@ class Policy
     hbx_ids = enrollees.map(&:m_id)
     th_mems = tax_household.tax_household_members.where(:person_hbx_id.in => hbx_ids)
     if term_for_np && policy_end_on.month == calendar_month
-      slcsp = "0.00"
-      pre_amt_tot = "0.00"
+      slcsp = 0.0
+      pre_amt_tot = 0.0
     else
       slcsp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
       pre_amt_tot = reported_pre_amt_tot_month(calendar_month)
+      pre_amt_tot = (pre_amt_tot * plan.ehb).to_f.round(2)
     end
     aptc_credit = reported_aptc_month(calendar_month)
-    [slcsp, aptc_credit, pre_amt_tot]
+    aptc = aptc_credit.to_f.round(2) > pre_amt_tot ? pre_amt_tot : aptc_credit.to_f.round(2)
+    if aptc == 0.0
+      ['%.2f'%0.0, '%.2f'%0.0, '%.2f'%pre_amt_tot]
+    else
+      ['%.2f'%slcsp, '%.2f'%aptc, '%.2f'%pre_amt_tot]
+    end
   end
 end
