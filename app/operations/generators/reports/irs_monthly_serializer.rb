@@ -66,7 +66,7 @@ module Generators::Reports
           @logger.info("primary person not found for hbx_member_id: #{hbx_member_id}, irs_group_id: #{irs_group.irs_group_id}")
           next
         end
-        policies = primary_person.policies.where(:kind.ne => "coverall")
+        policies = primary_person.policies.where(:kind.ne => "coverall").to_a
         policies.reject!{|pol| pol.plan.metal_level == "catastrophic" || pol.subscriber.coverage_start >= Date.today.beginning_of_month || !pol.subscriber.cp_id.present? || pol.plan.coverage_type == 'dental' || pol.canceled?}
         policies.reject! do |pol|
           if pol.enrollees.any?{|en| en.try(:person).try(:authority_member).blank?}

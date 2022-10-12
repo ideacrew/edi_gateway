@@ -164,7 +164,11 @@ class Policy
       pre_amt_tot = (pre_amt_tot * plan.ehb).to_f.round(2)
     end
     aptc_credit = reported_aptc_month(calendar_month)
-    aptc = aptc_credit.to_f.round(2) > pre_amt_tot ? pre_amt_tot : aptc_credit.to_f.round(2)
+    if term_for_np
+      aptc = aptc_credit.to_f.round(2)
+    else
+      aptc = aptc_credit.to_f.round(2) > pre_amt_tot ? pre_amt_tot : aptc_credit.to_f.round(2)
+    end
     if aptc == 0.0
       ['%.2f'%0.0, '%.2f'%0.0, '%.2f'%pre_amt_tot]
     else
