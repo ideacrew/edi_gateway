@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "trunk"
+      - "h36_generator"
   pull_request:
     branches:
-      - "trunk"
+      - "h36_generator"
 
 concurrency:
   group: docker-${{ github.ref }}
