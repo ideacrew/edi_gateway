@@ -57,12 +57,6 @@ class Enrollee
   end
 
   def coverage_end_date
-    if coverage_end.present?
-      coverage_end
-    elsif policy.subscriber.coverage_end.present?
-      policy.subscriber.coverage_end
-    else
-      policy.subscriber.coverage_start.end_of_year
-    end
+    coverage_end.present? ? coverage_end : policy.policy_end_on
   end
 end

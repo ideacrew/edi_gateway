@@ -118,17 +118,13 @@ module Generators::Reports
     end
 
     def serialize_associated_policy(xml, tax_household, calendar_month, policy)
-      hbx_ids = policy.enrollees.map(&:m_id)
-      th_mems = tax_household.tax_household_members.where(:person_hbx_id.in => hbx_ids)
-      slscp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
-      aptc_credit = policy.reported_aptc_month(calendar_month)
-      pre_amt_tot = policy.reported_pre_amt_tot_month(calendar_month)
+      slcsp, aptc, pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
       xml.AssociatedPolicy do |xml|
         xml.QHPPolicyNum policy.eg_id
         xml.QHPIssuerEIN policy&.carrier&.fein
-        xml.SLCSPAdjMonthlyPremiumAmt '%.2f' slscp
-        xml.HouseholdAPTCAmt '%.2f' aptc_credit
-        xml.TotalHsldMonthlyPremiumAmt '%.2f' pre_amt_tot
+        xml.SLCSPAdjMonthlyPremiumAmt '%.2f'%slcsp
+        xml.HouseholdAPTCAmt '%.2f'%aptc
+        xml.TotalHsldMonthlyPremiumAmt '%.2f'%pre_amt_tot
       end
     end
 
@@ -144,22 +140,16 @@ module Generators::Reports
     def serialize_insurance_coverages(xml, policy, tax_household)
       (1..max_month).each do |calendar_month|
         next if Policy.policy_reported_month(calendar_month, calendar_year, policy).nil?
-
-        hbx_ids = policy.enrollees.map(&:m_id)
-        th_mems = tax_household.tax_household_members.where(:hbx_member_id.in => hbx_ids)
-        slscp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
-        aptc_credit = policy.reported_aptc_month(calendar_month)
-        pre_amt_tot = policy.reported_pre_amt_tot_month(calendar_month)
-        end_date = policy.policy_end.blank? ? Date.new(calendar_year,12,31) : policy.policy_end
+        slcsp, aptc, pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
         xml.InsuranceCoverage do |xml|
           xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
           xml.QHPPolicyNum policy.eg_id
           xml.QHPIssuerEIN policy.carrier.fein
           xml.IssuerNm policy.carrier.name
           xml.PolicyCoverageStartDt date_formatter(policy.policy_start)
-          xml.PolicyCoverageEndDt date_formatter(end_date)
-          xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
-          xml.APTCPaymentAmt aptc_credit 
+          xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
+          xml.TotalQHPMonthlyPremiumAmt '%.2f'%pre_amt_tot
+          xml.APTCPaymentAmt '%.2f'%aptc
 
           if policy.covered_enrollees_as_of(calendar_month, calendar_year).empty?
             raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
@@ -168,6 +158,7 @@ module Generators::Reports
           policy.covered_enrollees_as_of(calendar_month, calendar_year).each do |enrollee|
             serialize_covered_individual(xml, enrollee)
           end
+          xml.SLCSPMonthlyPremiumAmt '%.2f'%slcsp
         end
       end
     end

@@ -76,6 +76,10 @@ class Policy
     subscriber.coverage_end
   end
 
+  def policy_end_on
+    subscriber.coverage_end.present? ? subscriber.coverage_end : subscriber.coverage_start.end_of_year
+  end
+
   def reported_tot_res_amt_on(date)
     return self.tot_res_amt unless multi_aptc?
     return 0.0 unless self.aptc_record_on(date)
@@ -142,5 +146,19 @@ class Policy
       coverage_end_month = 12 if calendar_year != end_date.year
       (start_date.month..coverage_end_month).include?(month) ? pol : nil
     end
+  end
+
+  def fetch_npt_h36_prems(tax_household, calendar_month)
+    hbx_ids = enrollees.map(&:m_id)
+    th_mems = tax_household.tax_household_members.where(:person_hbx_id.in => hbx_ids)
+    if term_for_np && policy_end_on.month == calendar_month
+      slcsp = "0.00"
+      pre_amt_tot = "0.00"
+    else
+      slcsp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
+      pre_amt_tot = reported_pre_amt_tot_month(calendar_month)
+    end
+    aptc_credit = reported_aptc_month(calendar_month)
+    [slcsp, aptc_credit, pre_amt_tot]
   end
 end
