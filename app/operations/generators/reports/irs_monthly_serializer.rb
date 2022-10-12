@@ -11,11 +11,11 @@ module Generators::Reports
     send(:include, Dry::Monads[:result, :do])
 
     def call(params)
-      calender_year, max_month = yield validate(params)
+      calendar_year, max_month = yield validate(params)
       @h36_root_folder = yield create_h36_folder
       transmission_folder = yield create_transmission_folder
       irs_group_query = yield get_irs_group_query
-      _execute = yield initialize_process(calender_year, max_month, irs_group_query)
+      _execute = yield initialize_process(calendar_year, max_month, irs_group_query)
       _manifest = yield create_manifest(transmission_folder)
       Success("generated h36 successfully")
     end
@@ -23,10 +23,10 @@ module Generators::Reports
     private
 
     def validate(params)
-      Failure('either calender_year is not present or calender_year is not an integer') unless params[:calender_year].present? || params[:calender_year].integer?
+      Failure('either calendar_year is not present or calendar_year is not an integer') unless params[:calendar_year].present? || params[:calendar_year].integer?
       Failure('either max_month is not present or max_month is not an integer') unless params[:max_month].present? || params[:max_month].integer?
       @logger = Logger.new("#{Rails.root}/log/h36_exceptions.log")
-      Success([params[:calender_year], params[:max_month]])
+      Success([params[:calendar_year], params[:max_month]])
     end
 
     def create_h36_folder
@@ -52,7 +52,7 @@ module Generators::Reports
       Success InsurancePolicies::AcaIndividuals::IrsGroup.all.no_timeout
     end
 
-    def initialize_process(calender_year, max_month, get_irs_group_query)
+    def initialize_process(calendar_year, max_month, get_irs_group_query)
       current = 0
       folder_count = 1
       create_new_irs_folder(folder_count)
@@ -81,7 +81,7 @@ module Generators::Reports
         end
 
         folder_path = "#{@h36_root_folder}/#{@h36_folder_name}"
-        group_xml = Generators::Reports::IrsMonthlyXml.new(irs_group, policies, calender_year, max_month, folder_path)
+        group_xml = Generators::Reports::IrsMonthlyXml.new(irs_group, policies, calendar_year, max_month, folder_path)
         group_xml.serialize
 
         count += 1

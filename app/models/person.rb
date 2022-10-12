@@ -48,11 +48,6 @@ class Person
     query_proxy.policies
   end
 
-  def primary_address
-    address = self.addresses[0]
-    raise 'Primary address missing' if address.nil?
-  end
-
   private
 
   def query_proxy

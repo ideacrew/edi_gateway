@@ -89,7 +89,7 @@ module Generators::Reports
           serialize_names(xml, individual)
           xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
           xml.BirthDt date_formatter(auth_mem.dob)
-          serialize_address(xml, individual.primary_address) if relation == 'Primary'
+          serialize_address(xml, individual.addresses[0]) if relation == 'Primary'
         end
       end
     end
@@ -108,8 +108,8 @@ module Generators::Reports
 
       xml.PersonAddressGrp do |xml|
         xml.USAddressGrp do |xml|
-          xml.AddressLine1Txt address.street_1
-          xml.AddressLine2Txt address.street_2
+          xml.AddressLine1Txt address.address_1
+          xml.AddressLine2Txt address.address_2
           xml.CityNm address.city.gsub(/[\.\,]/, '')
           xml.USStateCd address.state
           xml.USZIPCd address.zip.split('-')[0]
@@ -119,16 +119,16 @@ module Generators::Reports
 
     def serialize_associated_policy(xml, tax_household, calendar_month, policy)
       hbx_ids = policy.enrollees.map(&:m_id)
-      th_mems = tax_household.tax_household_members.where(:hbx_member_id.in => hbx_ids)
+      th_mems = tax_household.tax_household_members.where(:person_hbx_id.in => hbx_ids)
       slscp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
       aptc_credit = policy.reported_aptc_month(calendar_month)
       pre_amt_tot = policy.reported_pre_amt_tot_month(calendar_month)
       xml.AssociatedPolicy do |xml|
         xml.QHPPolicyNum policy.eg_id
         xml.QHPIssuerEIN policy&.carrier&.fein
-        xml.SLCSPAdjMonthlyPremiumAmt slscp
-        xml.HouseholdAPTCAmt aptc_credit
-        xml.TotalHsldMonthlyPremiumAmt pre_amt_tot
+        xml.SLCSPAdjMonthlyPremiumAmt '%.2f' slscp
+        xml.HouseholdAPTCAmt '%.2f' aptc_credit
+        xml.TotalHsldMonthlyPremiumAmt '%.2f' pre_amt_tot
       end
     end
 
