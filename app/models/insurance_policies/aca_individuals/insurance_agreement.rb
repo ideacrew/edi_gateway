@@ -23,6 +23,14 @@ module InsurancePolicies
       accepts_nested_attributes_for :contract_holder
       accepts_nested_attributes_for :insurance_provider
       accepts_nested_attributes_for :tax_households
+
+      def covered_month_tax_household(calendar_year, calendar_month)
+        date = Date.new(calendar_year, calendar_month, 1)
+        tax_households.select do |thh|
+          end_date = thh.end_date.present? ? thh.end_date : Date.new(calendar_year, 12, 31)
+          date.between?(thh.start_date, end_date)
+        end.last
+      end
     end
   end
 end

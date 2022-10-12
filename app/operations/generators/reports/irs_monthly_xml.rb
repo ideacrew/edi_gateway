@@ -49,9 +49,10 @@ module Generators::Reports
     end
 
     def serialize_taxhouseholds(xml)
-      tax_household = irs_group.insurance_agreements.first.tax_households.where(end_date: nil).last
+      insurance_agreement = irs_group.insurance_agreements.first
       xml.TaxHousehold do |xml|
         (1..max_month).each do |calendar_month|
+          tax_household = insurance_agreement.covered_month_tax_household(calendar_year, calendar_month)
           next if Policy.policies_for_month(calendar_month, calendar_year, policies).empty?
           serialize_taxhousehold_coverage(xml, tax_household, calendar_month)
         end
@@ -129,17 +130,18 @@ module Generators::Reports
     end
 
     def serialize_insurance_policies(xml)
-      tax_household = irs_group.insurance_agreements.first.tax_households.where(end_date: nil).last
+      insurance_agreement = irs_group.insurance_agreements.first
       policies.each do |policy|
         xml.InsurancePolicy do |xml|
-          serialize_insurance_coverages(xml, policy, tax_household)
+          serialize_insurance_coverages(xml, policy, insurance_agreement)
         end
       end
     end
 
-    def serialize_insurance_coverages(xml, policy, tax_household)
+    def serialize_insurance_coverages(xml, policy, insurance_agreement)
       (1..max_month).each do |calendar_month|
         next if Policy.policy_reported_month(calendar_month, calendar_year, policy).nil?
+        tax_household = insurance_agreement.covered_month_tax_household(calendar_year, calendar_month)
         slcsp, aptc, pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
         xml.InsuranceCoverage do |xml|
           xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
