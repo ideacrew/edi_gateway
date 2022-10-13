@@ -8,10 +8,11 @@ module Queries
     end
 
     def policies
-      Policy.where(
-        { "enrollees.m_id" =>
-            { "$in" => @person.members.map(&:hbx_member_id) } }
-      )
+      res_ids = @person.responsible_parties.map { |res| res.id.to_s }
+      Policy.where("$or" => [
+                     { "enrollees.m_id" => { "$in" => @person.members.map(&:hbx_member_id) } },
+                     { :responsible_party_id.in => res_ids }
+                   ])
     end
   end
 end
