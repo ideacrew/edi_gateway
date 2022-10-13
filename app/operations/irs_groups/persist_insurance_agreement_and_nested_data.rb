@@ -148,7 +148,7 @@ module IrsGroups
       coverage_household.coverage_household_members.collect do |member|
         {
           is_subscriber: member.is_subscriber,
-          person_hbx_id: member.family_member_reference.person_hbx_id,
+          person_hbx_id: member.family_member_reference.family_member_hbx_id,
           relation_with_primary: member.family_member_reference.relation_with_primary
         }
       end
