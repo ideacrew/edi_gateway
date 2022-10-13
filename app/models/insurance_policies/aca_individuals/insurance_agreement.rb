@@ -29,9 +29,20 @@ module InsurancePolicies
         return tax_households.last if uqhp_household
 
         date = Date.new(calendar_year, calendar_month, 1)
-        tax_households.select do |thh|
+        calendar_year_thhs = tax_households.where(start_date: Date.new(calendar_year)..Date.new(calendar_year).end_of_year)
+        tax_household = calendar_year_thhs.select do |thh|
           end_date = thh.end_date.present? ? thh.end_date : Date.new(calendar_year, 12, 31)
           date.between?(thh.start_date, end_date)
+        end.last
+
+        return tax_household if tax_household.present?
+
+        fetch_primary_person_tax_household || tax_households.last
+      end
+
+      def fetch_primary_person_tax_household
+        tax_households.select do |thh|
+          thh.tax_household_members.any? {|member| member.relation_with_primary == "self"}
         end.last
       end
     end

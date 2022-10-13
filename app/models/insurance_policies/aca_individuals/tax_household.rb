@@ -18,9 +18,12 @@ module InsurancePolicies
                                           cascade_callbacks: true
 
       def primary
-        return tax_household_members.first unless tax_household_members.count > 1
-
-        tax_household_members.where(tax_filer_status: "tax_filer").first
+        if is_immediate_family == true
+          tax_household_members.where(relation_with_primary: "self").first
+        else
+          tax_household_members.where(tax_filer_status: "tax_filer").first ||
+            tax_household_members.where(relation_with_primary: "self").first
+        end
       end
 
       def spouse
@@ -28,7 +31,9 @@ module InsurancePolicies
       end
 
       def dependents
-        tax_household_members.where(:relation_with_primary.nin => ['spouse', 'self'])
+        tax_household_members.select do |member|
+          member.id.to_s != primary.id.to_s && !%w(spouse self).include?(member.relation_with_primary)
+        end
       end
     end
   end

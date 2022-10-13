@@ -100,6 +100,8 @@ module Generators::Reports
           puts "time taken for current record ---- #{Time.now - start} seconds"
           start = Time.now
         end
+      rescue StandardError => e
+        @logger.info("Unable to create IRS Gropu for: #{irs_group.irs_group_id} due to #{e}")
       end
       merge_and_validate_xmls(folder_count)
       Success("executed successfully")
