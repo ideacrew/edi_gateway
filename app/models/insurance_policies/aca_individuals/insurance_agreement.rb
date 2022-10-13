@@ -25,6 +25,9 @@ module InsurancePolicies
       accepts_nested_attributes_for :tax_households
 
       def covered_month_tax_household(calendar_year, calendar_month)
+        uqhp_household = tax_households.any?{ |thh| thh.is_immediate_family == true }
+        return tax_households.last if uqhp_household
+
         date = Date.new(calendar_year, calendar_month, 1)
         tax_households.select do |thh|
           end_date = thh.end_date.present? ? thh.end_date : Date.new(calendar_year, 12, 31)
