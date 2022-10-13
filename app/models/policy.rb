@@ -114,13 +114,21 @@ class Policy
   end
 
   def reported_aptc_month(month)
-    credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
-    credits.sum {|aptc_credit| aptc_credit.aptc}.to_f.round(2) if credits.count > 0
+    if aptc_credits.count == 0
+      applied_aptc
+    else
+      credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
+      credits.sum {|aptc_credit| aptc_credit.aptc}.to_f.round(2)
+    end
   end
 
   def reported_pre_amt_tot_month(month)
-    credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
-    credits.sum {|aptc_credit| aptc_credit.pre_amt_tot}.to_f.round(2) if credits.count > 0
+    if aptc_credits.count == 0
+      pre_amt_tot
+    else
+      credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
+      credits.sum {|aptc_credit| aptc_credit.pre_amt_tot}.to_f.round(2) if credits.count > 0
+    end
   end
 
   def covered_enrollees_as_of(month, year)
