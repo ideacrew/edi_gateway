@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "h36_generator"
+      - "h36_irs_group_bug_fix"
   pull_request:
     branches:
-      - "h36_generator"
+      - "h36_irs_group_bug_fix"
 
 concurrency:
   group: docker-${{ github.ref }}

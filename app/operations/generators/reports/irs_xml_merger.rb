@@ -53,6 +53,8 @@ module Generators::Reports
         @xml_docs.each do |xml_doc|
           xml_doc.remove_namespaces!
           new_node = xml_doc.xpath('//IRSHouseholdGrp').first
+          next if new_node.blank?
+
           new_node = chop_special_characters(new_node)
           node.add_child(new_node.to_xml(:indent => 2) + "\n")
         end
