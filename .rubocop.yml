@@ -10,16 +10,23 @@ AllCops:
 Layout/LineLength:
   Max: 130
 
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
 Layout/SpaceInsidePercentLiteralDelimiters:
   Exclude:
     - Gemfile
+
+Metrics/AbcSize:
+  Max:
+    25
 
 Metrics/BlockLength:
   Enabled: false
 
 Metrics/MethodLength:
   Max:
-    15
+    20
 
 Naming/PredicateName:
   Enabled: false
