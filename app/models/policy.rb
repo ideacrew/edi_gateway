@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/ClassLength
 # Represents a Policy, consisting of individuals and a kind of coverage.
 class Policy
   include Mongoid::Document
@@ -114,20 +115,20 @@ class Policy
   end
 
   def reported_aptc_month(month)
-    if aptc_credits.count == 0
+    if aptc_credits.count.zero?
       applied_aptc
     else
-      credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
-      credits.sum {|aptc_credit| aptc_credit.aptc}.to_f.round(2)
+      credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month) }
+      credits.sum(&:aptc).to_f.round(2)
     end
   end
 
   def reported_pre_amt_tot_month(month)
-    if aptc_credits.count == 0
+    if aptc_credits.count.zero?
       pre_amt_tot
     else
-      credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month)}
-      credits.sum {|aptc_credit| aptc_credit.pre_amt_tot}.to_f.round(2) if credits.count > 0
+      credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month) }
+      credits.sum(&:pre_amt_tot).to_f.round(2) if credits.count.positive?
     end
   end
 
@@ -151,36 +152,46 @@ class Policy
 
   def self.policy_reported_month(month, calendar_year, pol)
     end_of_month = Date.new(calendar_year, month, 1).end_of_month
-    if pol.subscriber.coverage_start < end_of_month
-      start_date = pol.policy_start
-      end_date = pol.policy_end.blank? ? Date.new(calendar_year,12,31) : pol.policy_end
-      coverage_end_month = end_date.month
-      coverage_end_month = 12 if calendar_year != end_date.year
-      (start_date.month..coverage_end_month).include?(month) ? pol : nil
-    end
+    return unless pol.subscriber.coverage_start < end_of_month
+
+    start_date = pol.policy_start
+    end_date = policy_end_on
+    coverage_end_month = end_date.month
+    coverage_end_month = 12 if calendar_year != end_date.year
+    (start_date.month..coverage_end_month).include?(month) ? pol : nil
   end
 
   def fetch_npt_h36_prems(tax_household, calendar_month)
     hbx_ids = enrollees.map(&:m_id)
     th_mems = tax_household.tax_household_members.where(:person_hbx_id.in => hbx_ids)
-    if term_for_np && policy_end_on.month == calendar_month
-      slcsp = 0.0
-      pre_amt_tot = 0.0
+    slcsp, pre_amt_tot_month = slcsp_pre_amt_tot_values(calendar_month, th_mems)
+    aptc = check_for_npt_prem(calendar_month)
+    if aptc.to_d == 0.to_d
+      [format('%.2f', 0.0), format('%.2f', 0.0), format('%.2f', pre_amt_tot_month)]
     else
-      slcsp = th_mems.map{|mem| mem.slcsp_benchmark_premium.to_f}.sum
-      pre_amt_tot = reported_pre_amt_tot_month(calendar_month)
-      pre_amt_tot = (pre_amt_tot * plan.ehb).to_f.round(2)
+      [format('%.2f', slcsp), format('%.2f', aptc), format('%.2f', pre_amt_tot_month)]
     end
+  end
+
+  def slcsp_pre_amt_tot_values(calendar_month, th_mems)
+    if term_for_np && policy_end_on.month == calendar_month
+      [0.0, 0.0]
+    else
+      slcsp = th_mems.map { |mem| mem.slcsp_benchmark_premium.to_f }.sum
+      pre_amt_tot_month = reported_pre_amt_tot_month(calendar_month)
+      pre_amt_tot_month = (pre_amt_tot_month * plan.ehb).to_f.round(2)
+      [slcsp, pre_amt_tot_month]
+    end
+  end
+
+  def check_for_npt_prem(calendar_month)
     aptc_credit = reported_aptc_month(calendar_month)
     if term_for_np
-      aptc = aptc_credit.to_f.round(2)
+      aptc_credit.to_f.round(2)
     else
-      aptc = aptc_credit.to_f.round(2) > pre_amt_tot ? pre_amt_tot : aptc_credit.to_f.round(2)
-    end
-    if aptc == 0.0
-      ['%.2f'%0.0, '%.2f'%0.0, '%.2f'%pre_amt_tot]
-    else
-      ['%.2f'%slcsp, '%.2f'%aptc, '%.2f'%pre_amt_tot]
+      aptc_credit.to_f.round(2) > pre_amt_tot ? pre_amt_tot : aptc_credit.to_f.round(2)
     end
   end
 end
+
+# rubocop:enable Metrics/ClassLength

@@ -2,6 +2,8 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # Every InsuranceAgreement will have one or more TaxHousehold
+    # This class constructs TaxHousehold object
     class TaxHousehold
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -18,11 +20,11 @@ module InsurancePolicies
                                           cascade_callbacks: true
 
       def primary
+        primary_thh = tax_household_members.where(relation_with_primary: "self").first
         if is_immediate_family == true
-          tax_household_members.where(relation_with_primary: "self").first
+          primary_thh
         else
-          tax_household_members.where(tax_filer_status: "tax_filer").first ||
-            tax_household_members.where(relation_with_primary: "self").first
+          tax_household_members.where(tax_filer_status: "tax_filer").first || primary_thh
         end
       end
 

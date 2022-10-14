@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# This class used for xml generation
 class Maybe
   attr_reader :value
 
@@ -9,9 +12,12 @@ class Maybe
     @value.nil? ? Maybe.new(nil) : Maybe.new(the_proc.call(@value))
   end
 
-  def method_missing(m, *args, &block)
+  # rubocop:disable Style/MissingRespondToMissing
+
+  def method_missing(msg, *args, &block)
     target = @value
-    self.class.new(target.nil? ? nil : target.__send__(m, *args, &block))
+    self.class.new(target.nil? ? nil : target.__send__(msg, *args, &block))
   end
 
+  # rubocop:enable Style/MissingRespondToMissing
 end

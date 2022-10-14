@@ -2,6 +2,8 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # Every TaxHousehold will have one or more TaxHouseholdMembers
+    # This class constructs TaxHouseholdMember object
     class TaxHouseholdMember
       include Mongoid::Document
       include Mongoid::Timestamps
