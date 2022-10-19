@@ -2,7 +2,7 @@
 
 module Generators
   module Reports
-    # Creates a IRS Monthly Manifest
+    # This class creates an IRS Monthly Manifest File
     class IrsMonthlyManifest
       NS = {
         "xmlns:ns1" => "http://niem.gov/niem/structures/2.0",
@@ -75,14 +75,14 @@ module Generators
       def serialize_attachment(batch_xml, file)
         batch_xml['ns4'].Attachment do |attachment_xml|
           attachment_xml['ns3'].DocumentBinary do |db_xml|
-            serialize_binary(db_xml)
+            serialize_binary(db_xml, file)
           end
           attachment_xml['ns3'].DocumentFileName file.filename
           attachment_xml['ns3'].DocumentSequenceID file.sequence_id
         end
       end
 
-      def serialize_binary(db_xml)
+      def serialize_binary(db_xml, file)
         db_xml['ns2'].ChecksumAugmentation do |xml|
           xml['ns4'].SHA256HashValueText file.checksum
         end

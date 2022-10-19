@@ -119,7 +119,7 @@ class Policy
       applied_aptc
     else
       credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month) }
-      credits.sum(&:aptc).to_f.round(2)
+      credits.count.positive? ? credits.sum(&:aptc).to_f.round(2) : 0.0
     end
   end
 
@@ -128,7 +128,7 @@ class Policy
       pre_amt_tot
     else
       credits = aptc_credits.select { |aptc_rec| (aptc_rec.start_on.month..aptc_rec.end_on.month).include?(month) }
-      credits.sum(&:pre_amt_tot).to_f.round(2) if credits.count.positive?
+      credits.count.positive? ? credits.sum(&:pre_amt_tot).to_f.round(2) : 0.0
     end
   end
 
@@ -155,7 +155,7 @@ class Policy
     return unless pol.subscriber.coverage_start < end_of_month
 
     start_date = pol.policy_start
-    end_date = policy_end_on
+    end_date = pol.policy_end_on
     coverage_end_month = end_date.month
     coverage_end_month = 12 if calendar_year != end_date.year
     (start_date.month..coverage_end_month).include?(month) ? pol : nil
@@ -187,9 +187,9 @@ class Policy
   def check_for_npt_prem(calendar_month)
     aptc_credit = reported_aptc_month(calendar_month)
     if term_for_np
-      aptc_credit.to_f.round(2)
+      aptc_credit
     else
-      aptc_credit.to_f.round(2) > pre_amt_tot ? pre_amt_tot : aptc_credit.to_f.round(2)
+      aptc_credit > pre_amt_tot.to_f.round(2) ? pre_amt_tot.to_f.round(2) : aptc_credit
     end
   end
 end

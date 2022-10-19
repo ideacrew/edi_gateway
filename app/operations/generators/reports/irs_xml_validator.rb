@@ -2,7 +2,7 @@
 
 module Generators
   module Reports
-    # Validates a monthly IRS XML's
+    # This class validates a monthly IRS XML's
     class IrsXmlValidator
       attr_accessor :folder_path
 
@@ -10,7 +10,7 @@ module Generators
         @folder_path = folder_path
       end
 
-      def validate(_filename = nil, _type: :h36)
+      def validate(_filename = nil)
         Dir.foreach("#{@folder_path}/transmission") do |filename|
           next if (filename == '.') || (filename == '..') || (filename == 'manifest.xml') || (filename == '.DS_Store')
 

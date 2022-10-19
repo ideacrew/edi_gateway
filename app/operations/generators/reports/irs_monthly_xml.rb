@@ -33,7 +33,7 @@ module Generators
         Nokogiri::XML::Builder.new do |xml|
           xml['n1'].HealthExchange(NS) do
             xml.SubmissionYr Date.today.year.to_s
-            xml.SubmissionMonthNum max_month
+            xml.SubmissionMonthNum max_month == 12 ? 1 : (max_month + 1)
             xml.ApplicableCoverageYr calendar_year
             xml.IndividualExchange do |ind_xml|
               ind_xml.HealthExchangeId "02.ME*.SBE.001.001"
@@ -91,20 +91,20 @@ module Generators
 
         hh_xml.send("#{relation}Grp") do |rel_grp_xml|
           relation = 'DependentPerson' if relation == 'Dependent'
-          rel_grp_xml.send(relation) do |rel_xml|
+          rel_grp_xml.send(relation) do |person_xml|
             auth_mem = individual.authority_member
-            serialize_names(rel_xml, individual)
-            rel_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
-            rel_xml.BirthDt date_formatter(auth_mem.dob)
-            serialize_address(rel_xml, individual.addresses[0]) if relation == 'Primary'
+            serialize_names(person_xml, individual)
+            person_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
+            person_xml.BirthDt date_formatter(auth_mem.dob)
+            serialize_address(person_xml, individual.addresses[0]) if relation == 'Primary'
           end
         end
       end
 
       # rubocop:enable Metrics/AbcSize
 
-      def serialize_names(rel_xml, individual)
-        rel_xml.CompletePersonName do |xml|
+      def serialize_names(person_xml, individual)
+        person_xml.CompletePersonName do |xml|
           xml.PersonFirstName individual.name_first
           xml.PersonMiddleName individual.name_middle
           xml.PersonLastName individual.name_last
@@ -112,10 +112,10 @@ module Generators
         end
       end
 
-      def serialize_address(rel_xml, address)
+      def serialize_address(person_xml, address)
         return if address.blank?
 
-        rel_xml.PersonAddressGrp do |pag_xml|
+        person_xml.PersonAddressGrp do |pag_xml|
           pag_xml.USAddressGrp do |xml|
             xml.AddressLine1Txt address.address_1
             xml.AddressLine2Txt address.address_2
@@ -183,10 +183,10 @@ module Generators
         return if auth_mem.nil?
 
         insured_cov_xml.CoveredIndividual do |cov_ind_xml|
-          cov_ind_xml.InsuredPerson do |xml|
-            serialize_names(xml, individual)
-            xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
-            xml.BirthDt date_formatter(auth_mem.dob)
+          cov_ind_xml.InsuredPerson do |person_xml|
+            serialize_names(person_xml, individual)
+            person_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
+            person_xml.BirthDt date_formatter(auth_mem.dob)
           end
           cov_ind_xml.CoverageStartDt date_formatter(enrollee.coverage_start)
           cov_ind_xml.CoverageEndDt date_formatter(enrollee.coverage_end_date)
@@ -198,8 +198,8 @@ module Generators
 
       private
 
-      def prepend_zeros(number, count)
-        (count - number.size).times { number.prepend('0') }
+      def prepend_zeros(number, value)
+        (value - number.size).times { number.prepend('0') }
         number
       end
 

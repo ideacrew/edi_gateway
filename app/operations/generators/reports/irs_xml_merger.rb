@@ -4,7 +4,7 @@ require 'nokogiri'
 
 module Generators
   module Reports
-    # Merges a monthly IRS XML's
+    # This class merges a monthly IRS XML's
     class IrsXmlMerger
       attr_reader :consolidated_doc, :xml_docs
 
@@ -62,7 +62,7 @@ module Generators
         @xml_docs.each do |xml|
           xml.remove_namespaces!
           new_node = xml.xpath('//IRSHouseholdGrp').first
-          next if new_node.empty?
+          next if new_node.nil?
 
           new_node = chop_special_characters(new_node)
           node.add_child("#{new_node.to_xml(:indent => 2)}\n")
@@ -70,7 +70,7 @@ module Generators
       end
 
       def validate
-        @xml_validator.validate(@data_file_path, type: :h36)
+        @xml_validator.validate(@data_file_path)
         cross_verify_elements
       end
 
@@ -105,8 +105,8 @@ module Generators
         fetch_ssn(node)
         ["PersonFirstName", "PersonMiddleName", "PersonLastName", "AddressLine1Txt", "AddressLine2Txt", "CityNm"].each do |ele|
           node.xpath("//#{ele}", NS).each do |xml_tag|
-            update_ele = ::Maybe.new(xml_tag.content).strip.gsub(/(-{2}|'|\#|"|&|<|>)/, "").value
-            if xml_tag.content.match(/(-{2}|'|\#|"|&|<|>)/)
+            update_ele = ::Maybe.new(xml_tag.content).strip.gsub(/(-{2}|'|‘|’|\#|"|&|<|>)/, "").value
+            if xml_tag.content.match(/(-{2}|'|‘|’|\#|"|&|<|>)/)
               puts xml_tag.content.inspect
               puts update_ele
             end

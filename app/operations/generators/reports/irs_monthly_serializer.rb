@@ -8,7 +8,7 @@ require 'fileutils'
 
 module Generators
   module Reports
-    # Generate a monthly IRS report
+    # This class generates a monthly IRS report
     class IrsMonthlySerializer
       send(:include, Dry::Monads[:result, :do])
 
@@ -77,7 +77,7 @@ module Generators
           end
           policies = primary_person.policies.to_a
           policies.reject! do |pol|
-            non_eligible_policy(pol)
+            non_eligible_policy(pol, calendar_year, max_month)
           end
           policies.reject! do |pol|
             if pol.enrollees.any? { |en| en.try(:person).try(:authority_member).blank? }
@@ -96,7 +96,7 @@ module Generators
 
           count += 1
 
-          puts "----found #{count} families so far" if (count % 50).zero?
+          puts "----found #{count} IRS Groups so far" if (count % 50).zero?
 
           if (count % 3000).zero?
             merge_and_validate_xmls(folder_count)
@@ -110,27 +110,28 @@ module Generators
             start = Time.now
           end
         rescue StandardError => e
-          @logger.info("Unable to create IRS Gropu for: #{irs_group.irs_group_id} due to #{e}")
+          @logger.info("Unable to create IRS Group for: #{irs_group.irs_group_id} due to #{e}")
         end
         merge_and_validate_xmls(folder_count)
         Success("executed successfully")
+      end
+
+      def non_eligible_policy(pol, calendar_year, max_month)
+        return true if pol.canceled?
+        return true if pol.kind == "coverall"
+        return true if pol.plan.coverage_type == 'dental'
+        return true if pol.plan.metal_level == "catastrophic"
+        return true if pol.subscriber.cp_id.empty?
+
+        return true if max_month != 12 && (pol.subscriber.coverage_start >= Date.new(calendar_year, (max_month + 1), 1))
+
+        false
       end
 
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/CyclomaticComplexity
       # rubocop:enable Metrics/PerceivedComplexity
       # rubocop:enable Metrics/MethodLength
-
-      def non_eligible_policy(pol)
-        return true if pol.canceled?
-        return true if pol.kind == "coverall"
-        return true if pol.plan.coverage_type == 'dental'
-        return true if pol.plan.metal_level == "catastrophic"
-        return true if pol.subscriber.cp_id.empty?
-        return true if pol.subscriber.coverage_start >= Date.today.beginning_of_month
-
-        false
-      end
 
       def merge_and_validate_xmls(folder_count)
         folder_num = prepend_zeros(folder_count.to_s, 5)
@@ -150,8 +151,8 @@ module Generators
         create_directory "#{@h36_root_folder}/#{@h36_folder_name}"
       end
 
-      def prepend_zeros(number, count)
-        (count - number.to_s.size).times { number.prepend('0') }
+      def prepend_zeros(number, value)
+        (value - number.to_s.size).times { number.prepend('0') }
         number
       end
     end
