@@ -166,11 +166,7 @@ class Policy
     th_mems = tax_household.tax_household_members.where(:person_hbx_id.in => hbx_ids)
     slcsp, pre_amt_tot_month = slcsp_pre_amt_tot_values(calendar_month, th_mems)
     aptc = check_for_npt_prem(calendar_month)
-    if aptc.to_d == 0.to_d
-      [format('%.2f', 0.0), format('%.2f', 0.0), format('%.2f', pre_amt_tot_month)]
-    else
-      [format('%.2f', slcsp), format('%.2f', aptc), format('%.2f', pre_amt_tot_month)]
-    end
+    [format('%.2f', slcsp), format('%.2f', aptc), format('%.2f', pre_amt_tot_month)]
   end
 
   def slcsp_pre_amt_tot_values(calendar_month, th_mems)

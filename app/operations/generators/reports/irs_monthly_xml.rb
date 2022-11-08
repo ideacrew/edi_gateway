@@ -63,13 +63,40 @@ module Generators
         end
       end
 
+      def thh_to_pick(tax_household, calendar_month)
+        aptc_to_pick = []
+        Policy.policies_for_month(calendar_month, calendar_year, policies).each do |policy|
+          _slcsp, aptc, _pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
+          aptc_to_pick << aptc.to_f
+        end
+
+        aptc_to_pick.any?(&:positive?)
+      end
+
+      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Metrics/MethodLength
+
       def serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
         thh_xml.TaxHouseholdCoverage do |thhc_xml|
           thhc_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
-          thhc_xml.Household do |hh_xml|
-            serialize_household_members(hh_xml, tax_household)
-            Policy.policies_for_month(calendar_month, calendar_year, policies).each do |policy|
-              serialize_associated_policy(hh_xml, tax_household, calendar_month, policy)
+
+          if thh_to_pick(tax_household, calendar_month)
+            thhc_xml.Household do |hh_xml|
+              serialize_household_members(hh_xml, tax_household)
+              Policy.policies_for_month(calendar_month, calendar_year, policies).each do |policy|
+                serialize_associated_policy(hh_xml, tax_household, calendar_month, policy)
+              end
+            end
+          else
+            thhc_xml.OtherRelevantAdult do |hh_xml|
+              individual = tax_household.primary&.thm_individual
+              next if individual.blank?
+
+              auth_mem = individual.authority_member
+              serialize_names(hh_xml, individual)
+              hh_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
+              hh_xml.BirthDt date_formatter(auth_mem.dob)
+              serialize_address(hh_xml, individual.addresses[0])
             end
           end
         end
@@ -82,8 +109,6 @@ module Generators
           serialize_tax_individual(hh_xml, dependent, 'Dependent')
         end
       end
-
-      # rubocop:disable Metrics/AbcSize
 
       def serialize_tax_individual(hh_xml, tax_household_member, relation)
         individual = tax_household_member&.thm_individual
@@ -100,8 +125,6 @@ module Generators
           end
         end
       end
-
-      # rubocop:enable Metrics/AbcSize
 
       def serialize_names(person_xml, individual)
         person_xml.CompletePersonName do |xml|
@@ -146,9 +169,6 @@ module Generators
         end
       end
 
-      # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Metrics/MethodLength
-
       def serialize_insurance_coverages(insured_pol_xml, policy, insurance_agreement)
         (1..max_month).each do |calendar_month|
           next if Policy.policy_reported_month(calendar_month, calendar_year, policy).nil?
@@ -159,7 +179,7 @@ module Generators
             insured_cov_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
             insured_cov_xml.QHPPolicyNum policy.eg_id
             insured_cov_xml.QHPIssuerEIN policy.carrier.fein
-            insured_cov_xml.IssuerNm policy.carrier.name
+            insured_cov_xml.IssuerNm policy.carrier.issuer_me_name
             insured_cov_xml.PolicyCoverageStartDt date_formatter(policy.policy_start)
             insured_cov_xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
             insured_cov_xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
@@ -172,7 +192,7 @@ module Generators
             policy.covered_enrollees_as_of(calendar_month, calendar_year).each do |enrollee|
               serialize_covered_individual(insured_cov_xml, enrollee)
             end
-            insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp
+            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) unless thh_to_pick(tax_household, calendar_month)
           end
         end
       end
