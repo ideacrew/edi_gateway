@@ -78,10 +78,11 @@ module IrsGroups
     end
 
     def construct_tax_households_payload
+      result = []
       household = @family.households.first
-      return collect_tax_households(household.tax_households) if household.tax_households.present?
-
-      collect_coverage_households(household.coverage_households)
+      result << collect_tax_households(household.tax_households) if household.tax_households.present?
+      result << collect_coverage_households(household.coverage_households)
+      result.flatten
     end
 
     def collect_tax_households(tax_households)
