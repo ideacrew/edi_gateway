@@ -41,6 +41,10 @@ module InsurancePolicies
           date.between?(thh.start_date, end_date)
         end.last
       end
+
+      def uqhp_tax_household
+        tax_households.detect { |thh| thh.is_immediate_family == true }
+      end
     end
   end
 end

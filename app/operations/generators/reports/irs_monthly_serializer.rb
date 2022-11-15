@@ -121,7 +121,7 @@ module Generators
         return true if pol.kind == "coverall"
         return true if pol.plan.coverage_type == 'dental'
         return true if pol.plan.metal_level == "catastrophic"
-        return true if pol.subscriber.cp_id.empty?
+        return true if pol.subscriber.cp_id.blank?
 
         return true if max_month != 12 && (pol.subscriber.coverage_start >= Date.new(calendar_year, (max_month + 1), 1))
 

@@ -21,6 +21,7 @@ module Generators
         @calendar_year = calendar_year
         @max_month = max_month
         @folder_path = folder_path
+        @logger = Logger.new("#{Rails.root}/log/h36_OtherRelevantAdult_primary_person.log")
       end
 
       def serialize
@@ -89,7 +90,7 @@ module Generators
             end
           else
             thhc_xml.OtherRelevantAdult do |hh_xml|
-              individual = tax_household.primary&.thm_individual
+              individual = fetch_thh_primary_person(tax_household)
               next if individual.blank?
 
               auth_mem = individual.authority_member
@@ -99,6 +100,18 @@ module Generators
               serialize_address(hh_xml, individual.addresses[0])
             end
           end
+        end
+      end
+
+      def fetch_thh_primary_person(tax_household)
+        uqhp_primary = irs_group.insurance_agreements.first.uqhp_tax_household.primary
+        aqhp_primary = tax_household.primary
+        if aqhp_primary.present?
+          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using aqhp_primary: #{aqhp_primary.person_hbx_id}")
+          aqhp_primary.thm_individual
+        else
+          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using uqhp_primary: #{uqhp_primary.person_hbx_id}")
+          uqhp_primary&.thm_individual
         end
       end
 
