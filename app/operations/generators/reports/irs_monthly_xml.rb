@@ -104,14 +104,14 @@ module Generators
       end
 
       def fetch_thh_primary_person(tax_household)
-        uqhp_primary = irs_group.insurance_agreements.first.uqhp_tax_household.primary
+        contract_holder = irs_group.insurance_agreements.first.contract_holder
         aqhp_primary = tax_household.primary
         if aqhp_primary.present?
           @logger.info("IrsGroup: #{irs_group.irs_group_id}, using aqhp_primary: #{aqhp_primary.person_hbx_id}")
           aqhp_primary.thm_individual
         else
-          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using uqhp_primary: #{uqhp_primary.person_hbx_id}")
-          uqhp_primary&.thm_individual
+          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using uqhp_primary: #{contract_holder&.hbx_member_id}")
+          contract_holder&.primary_person
         end
       end
 

@@ -62,7 +62,7 @@ module Generators
       # rubocop:disable Metrics/MethodLength
 
       def initialize_process(calendar_year, max_month, fetch_irs_groups)
-        current = 0
+        total_count = fetch_irs_groups.count
         folder_count = 1
         create_new_irs_folder(folder_count)
         count = 0
@@ -105,7 +105,7 @@ module Generators
           end
 
           if (count % 100).zero?
-            puts "so far --- #{count} --- out of #{current}"
+            puts "so far --- #{count} --- out of #{total_count}"
             puts "time taken for current record ---- #{Time.now - start} seconds"
             start = Time.now
           end

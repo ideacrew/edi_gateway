@@ -24,6 +24,10 @@ module InsurancePolicies
 
       embeds_many :phones, class_name: '::InsurancePolicies::AcaIndividuals::Phone', cascade_callbacks: true
       accepts_nested_attributes_for :phones, allow_destroy: true
+
+      def primary_person
+        Person.where(authority_member_id: self.hbx_member_id).first
+      end
     end
   end
 end
