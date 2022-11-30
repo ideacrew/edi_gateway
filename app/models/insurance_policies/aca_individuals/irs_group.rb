@@ -13,8 +13,11 @@ module InsurancePolicies
 
       embeds_many :insurance_agreements, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceAgreement",
                                          cascade_callbacks: true
+      embeds_many :tax_household_groups, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup",
+                  cascade_callbacks: true
 
       accepts_nested_attributes_for :insurance_agreements
+      accepts_nested_attributes_for :tax_household_groups
     end
   end
 end

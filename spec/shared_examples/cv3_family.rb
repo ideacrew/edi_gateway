@@ -110,6 +110,37 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
     }
   end
 
+  let(:tax_household_member_enrollment_member) do
+    {
+      hbx_enrollment_member: {family_member_reference: family_member_reference, is_subscriber: true,
+                              eligibility_date: Date.today, coverage_start_on: Date.today},
+      tax_household_member: {family_member_reference: family_member_reference,
+                             product_eligibility_determination: tax_household_member_eligibity_determination,
+                             is_subscriber: true},
+      age_on_effective_date: 45,
+      family_member_reference: family_member_reference,
+      relationship_with_primary: "self",
+      date_of_birth: Date.today
+    }
+  end
+
+  let(:tax_households_references_params) do
+    {
+      tax_household_reference: { hbx_id: "828762", max_aptc: currency, yearly_expected_contribution: currency },
+      hbx_enrollment_reference: { hbx_id: '1000', effective_on: Date.today, aasm_state: "auto_renewing",
+                                  market_place_kind: "individual", enrollment_period_kind: :open_enrollment,
+                                  product_kind: "health" },
+      household_benchmark_ehb_premium: currency,
+      household_health_benchmark_ehb_premium: currency,
+      household_dental_benchmark_ehb_premium: currency,
+      health_product_hios_id: "33653ME0560003-01",
+      dental_product_hios_id: nil,
+      applied_aptc: currency,
+      available_max_aptc: currency,
+      tax_household_members_enrollment_members: [tax_household_member_enrollment_member]
+    }
+  end
+
   let!(:hbx_enrollments) do
     [
       {
@@ -149,6 +180,7 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
         benefit_package_reference: benefit_package_reference,
         benefit_coverage_period_reference: benefit_coverage_period_reference,
         updated_by: person_reference,
+        tax_households_references: [tax_households_references_params],
         # benefit_sponsorship_reference: benefit_sponsorship_reference,
         # sponsored_benefit_package_reference: sponsored_benefit_package_reference,
         # sponsored_benefit_reference: sponsored_benefit_reference,
@@ -247,7 +279,8 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
       magi_medicaid_monthly_household_income: currency,
       magi_medicaid_monthly_income_limit: currency,
       medicaid_household_size: nil,
-      is_without_assistance: false
+      is_without_assistance: false,
+      csr: 0
     }
   end
 
@@ -269,7 +302,7 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
         start_date: Date.today,
         end_date: Date.today,
         tax_household_members: tax_household_members,
-        eligibility_determinations: eligibility_determinations
+        eligibility_determinations: []
       }
     ]
   end
@@ -283,6 +316,20 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
         submitted_at: Date.today,
         irs_group_reference: irs_group_reference,
         coverage_households: coverage_households,
+        tax_households: tax_households,
+        hbx_enrollments: hbx_enrollments
+      }
+    ]
+  end
+
+  let!(:tax_household_group_params) do
+    [
+      {
+        hbx_id: "1100223",
+        assistance_year: 2023,
+        start_on: Date.today,
+        end_on: nil,
+        source: "Faa",
         tax_households: tax_households,
         hbx_enrollments: hbx_enrollments
       }
@@ -711,6 +758,7 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
       vlp_documents_status: nil,
       family_members: family_member_params,
       households: household_params,
+      tax_household_groups: tax_household_group_params,
       documents: documents,
       broker_accounts: broker_accounts,
       general_agency_accounts: general_agency_accounts,

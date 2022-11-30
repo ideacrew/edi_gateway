@@ -10,12 +10,14 @@ module InsurancePolicies
 
       embedded_in :insurance_agreement, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceAgreement"
 
+      field :tax_household_hbx_id, type: String
       field :allocated_aptc, type: Money
       field :max_aptc, type: Money
       field :start_date, type: Date
       field :end_date, type: Date
       field :is_immediate_family, type: Boolean
 
+      embedded_in :tax_household_group, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup"
       embeds_many :tax_household_members, class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdMember",
                                           cascade_callbacks: true
 
