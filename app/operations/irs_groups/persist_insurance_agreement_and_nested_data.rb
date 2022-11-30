@@ -52,6 +52,7 @@ module IrsGroups
     def construct_thhs_from_groups(tax_household_group)
       tax_household_group.tax_households.collect do |tax_household|
         {
+          tax_household_hbx_id: tax_household.hbx_id,
           allocated_aptc: Money.new(tax_household.allocated_aptc&.cents, tax_household.allocated_aptc&.currency_iso),
           max_aptc: Money.new(tax_household.max_aptc&.cents, tax_household.max_aptc&.currency_iso),
           start_date: tax_household.start_date,
