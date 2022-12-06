@@ -1,9 +1,10 @@
 AllCops:
+  NewCops: enable
   Exclude:
-    - "bin/**"
-    - "vendor/bundle/**/*"
-    - "node_modules/**/*"
-    - "db/schema.rb"
+    - 'bin/**'
+    - 'vendor/bundle/**/*'
+    - 'node_modules/**/*'
+    - 'db/schema.rb'
   SuggestExtensions: false
   TargetRubyVersion: 2.7
 
@@ -18,8 +19,7 @@ Metrics/BlockLength:
   Enabled: false
 
 Metrics/MethodLength:
-  Max:
-    15
+  Max: 15
 
 Naming/PredicateName:
   Enabled: false
@@ -33,8 +33,8 @@ Style/BlockComments:
 Style/Documentation:
   Exclude:
     - config/application.rb
-    - "project_gems/keycloakr/test/**/*.rb"
-    - "spec/**/*_spec.rb"
+    - 'project_gems/keycloakr/test/**/*.rb'
+    - 'spec/**/*_spec.rb'
 
 Style/EmptyLiteral:
   Enabled: false
