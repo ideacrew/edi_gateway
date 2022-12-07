@@ -13,16 +13,19 @@ module InsurancePolicies
       field :gender, type: String
       field :relationship_code, type: String
 
-      embeds_one :person_name, class_name: '::InsurancePolicies::AcaIndividuals::PersonName', cascade_callbacks: true
+      belongs_to :insurance_agreement, class_name: "InsurancePolicies::AcaIndividuals::InsuranceAgreement",
+                 inverse_of: :contract_holder, optional: true
+
+      embeds_one :person_name, class_name: 'InsurancePolicies::AcaIndividuals::PersonName', cascade_callbacks: true
       accepts_nested_attributes_for :person_name
 
-      embeds_many :emails, class_name: '::InsurancePolicies::AcaIndividuals::Email', cascade_callbacks: true
+      embeds_many :emails, class_name: 'InsurancePolicies::AcaIndividuals::Email', cascade_callbacks: true
       accepts_nested_attributes_for :emails, allow_destroy: true
 
-      embeds_many :addresses, class_name: '::InsurancePolicies::AcaIndividuals::Address', cascade_callbacks: true
+      embeds_many :addresses, class_name: 'InsurancePolicies::AcaIndividuals::Address', cascade_callbacks: true
       accepts_nested_attributes_for :addresses, allow_destroy: true
 
-      embeds_many :phones, class_name: '::InsurancePolicies::AcaIndividuals::Phone', cascade_callbacks: true
+      embeds_many :phones, class_name: 'InsurancePolicies::AcaIndividuals::Phone', cascade_callbacks: true
       accepts_nested_attributes_for :phones, allow_destroy: true
 
       def primary_person

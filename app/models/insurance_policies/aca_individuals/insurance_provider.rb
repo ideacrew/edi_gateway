@@ -12,7 +12,9 @@ module InsurancePolicies
       field :text, type: String
       field :fein, type: String
 
-      embedded_in :insurance_agreement, class_name: "InsurancePolicies::AcaIndividuals::InsuranceAgreement"
+      belongs_to :insurance_agreement, class_name: "InsurancePolicies::AcaIndividuals::InsuranceAgreement",
+                 inverse_of: :insurance_provider
+
       embeds_many :insurance_products, class_name: "InsurancePolicies::AcaIndividuals::InsuranceProduct", cascade_callbacks: true
     end
   end

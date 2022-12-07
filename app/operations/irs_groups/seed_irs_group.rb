@@ -13,7 +13,10 @@ module IrsGroups
       family = yield build_family_entity(validated_family_hash)
       policies = yield FetchPoliciesFromGlue.new.call({ family: family })
       result = yield CreateAndPersistIrsGroup.new.call({ family: family, policies: policies })
-      Success(result)
+      result_2 = yield CreateOrUpdateTaxHouseholdGroups.new.call({family: family, irs_group: result})
+      result_3 = yield CreateOrUpdateTaxHouseholdEnrollments.new.call({family: family})
+
+      Success(result_2)
     end
 
     private

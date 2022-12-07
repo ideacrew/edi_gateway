@@ -53,13 +53,21 @@ module Generators
       end
 
       def serialize_taxhouseholds(irs_hhg_xml)
-        insurance_agreement = irs_group.insurance_agreements.first
-        irs_hhg_xml.TaxHousehold do |thh_xml|
-          (1..max_month).each do |calendar_month|
-            tax_household = insurance_agreement.covered_month_tax_household(calendar_year, calendar_month)
-            next if Policy.policies_for_month(calendar_month, calendar_year, policies).empty?
+        @irs_group.irs_households_for_duration(calendar_year, max_month, policies).each do |tax_household|
+          irs_hhg_xml.TaxHousehold do |thh_xml|
+            (1..max_month).each do |calendar_month|
+              result =  if tax_household.is_immediate_family == true
+                          Policy.policies_for_month(calendar_month, calendar_year, policies)
+                        else
+                          policies_for_month = Policy.policies_for_month(calendar_month, calendar_year, policies)
+                          thh_enrollments = InsurancePolicies::AcaIndividuals::TaxHouseholdEnrollment.thh_enrollments_for(tax_household)
+                          policies_for_month.map(&:eg_id) & thh_enrollments.map(&:enrollment_hbx_id)
+                        end
 
-            serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
+              next if result.empty?
+
+              serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
+            end
           end
         end
       end
@@ -90,7 +98,7 @@ module Generators
             end
           else
             thhc_xml.OtherRelevantAdult do |hh_xml|
-              individual = fetch_thh_primary_person(tax_household)
+              individual = fetch_thh_primary_person
               next if individual.blank?
 
               auth_mem = individual.authority_member
@@ -103,16 +111,9 @@ module Generators
         end
       end
 
-      def fetch_thh_primary_person(tax_household)
+      def fetch_thh_primary_person
         contract_holder = irs_group.insurance_agreements.first.contract_holder
-        aqhp_primary = tax_household.primary
-        if aqhp_primary.present?
-          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using aqhp_primary: #{aqhp_primary.person_hbx_id}")
-          aqhp_primary.thm_individual
-        else
-          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using uqhp_primary: #{contract_holder&.hbx_member_id}")
-          contract_holder&.primary_person
-        end
+        contract_holder&.primary_person
       end
 
       def serialize_household_members(hh_xml, tax_household)

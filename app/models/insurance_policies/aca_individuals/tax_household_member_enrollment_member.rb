@@ -14,6 +14,9 @@ module InsurancePolicies
 
       embedded_in :tax_household_enrollment,
                   class_name: "::InsurancePolicies::AcaIndividuals::TaxHouseholdEnrollment"
+
+      belongs_to :member, class_name: "::InsurancePolicies::AcaIndividuals::Member",
+                 inverse_of: :insurance_provider
     end
   end
 end

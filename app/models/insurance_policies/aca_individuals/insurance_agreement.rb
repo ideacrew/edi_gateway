@@ -14,16 +14,15 @@ module InsurancePolicies
       field :marketplace_segment_id, type: String
       field :plan_year, type: String
 
-      embedded_in :irs_group, class_name: "::InsurancePolicies::AcaIndividuals::IrsGroup"
-      embeds_one :contract_holder, class_name: "::InsurancePolicies::AcaIndividuals::Member", cascade_callbacks: true
-      embeds_one :insurance_provider, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceProvider",
-                                      cascade_callbacks: true
-      embeds_many :tax_households, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold", cascade_callbacks: true
+      embedded_in :irs_group, class_name: "InsurancePolicies::AcaIndividuals::IrsGroup"
+
+      has_one :contract_holder, class_name: "InsurancePolicies::AcaIndividuals::Member",
+              inverse_of: :insurance_agreement
+      has_one :insurance_provider, class_name: "InsurancePolicies::AcaIndividuals::InsuranceProvider",
+              inverse_of: :insurance_agreement
 
       accepts_nested_attributes_for :insurance_provider
       accepts_nested_attributes_for :contract_holder
-      accepts_nested_attributes_for :insurance_provider
-      accepts_nested_attributes_for :tax_households
 
       def covered_month_tax_household(calendar_year, calendar_month)
         tax_household = covered_calendar_year_thh(calendar_year, calendar_month)

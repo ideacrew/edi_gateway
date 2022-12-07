@@ -59,6 +59,7 @@ RSpec.describe IrsGroups::PersistInsuranceAgreementAndNestedData do
     irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.create!(irs_group_id: "2200000001000595")
 
     res = subject.call({ family: family_entity, policies: [policy], irs_group: irs_group, primary_person: person })
+    binding.pry
     expect(res.success?).to be_truthy
     expect(irs_group.insurance_agreements.count).to eq 1
     expect(irs_group.insurance_agreements.first.contract_holder.hbx_member_id).to eq "1000595"

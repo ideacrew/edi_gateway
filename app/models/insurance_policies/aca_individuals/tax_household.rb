@@ -10,7 +10,7 @@ module InsurancePolicies
 
       embedded_in :insurance_agreement, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceAgreement"
 
-      field :tax_household_hbx_id, type: String
+      field :hbx_id, type: String
       field :allocated_aptc, type: Money
       field :max_aptc, type: Money
       field :start_date, type: Date

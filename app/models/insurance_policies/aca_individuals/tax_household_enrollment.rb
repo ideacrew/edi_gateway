@@ -22,6 +22,10 @@ module InsurancePolicies
                   cascade_callbacks: true
 
       accepts_nested_attributes_for :tax_household_members_enrollment_members
+
+      def self.thh_enrollments_for(tax_household)
+        InsurancePolicies::AcaIndividuals::TaxHouseholdEnrollment.where(tax_household_hbx_id: tax_household.tax_household_hbx_id)
+      end
     end
   end
 end

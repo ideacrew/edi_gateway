@@ -31,6 +31,9 @@ module InsurancePolicies
 
       embedded_in :tax_household, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold"
 
+      belongs_to :member, class_name: "::InsurancePolicies::AcaIndividuals::Member",
+                 inverse_of: :tax_household_member
+
       def thm_individual
         Person.where(authority_member_id: self.person_hbx_id).first
       end

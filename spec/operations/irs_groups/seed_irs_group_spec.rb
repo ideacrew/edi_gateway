@@ -99,6 +99,7 @@ RSpec.describe IrsGroups::SeedIrsGroup do
     res = subject.call({ payload: family_params.to_h })
     expect(res.success?).to be_truthy
     irs_group = res.success
+    binding.pry
     expect(irs_group.class).to eq(InsurancePolicies::AcaIndividuals::IrsGroup)
     expect(irs_group.insurance_agreements.count).to eq 1
     expect(irs_group.insurance_agreements.first.contract_holder.class).to eq(InsurancePolicies::AcaIndividuals::Member)

@@ -53,7 +53,7 @@ module Generators
       end
 
       def fetch_irs_groups
-        Success InsurancePolicies::AcaIndividuals::IrsGroup.all.no_timeout
+        Success InsurancePolicies::AcaIndividuals::IrsGroup.all.exists(tax_household_groups: true)
       end
 
       # rubocop:disable Metrics/AbcSize
