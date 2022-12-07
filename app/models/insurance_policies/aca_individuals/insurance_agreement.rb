@@ -7,22 +7,26 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      field :start_on, type: Date
-      field :end_on, type: Date
+      embedded_in :irs_group, class_name: '::InsurancePolicies::AcaIndividuals::IrsGroup'
+
       field :effectuated_on, type: Date
       field :policy_id, type: String
       field :marketplace_segment_id, type: String
       field :plan_year, type: String
 
-      embedded_in :irs_group, class_name: "::InsurancePolicies::AcaIndividuals::IrsGroup"
-      embeds_one :contract_holder, class_name: "::InsurancePolicies::AcaIndividuals::Member", cascade_callbacks: true
-      embeds_one :insurance_provider, class_name: "::InsurancePolicies::AcaIndividuals::InsuranceProvider",
-                                      cascade_callbacks: true
-      embeds_many :tax_households, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold", cascade_callbacks: true
-
-      accepts_nested_attributes_for :insurance_provider
+      embeds_one :contract_holder, class_name: '::InsurancePolicies::AcaIndividuals::Member', cascade_callbacks: true
       accepts_nested_attributes_for :contract_holder
+
+      embeds_one :insurance_provider,
+                 class_name: '::InsurancePolicies::AcaIndividuals::InsuranceProvider',
+                 cascade_callbacks: true
       accepts_nested_attributes_for :insurance_provider
+
+      embeds_one :insurance_ploicies, class_name: '::InsurancePolicies::AcaIndividuals::Member', cascade_callbacks: true
+
+      embeds_many :tax_households,
+                  class_name: '::InsurancePolicies::AcaIndividuals::TaxHousehold',
+                  cascade_callbacks: true
       accepts_nested_attributes_for :tax_households
 
       def covered_month_tax_household(calendar_year, calendar_month)
@@ -34,8 +38,11 @@ module InsurancePolicies
 
       def covered_calendar_year_thh(calendar_year, calendar_month)
         date = Date.new(calendar_year, calendar_month, 1)
-        calendar_year_thhs = tax_households.where(start_date: Date.new(calendar_year)..Date.new(calendar_year).end_of_year,
-                                                  is_immediate_family: nil)
+        calendar_year_thhs =
+          tax_households.where(
+            start_date: Date.new(calendar_year)..Date.new(calendar_year).end_of_year,
+            is_immediate_family: nil
+          )
         calendar_year_thhs.select do |thh|
           end_date = thh.end_date.present? ? thh.end_date : Date.new(calendar_year, 12, 31)
           date.between?(thh.start_date, end_date)
