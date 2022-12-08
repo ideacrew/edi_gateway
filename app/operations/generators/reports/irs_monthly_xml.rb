@@ -25,9 +25,7 @@ module Generators
       end
 
       def serialize
-        File.open("#{@folder_path}/#{@irs_group.irs_group_id}.xml", 'w') do |file|
-          file.write builder.to_xml(:indent => 2)
-        end
+        File.write("#{@folder_path}/#{@irs_group.irs_group_id}.xml", builder.to_xml(:indent => 2))
       end
 
       def builder

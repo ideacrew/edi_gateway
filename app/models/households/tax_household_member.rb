@@ -30,6 +30,6 @@ module Households
     embedded_in :tax_household, class_name: "Households::TaxHousehold"
 
     belongs_to :person, class_name: "People::Person",
-               inverse_of: :tax_household_member
+                        inverse_of: :tax_household_member
   end
 end

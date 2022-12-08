@@ -16,9 +16,8 @@ module Households
     field :is_immediate_family, type: Boolean
 
     embeds_many :tax_household_members, class_name: "Households::TaxHouseholdMember",
-                cascade_callbacks: true
+                                        cascade_callbacks: true
     accepts_nested_attributes_for :tax_household_members, allow_destroy: true
-
 
     def primary
       primary_thh = tax_household_members.where(relation_with_primary: "self").first

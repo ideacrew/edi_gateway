@@ -5,7 +5,7 @@ module Products
   class Product
     include Mongoid::Document
     include Mongoid::Timestamps
-    
+
     field :hios_id, type: String
     field :name, type: String
     field :active_year, type: Integer

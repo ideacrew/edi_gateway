@@ -12,15 +12,13 @@ module Generators
         "xmlns:ns5" => "http://birsrep.dsh.cms.gov/exchange/1.0"
       }.freeze
 
+      ManifestStruct = Struct.new(:file_count)
+      Attachment = Struct.new(:checksum, :binarysize, :filename, :sequence_id)
       def create(folder)
         @folder = folder
-        @manifest = OpenStruct.new({
-                                     file_count: Dir.glob("#{@folder}/*.xml").count
-                                   })
+        @manifest = ManifestStruct.new(file_count: Dir.glob("#{@folder}/*.xml").count)
         manifest_xml = serialize.to_xml(:indent => 2)
-        File.open("#{folder}/manifest.xml", 'w') do |file|
-          file.write manifest_xml
-        end
+        File.write("#{folder}/manifest.xml", manifest_xml)
       end
 
       def serialize
@@ -38,12 +36,10 @@ module Generators
 
       def attachments
         Dir.glob("#{@folder}/*.xml").inject([]) do |data, file|
-          data << OpenStruct.new({
-                                   checksum: Digest::SHA256.file(file).hexdigest,
-                                   binarysize: File.size(file),
-                                   filename: File.basename(file),
-                                   sequence_id: File.basename(file).match(/\d{5}/)[0]
-                                 })
+          data << Attachment.new(checksum: Digest::SHA256.file(file).hexdigest,
+                                 binarysize: File.size(file),
+                                 filename: File.basename(file),
+                                 sequence_id: File.basename(file).match(/\d{5}/)[0])
         end
       end
 

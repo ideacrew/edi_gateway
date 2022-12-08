@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module InsurancePolicies
+  # Member information
   class Member
     include Mongoid::Document
     include Mongoid::Timestamps

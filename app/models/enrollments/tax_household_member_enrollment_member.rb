@@ -15,6 +15,6 @@ module Enrollments
     field :date_of_birth, type: Date
 
     belongs_to :person, class_name: "People::Person",
-               inverse_of: :tax_household_member_enrollment_member
+                        inverse_of: :tax_household_member_enrollment_member
   end
 end
