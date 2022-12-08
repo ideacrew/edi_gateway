@@ -9,6 +9,7 @@ module InsurancePolicies
 
       # belongs_to :insurance_agreement, class_name: 'InsurancePolicies::AcaIndividuals::InsuranceAgreement'
       has_many :tax_households, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
+      accepts_nested_attributes_for :tax_households
 
       field :hbx_id, type: String
       field :assistance_year, type: Integer
@@ -17,6 +18,9 @@ module InsurancePolicies
 
       field :start_on, type: Date
       field :end_on, type: Date
+
+      index({ hbx_id: 1 }, { unique: true })
+      index({ application_hbx_id: 1 })
     end
   end
 end

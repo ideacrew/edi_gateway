@@ -2,25 +2,34 @@
 
 require './spec/shared_examples/insurance_policies/shared_insurance_policies'
 
-RSpec.describe InsurancePolicies::AcaIndividuals::TaxHouseholdGroup, type: :model, db_clean: :before do
+RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db_clean: :before do
   include_context 'shared_insurance_policies'
 
   context "Given valid params to initialize a #{described_class} instance" do
-    let(:hbx_id) { '12124' }
-    let(:assistance_year) { 2022 }
-    let(:application_hbx_id) { '36369' }
-    let(:household_group_benchmark_ehb_premium) { BigDecimal('210.98') }
-    let(:tax_households) { [shared_insurance_policies_tax_household] }
+    let(:hbx_id) { '828762' }
+    let(:is_eligibility_determined) { true }
+
+    let(:allocated_aptc) { BigDecimal('0.0') }
+    let(:max_aptc) { BigDecimal('510.98') }
+    let(:yearly_expected_contribution) { BigDecimal('102.78238') }
+
+    let(:tax_household_members) do
+      [
+        InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(shared_insurance_policies_tax_household_one),
+        InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(shared_insurance_policies_tax_household_two)
+      ]
+    end
 
     let(:valid_params) do
       {
         hbx_id: hbx_id,
-        assistance_year: assistance_year,
-        application_hbx_id: application_hbx_id,
-        household_group_benchmark_ehb_premium: household_group_benchmark_ehb_premium,
+        is_eligibility_determined: is_eligibility_determined,
+        allocated_aptc: allocated_aptc,
+        max_aptc: max_aptc,
+        yearly_expected_contribution: yearly_expected_contribution,
         start_on: Date.today,
         end_on: nil,
-        tax_households: tax_households
+        tax_household_members: tax_household_members
       }
     end
 
