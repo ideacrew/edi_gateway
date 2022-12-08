@@ -86,9 +86,7 @@ module Generators
       end
 
       def write
-        File.open(@data_file_path, 'w+') do |file|
-          file.write(@consolidated_doc.to_xml)
-        end
+        File.write(@data_file_path, @consolidated_doc.to_xml)
       end
 
       def self.validate_individuals(dir)
