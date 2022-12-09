@@ -7,27 +7,20 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      embedded_in :irs_group, class_name: '::InsurancePolicies::AcaIndividuals::IrsGroup'
+      has_many :insurance_policies
 
-      field :effectuated_on, type: Date
-      field :policy_id, type: String
-      field :marketplace_segment_id, type: String
       field :plan_year, type: String
 
-      embeds_one :contract_holder, class_name: '::InsurancePolicies::AcaIndividuals::Member', cascade_callbacks: true
+      # Account ID is reference to Account model stored in external RDBMS and is
+      # managed by application (rather than Mongoid)
+      field :account_id, type: String
+
+      embeds_one :contract_holder, class_name: '::InsurancePolicies::AcaIndividuals::Member'
       accepts_nested_attributes_for :contract_holder
 
-      embeds_one :insurance_provider,
-                 class_name: '::InsurancePolicies::AcaIndividuals::InsuranceProvider',
-                 cascade_callbacks: true
-      accepts_nested_attributes_for :insurance_provider
+      belongs_to :insurance_provider, class_name: '::InsurancePolicies::AcaIndividuals::InsuranceProvider'
 
-      embeds_one :insurance_ploicies, class_name: '::InsurancePolicies::AcaIndividuals::Member', cascade_callbacks: true
-
-      embeds_many :tax_households,
-                  class_name: '::InsurancePolicies::AcaIndividuals::TaxHousehold',
-                  cascade_callbacks: true
-      accepts_nested_attributes_for :tax_households
+      embeds_one :insurance_polcies, class_name: '::InsurancePolicies::AcaIndividuals::InsurancePolicies'
 
       def covered_month_tax_household(calendar_year, calendar_month)
         tax_household = covered_calendar_year_thh(calendar_year, calendar_month)

@@ -6,14 +6,18 @@ module InsurancePolicies
       include Mongoid::Document
       include Mongoid::Timestamps
 
+      has_many :insurance_products
+
       field :title, type: String
       field :hios_id, type: String
       field :description, type: String
       field :text, type: String
       field :fein, type: String
 
-      embedded_in :insurance_agreement, class_name: "InsurancePolicies::AcaIndividuals::InsuranceAgreement"
-      embeds_many :insurance_products, class_name: "InsurancePolicies::AcaIndividuals::InsuranceProduct", cascade_callbacks: true
+      embedded_in :insurance_agreement, class_name: 'InsurancePolicies::AcaIndividuals::InsuranceAgreement'
+      embeds_many :insurance_products,
+                  class_name: 'InsurancePolicies::AcaIndividuals::InsuranceProduct',
+                  cascade_callbacks: true
     end
   end
 end

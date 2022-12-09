@@ -15,12 +15,9 @@ module InsurancePolicies
       # belongs_to :enrollment
       # accepts_nested_attributes_for :enrollment
 
-      # has_one :health_product
-      # has_one :dental_product
+      # belongs_to :health_product
+      # belongs_to :dental_product
 
-      field :household_health_benchmark_ehb_premium, type: Money
-      field :household_dental_benchmark_ehb_premium, type: Money
-      field :household_benchmark_ehb_premium, type: Money
       field :applied_aptc, type: Money
       field :available_max_aptc, type: Money
 

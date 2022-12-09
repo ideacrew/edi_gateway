@@ -1,6 +1,23 @@
 # frozen_string_literal: true
 
 RSpec.shared_context 'shared_insurance_policies' do
+  # Enrollment
+  let(:enrollment_total_premium) { BigDecimal('1200.0') }
+  let(:enrollment_total_premium_adjustments) { BigDecimal('400.0') }
+  let(:enrollment_total_responsible_premium) { BigDecimal('800.0') }
+  let(:enrollment_start_on) { Date.new(Date.today.year, 1, 1) }
+  let(:enrollment_start_on) { nil }
+
+  let(:shared_insurance_policies_enrollment) do
+    InsurancePolicies::AcaIndividuals::Enrollment.new(
+      total_premium: enrollment_total_premium,
+      total_premium_adjustments: enrollment_total_premium_adjustments,
+      total_responsible_premium: enrollment_total_responsible_premium,
+      start_on: enrollment_start_on,
+      end_on: enrollment_end_on
+    )
+  end
+
   let(:tax_household_hbx_id_one) { '101101' }
   let(:tax_household_hbx_id_two) { '101102' }
   let(:tax_household_is_eligibility_determined) { true }
