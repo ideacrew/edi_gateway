@@ -2,6 +2,8 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # An index table for many-to-many association between {InsurancePolicies::AcaIndividuals::Enrollments} and
+    # {InsurancePolicies::AcaIndividuals::TaxHouseholds}
     class EnrollmentsTaxHouseholds
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -12,16 +14,11 @@ module InsurancePolicies
       belongs_to :tax_household, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
       accepts_nested_attributes_for :tax_household
 
-      # belongs_to :enrollment
-      # accepts_nested_attributes_for :enrollment
-
-      # belongs_to :health_product
-      # belongs_to :dental_product
+      belongs_to :enrollment, class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
+      accepts_nested_attributes_for :enrollment
 
       field :applied_aptc, type: Money
       field :available_max_aptc, type: Money
-
-      # field :irs_group_id, type: String
     end
   end
 end
