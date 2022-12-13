@@ -9,12 +9,17 @@ module InsurancePolicies
       include DomainModelHelpers
 
       has_many :irs_groups, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup'
-      accepts_nested_attributes_for :irs_groups
+      # accepts_nested_attributes_for :irs_groups
 
       has_many :enrollments, class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
-      accepts_nested_attributes_for :enrollments
+      # accepts_nested_attributes_for :enrollments
 
-      belongs_to :plan_years_products, 'InsurancePolicies::AcaIndividuals::PlanYearsProducts'
+      belongs_to :insurance_product, class_name:'InsurancePolicies::InsuranceProduct'
+
+      belongs_to :insurance_agreement, class_name:'InsurancePolicies::InsuranceAgreement'
+
+      #TODO - NEED confirmation
+      #belongs_to :plan_years_products, class_name: 'InsurancePolicies::AcaIndividuals::PlanYearsProducts'
 
       field :policy_id, type: String
       field :insurer_policy_id, type: String

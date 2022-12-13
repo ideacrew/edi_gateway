@@ -12,11 +12,11 @@ module InsurancePolicies
 
     field :plan_year, type: String
 
-    has_one :contract_holder, class_name: 'InsurancePolicies::AcaIndividuals::Member'
+    belongs_to :contract_holder, class_name: "People::Person"
 
-    belongs_to :insurance_provider, class_name: 'InsurancePolicies::AcaIndividuals::InsuranceProvider'
+    belongs_to :insurance_provider, class_name: "InsurancePolicies::InsuranceProvider"
 
-    has_many :insurance_polcies, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicies'
+    has_one :insurance_policy, class_name: "InsurancePolicies::AcaIndividuals::InsurancePolicy"
 
     # Return the UserFees::Account for this InsuranceAgreement
     def account

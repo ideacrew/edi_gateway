@@ -11,13 +11,15 @@ module InsurancePolicies
       has_many :enrollments_tax_households, class_name: 'InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds'
       accepts_nested_attributes_for :enrollments_tax_households
 
-      embeds_one :subscriber, class_name: 'AcaIndividuals::EnrolledMember', inverse_of: :subscriber_member
-      embeds_many :dependents, class_name: 'AcaIndividuals::EnrolledMember', inverse_of: :dependent_member
+      belongs_to :insurance_policy, class_name: "InsurancePolicies::AcaIndividuals::InsurancePolicy"
 
-      field :total_premium, type: Money
-      field :total_premium_adjustments, type: Money
-      field :total_responsible_premium, type: Money
+      embeds_one :subscriber, class_name: 'AcaIndividuals::EnrolledMember', as: :subscriber_member
+      embeds_many :dependents, class_name: 'AcaIndividuals::EnrolledMember', as: :dependent_members
 
+      field :hbx_enrollment_id, type: String
+      field :total_premium_amount, type: Money
+      field :total_premium_adjustment_amount, type: Money
+      field :total_responsible_premium_amount, type: Money
       field :effectuated_on, type: Date
 
       field :start_on, type: Date

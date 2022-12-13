@@ -8,22 +8,20 @@ module InsurancePolicies
       include Mongoid::Timestamps
       include DomainModelHelpers
 
-      belongs_to :member, class_name: 'InsurancePolicies::Member'
-      accepts_nested_attributes_for :member
+      belongs_to :person, class_name: 'People::Person'
+      accepts_nested_attributes_for :person
 
       embeds_one :premium_schedule, class_name: 'InsurancePolicies::PremiumSchedule'
 
       # Subscriber Association
       embedded_in :aca_individuals_enrollment,
-                  as: :subscriber_member,
                   class_name: 'InsurancePolicies::AcaIndividuals::Enrollment',
-                  inverse_of: :subscriber
+                  inverse_of: :subscriber_member
 
       # Dependnet Association
       embedded_in :aca_individuals_enrollment,
-                  as: :dependent_member,
                   class_name: 'InsurancePolicies::AcaIndividuals::Enrollment',
-                  inverse_of: :dependents
+                  inverse_of: :dependent_members
 
       field :insurer_assigned_id, type: String
       field :encrypted_ssn, type: String
