@@ -17,8 +17,16 @@ module InsurancePolicies
       belongs_to :enrollment, class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
       accepts_nested_attributes_for :enrollment
 
+      has_many :enrolled_members_tax_household_members,
+               class_name: 'InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers'
+
       field :applied_aptc, type: Money
       field :available_max_aptc, type: Money
+      field :household_benchmark_ehb_premium, type: Money
+      field :health_product_hios_id, type: String
+      field :dental_product_hios_id, type: String
+      field :household_health_benchmark_ehb_premium, type: Money
+      field :household_dental_benchmark_ehb_premium, type: Money
     end
   end
 end

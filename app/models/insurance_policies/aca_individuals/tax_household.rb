@@ -11,7 +11,7 @@ module InsurancePolicies
 
       Money.default_currency = 'USD'
 
-      belongs_to :tax_houshold_group, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup'
+      belongs_to :tax_household_group, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup'
 
       # embeds_one :aptc_accumulator
       # embeds_one :contribution_accumulator

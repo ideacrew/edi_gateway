@@ -6,12 +6,12 @@ module InsurancePolicies
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embedded_in :enrolled_member
+    embedded_in :enrolled_member, class_name: 'InsurancePolicies::AcaIndividuals::EnrolledMember'
 
     field :premium_amount, type: Money
     field :benchmark_ehb_premium_amount, type: Money
     field :next_due_on, type: Date
 
-    embeds_many :premium_adjustments, class_name: 'InsurancePolicies::PremiumAdjustment'
+    # embeds_many :premium_adjustments, class_name: 'InsurancePolicies::PremiumAdjustment'
   end
 end

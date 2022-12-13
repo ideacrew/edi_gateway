@@ -11,6 +11,9 @@ module InsurancePolicies
       has_many :irs_groups, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup'
       accepts_nested_attributes_for :irs_groups
 
+      has_many :tax_households, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
+      accepts_nested_attributes_for :tax_households
+
       field :hbx_id, type: String
       field :assistance_year, type: Integer
       field :application_hbx_id, type: String
