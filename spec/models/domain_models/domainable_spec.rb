@@ -11,8 +11,7 @@ shared_examples_for 'domainable' do
   end
 
   it 'runs attributes through the contract' do
-    binding.pry
-    model.validate_values
+    # model.validate_values
   end
 end
 

@@ -136,6 +136,4 @@ RSpec.shared_context 'shared_insurance_policies' do
       reason: tax_household_member_reason
     )
   end
-
-  let(:shared_people_person)
 end

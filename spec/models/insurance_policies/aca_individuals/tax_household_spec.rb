@@ -50,7 +50,6 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
     context 'and it should save and retreive from database' do
       it 'should persist' do
         result = described_class.new(valid_params)
-        binding.pry
         expect(result.save).to be_truthy
         expect(described_class.all.size).to eq 1
 
