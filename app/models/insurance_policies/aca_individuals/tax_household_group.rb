@@ -6,7 +6,7 @@ module InsurancePolicies
     class TaxHouseholdGroup
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       has_many :irs_groups, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup'
       accepts_nested_attributes_for :irs_groups

@@ -4,7 +4,7 @@ module People
   class PersonName
     include Mongoid::Document
     include Mongoid::Timestamps
-    include DomainModelHelpers
+    include DomainModels::Domainable
 
     embedded_in :person, class_name: 'People::Person', inverse_of: :name
     embedded_in :person, class_name: 'People::Person', inverse_of: :former_names

@@ -6,12 +6,12 @@ module InsurancePolicies
     class Enrollment
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       has_many :enrollments_tax_households, class_name: 'InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds'
       accepts_nested_attributes_for :enrollments_tax_households
 
-      belongs_to :insurance_policy, class_name: "InsurancePolicies::AcaIndividuals::InsurancePolicy"
+      belongs_to :insurance_policy, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'
 
       embeds_one :subscriber, class_name: 'AcaIndividuals::EnrolledMember', as: :subscriber_member
       embeds_many :dependents, class_name: 'AcaIndividuals::EnrolledMember', as: :dependent_members

@@ -5,7 +5,7 @@ module Locations
     class StreetAddress
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       embedded_in :person, class_name: 'InsurancePolicies::Person', inverse_of: :addresses
 

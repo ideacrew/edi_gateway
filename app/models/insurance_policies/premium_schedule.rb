@@ -5,6 +5,7 @@ module InsurancePolicies
   class PremiumSchedule
     include Mongoid::Document
     include Mongoid::Timestamps
+    include DomainModels::Domainable
 
     embedded_in :enrolled_member, class_name: 'InsurancePolicies::AcaIndividuals::EnrolledMember'
 

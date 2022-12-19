@@ -7,7 +7,7 @@ module InsurancePolicies
     class EnrollmentsTaxHouseholds
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       Money.default_currency = 'USD'
 

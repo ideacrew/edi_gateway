@@ -5,7 +5,7 @@ module InsurancePolicies
   class InsuranceProvider
     include Mongoid::Document
     include Mongoid::Timestamps
-    include DomainModelHelpers
+    include DomainModels::Domainable
 
     has_many :insurance_products, class_name: 'InsurancePolicies::InsuranceProduct'
 
@@ -15,8 +15,12 @@ module InsurancePolicies
     field :text, type: String
     field :fein, type: String
 
-    # has_many :aca_individuals_insurance_agreements,
-    #          class_name: 'InsurancePolicies::AcaIndividuals::InsuranceAgreement',
-    #          inverse_of: :insurance_provider
+    has_many :insurance_agreements,
+             class_name: 'InsurancePolicies::InsuranceAgreement',
+             inverse_of: :insurance_provider,
+             counter_cache: true
+
+    index({ hios_id: 1 }, { unique: true })
+    index({ fein: 1 }, { unique: true })
   end
 end

@@ -91,10 +91,10 @@ RSpec.shared_context 'shared_insurance_policies' do
   end
 
   # TaxHouseholdMembers
-  let(:tax_household_member_person_hbx_id_a) { '1001' }
-  let(:tax_household_member_person_hbx_id_b) { '1002' }
-  let(:tax_household_member_person_hbx_id_c) { '1003' }
-  let(:tax_household_member_person_hbx_id_d) { '1004' }
+  let(:tax_household_member_hbx_id_a) { '1001' }
+  let(:tax_household_member_hbx_id_b) { '1002' }
+  let(:tax_household_member_hbx_id_c) { '1003' }
+  let(:tax_household_member_hbx_id_d) { '1004' }
   let(:tax_household_member_is_subscriber_true) { true }
   let(:tax_household_member_is_tax_filer_true) { true }
   let(:tax_household_member_is_subscriber_false) { false }
@@ -103,7 +103,7 @@ RSpec.shared_context 'shared_insurance_policies' do
 
   let(:shared_insurance_policies_tax_household_member_tax_filer_a) do
     InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(
-      person_hbx_id: tax_household_member_person_hbx_id_a,
+      hbx_id: tax_household_member_hbx_id_a,
       is_subscriber: tax_household_member_is_subscriber_true,
       is_tax_filer: tax_household_member_is_tax_filer_true,
       reason: tax_household_member_reason
@@ -112,7 +112,7 @@ RSpec.shared_context 'shared_insurance_policies' do
 
   let(:shared_insurance_policies_tax_household_member_tax_filer_b) do
     InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(
-      person_hbx_id: tax_household_member_person_hbx_id_b,
+      hbx_id: tax_household_member_hbx_id_b,
       is_subscriber: tax_household_member_is_subscriber_true,
       is_tax_filer: tax_household_member_is_tax_filer_true,
       reason: tax_household_member_reason
@@ -121,7 +121,7 @@ RSpec.shared_context 'shared_insurance_policies' do
 
   let(:shared_insurance_policies_tax_household_non_tax_filer_member_c) do
     InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(
-      person_hbx_id: tax_household_member_person_hbx_id_c,
+      hbx_id: tax_household_member_hbx_id_c,
       is_subscriber: tax_household_member_is_subscriber_false,
       is_tax_filer: tax_household_member_is_tax_filer_false,
       reason: tax_household_member_reason
@@ -130,10 +130,12 @@ RSpec.shared_context 'shared_insurance_policies' do
 
   let(:shared_insurance_policies_tax_household_non_tax_filer_member_d) do
     InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(
-      person_hbx_id: tax_household_member_person_hbx_id_d,
+      hbx_id: tax_household_member_hbx_id_d,
       is_subscriber: tax_household_member_is_subscriber_false,
       is_tax_filer: tax_household_member_is_tax_filer_false,
       reason: tax_household_member_reason
     )
   end
+
+  let(:shared_people_person)
 end

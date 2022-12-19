@@ -5,9 +5,9 @@ module InsurancePolicies
   class InsuranceProduct
     include Mongoid::Document
     include Mongoid::Timestamps
-    include DomainModelHelpers
+    include DomainModels::Domainable
 
-    # TODO Confirm what to do
+    # TODO: Confirm what to do
     # belongs_to :plan_years_products
 
     field :name, type: String
@@ -20,9 +20,9 @@ module InsurancePolicies
     field :ehb, type: BigDecimal, default: 0.0
     field :plan_year, type: Integer
 
-    belongs_to :insurance_provider, class_name: "InsurancePolicies::InsuranceProvider"
+    belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider'
 
-    # TODO Confirm with Dan (inside or outisde aca_individuals structure)
+    # TODO: Confirm with Dan (inside or outisde aca_individuals structure)
     # embeds_many :insurance_product_features,
     #             class_name: "InsurancePolicies::AcaIndividuals::InsuranceProductFeature",
     #             cascade_callbacks: true

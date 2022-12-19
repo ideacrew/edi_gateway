@@ -4,7 +4,7 @@ module Contacts
   class Phone
     include Mongoid::Document
     include Mongoid::Timestamps
-    include DomainModelHelpers
+    include DomainModels::Domainable
 
     embedded_in :person, class_name: 'People::Person', inverse_of: :phones
 

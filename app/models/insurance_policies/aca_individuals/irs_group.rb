@@ -5,9 +5,10 @@ module InsurancePolicies
     class IrsGroup
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       belongs_to :aca_individual_insurance_policy, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'
+
       # accepts_nested_attributes_for :insurance_policy
 
       belongs_to :tax_household_group, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup'

@@ -5,7 +5,7 @@ module Locations
     class ValidationStatus
       include Mongoid::Document
       include Mongoid::Timestamps
-      include ::DomainModelHelpers
+      include ::DomainModels::Domainable
 
       embedded_in :address, class_name: 'InsurancePolicies::Person', inverse_of: :emails
 

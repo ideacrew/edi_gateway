@@ -5,23 +5,15 @@ module InsurancePolicies
   class InsuranceAgreement
     include Mongoid::Document
     include Mongoid::Timestamps
-
-    # Account ID is reference to Account model stored in external RDBMS and is
-    # managed by application (rather than Mongoid)
-    field :account_id, type: String
+    include DomainModels::Domainable
 
     field :plan_year, type: String
 
-    belongs_to :contract_holder, class_name: "People::Person"
+    belongs_to :contract_holder, class_name: 'People::Person'
 
-    belongs_to :insurance_provider, class_name: "InsurancePolicies::InsuranceProvider"
+    belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider'
 
-    has_one :insurance_policy, class_name: "InsurancePolicies::AcaIndividuals::InsurancePolicy"
-
-    # Return the UserFees::Account for this InsuranceAgreement
-    def account
-      Account.find(self.account_id)
-    end
+    has_one :insurance_policy, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'
 
     def covered_month_tax_household(calendar_year, calendar_month)
       tax_household = covered_calendar_year_thh(calendar_year, calendar_month)

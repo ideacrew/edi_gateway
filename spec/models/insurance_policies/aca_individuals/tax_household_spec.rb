@@ -1,9 +1,14 @@
 # frozen_string_literal: true
 
 require './spec/shared_examples/insurance_policies/shared_insurance_policies'
+require './spec/models/domain_models/domainable_spec'
 
 RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db_clean: :before do
   include_context 'shared_insurance_policies'
+
+  context 'Domain Model behavior' do
+    it_behaves_like 'domainable'
+  end
 
   context "Given valid params to initialize a #{described_class} instance" do
     let(:hbx_id) { '828762' }
@@ -15,10 +20,13 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
 
     let(:tax_household_members) do
       [
-        InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(shared_insurance_policies_tax_household_one),
-        InsurancePolicies::AcaIndividuals::TaxHouseholdMember.new(shared_insurance_policies_tax_household_two)
+        shared_insurance_policies_tax_household_member_tax_filer_a,
+        shared_insurance_policies_tax_household_non_tax_filer_member_c
       ]
     end
+
+    let(:tax_household_group) { shared_insurance_policies_tax_household_group }
+    let(:tax_household) { tax_household_group.tax_households.first }
 
     let(:valid_params) do
       {
@@ -29,7 +37,8 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
         yearly_expected_contribution: yearly_expected_contribution,
         start_on: Date.today,
         end_on: nil,
-        tax_household_members: tax_household_members
+        tax_household_members: tax_household_members,
+        tax_household_group: tax_household_group
       }
     end
 
@@ -41,6 +50,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
     context 'and it should save and retreive from database' do
       it 'should persist' do
         result = described_class.new(valid_params)
+        binding.pry
         expect(result.save).to be_truthy
         expect(described_class.all.size).to eq 1
 

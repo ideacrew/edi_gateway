@@ -6,7 +6,7 @@ module InsurancePolicies
     class EnrolledMember
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       belongs_to :person, class_name: 'People::Person'
       accepts_nested_attributes_for :person

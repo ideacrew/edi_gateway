@@ -5,7 +5,7 @@ module People
   class Person
     include Mongoid::Document
     include Mongoid::Timestamps
-    include DomainModelHelpers
+    include DomainModels::Domainable
 
     # embedded_in :member, class_name: 'InsurancePolicies::Member'
 
