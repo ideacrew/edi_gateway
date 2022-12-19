@@ -8,10 +8,10 @@ ruby "2.7.6"
 #######################################################
 # Local components/engines
 #######################################################
-gem 'aca_entities', git:  'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
+gem 'aca_entities', git: 'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
 # gem 'aca_entities',     git: 'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
 gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
-gem 'event_source',       git: 'https://github.com/ideacrew/event_source.git', branch: 'trunk'
+gem 'event_source', git: 'https://github.com/ideacrew/event_source.git', branch: 'trunk'
 # gem 'keycloak',           git: 'https://github.com/ideacrew/keycloak-client.git', branch: 'support_relay_state'
 # gem 'keycloak',           git: 'https://github.com/ideacrew/keycloak-client.git', branch: 'trunk'
 # gem 'resource_registry',  git:  'https://github.com/ideacrew/resource_registry.git', branch: 'trunk'
@@ -40,8 +40,8 @@ gem 'dry-validation',      '~> 1.6.0'
 gem 'keepr', '~> 0.7.0'
 
 # MongoDB Database
-gem 'mongoid',             '~> 7.4'
 gem 'money-rails', '~> 1.15'
+gem 'mongoid',             '~> 7.4'
 
 gem 'nokogiri-happymapper'
 
@@ -77,10 +77,10 @@ gem "tzinfo-data", platforms: %i[mingw mswin x64_mingw jruby]
 group :development, :test do
   gem 'database_cleaner-active_record'
   gem 'database_cleaner-mongoid'
-  gem 'rspec-rails'
   gem 'dotenv-rails'
   gem 'factory_bot_rails'
   gem 'pry-byebug'
+  gem 'rspec-rails'
   gem 'shoulda-matchers'
 end
 
@@ -89,9 +89,9 @@ group :development do
   gem 'prettier'
   gem 'redcarpet'
   gem 'rubocop', require: false
+  gem 'rubocop-git'
   gem 'rubocop-rails', require: false
   gem 'rubocop-rspec'
-  gem 'rubocop-git'
 
   # Display performance information such as SQL time and flame graphs for each request in your browser.
   # Can be configured to work on production as well see: https://github.com/MiniProfiler/rack-mini-profiler/blob/master/README.md
@@ -110,7 +110,7 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
+  gem 'mongoid-rspec'
   gem "selenium-webdriver"
   gem "webdrivers"
 end
-
