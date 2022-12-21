@@ -8,8 +8,8 @@ module InsurancePolicies
       include Mongoid::Timestamps
       include DomainModels::Domainable
 
-      has_many :irs_groups, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup'
-      accepts_nested_attributes_for :irs_groups
+      belongs_to :irs_group, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup'
+      accepts_nested_attributes_for :irs_group
 
       has_many :tax_households, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
       accepts_nested_attributes_for :tax_households

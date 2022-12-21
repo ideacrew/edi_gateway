@@ -1,0 +1,16 @@
+# frozen_string_literal: true
+
+module InsurancePolicies
+  module AcaIndividuals
+    class ResponsibleParty
+      include Mongoid::Document
+      include Mongoid::Timestamps
+      include DomainModelHelpers
+
+      field :kind, type: String
+      field :hbx_id, type: String
+
+      belongs_to :person, class_name: "People::Person"
+    end
+  end
+end

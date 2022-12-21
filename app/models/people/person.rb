@@ -10,6 +10,7 @@ module People
     # embedded_in :member, class_name: 'InsurancePolicies::Member'
 
     field :person_id, type: String
+    field :hbx_id, type: String
 
     embeds_one :name, class_name: 'People::PersonName', cascade_callbacks: true
     accepts_nested_attributes_for :name

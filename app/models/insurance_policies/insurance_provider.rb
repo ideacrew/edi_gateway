@@ -15,10 +15,10 @@ module InsurancePolicies
     field :text, type: String
     field :fein, type: String
 
-    has_many :insurance_agreements,
-             class_name: 'InsurancePolicies::InsuranceAgreement',
-             inverse_of: :insurance_provider,
-             counter_cache: true
+    # has_many :insurance_agreements,
+    #          class_name: 'InsurancePolicies::InsuranceAgreement',
+    #          inverse_of: :insurance_provider,
+    #          counter_cache: true
 
     index({ hios_id: 1 }, { unique: true })
     index({ fein: 1 }, { unique: true })
