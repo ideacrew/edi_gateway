@@ -12,25 +12,25 @@ module InsurancePolicies
 
         def call(params)
           validated_params = yield validate(params)
-          thh_group = yield create(validated_params)
+          thh_group = yield create(validated_params, params[:irs_group_id])
           Success(thh_group)
         end
 
         private
 
         def validate(params)
-          binding.pry
           AcaEntities::Contracts::Households::TaxHouseholdGroupContract.new.call(params)
         end
 
-        def create(validated_params)
+        def create(validated_params, irs_group_id)
           attrs = validated_params.to_h
           thh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup.
             create!(hbx_id: attrs[:hbx_id],
                     start_on: attrs[:start_on],
                     end_on: attrs[:end_on],
                     assistance_year: attrs[:assistance_year],
-                    application_hbx_id: attrs[:application_hbx_id])
+                    application_hbx_id: attrs[:application_hbx_id],
+                    irs_group_id: irs_group_id)
 
           if thh_group.present?
             thh_group_hash = thh_group.as_json(include: [:tax_households]).deep_symbolize_keys

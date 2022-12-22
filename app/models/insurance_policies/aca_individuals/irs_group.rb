@@ -7,7 +7,9 @@ module InsurancePolicies
       include Mongoid::Timestamps
       include DomainModels::Domainable
 
-      has_many :aca_individual_insurance_policies, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'
+      has_many :aca_individual_insurance_policies,
+               class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy',
+               inverse_of: :irs_group
 
       # belongs_to :aca_individual_insurance_policies_irs_groups,
       #            class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'

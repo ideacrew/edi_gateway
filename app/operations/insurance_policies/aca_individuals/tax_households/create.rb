@@ -19,7 +19,6 @@ module InsurancePolicies
         private
 
         def validate(params)
-          binding.pry
           AcaEntities::Contracts::Households::TaxHouseholdContract.new.call(params)
         end
 
@@ -28,7 +27,11 @@ module InsurancePolicies
           thh = ::InsurancePolicies::AcaIndividuals::TaxHousehold.
             create!(hbx_id: attrs[:hbx_id],
                     allocated_aptc: attrs[:allocated_aptc],
+                    max_aptc: attrs[:max_aptc],
                     is_eligibility_determined: attrs[:is_eligibility_determined],
+                    start_on: attrs[:start_on],
+                    end_on: attrs[:end_on],
+                    yearly_expected_contribution: attrs[:yearly_expected_contribution],
                     tax_household_group_id: tax_household_group[:id])
 
           if thh.present?

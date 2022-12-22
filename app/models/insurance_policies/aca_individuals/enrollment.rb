@@ -16,7 +16,7 @@ module InsurancePolicies
       embeds_one :subscriber, class_name: 'AcaIndividuals::EnrolledMember', as: :subscriber_member
       embeds_many :dependents, class_name: 'AcaIndividuals::EnrolledMember', as: :dependent_members
 
-      field :hbx_enrollment_id, type: String
+      field :hbx_id, type: String
       field :total_premium_amount, type: Money
       field :total_premium_adjustment_amount, type: Money
       field :total_responsible_premium_amount, type: Money

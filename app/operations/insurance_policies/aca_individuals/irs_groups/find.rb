@@ -28,7 +28,7 @@ module InsurancePolicies
 
         def find_irs_group(validated_params)
           scope = search_scope(validated_params)
-          irs_group = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(scope)
+          irs_group = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(scope).first
 
           if irs_group.present?
             irs_group_hash = irs_group.to_hash

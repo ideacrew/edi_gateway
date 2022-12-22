@@ -5,14 +5,14 @@ require 'dry/monads/do'
 
 module InsurancePolicies
   module AcaIndividuals
-    # Operation to find tax_household.
-    module TaxHouseholds
+    # Operation to find tax_household group.
+    module Enrollments
       class Find
         send(:include, Dry::Monads[:result, :do])
 
         def call(params)
           validated_params = yield validate(params)
-          insurance_policy = yield find_tax_household(validated_params)
+          insurance_policy = yield find_enrollment(validated_params)
           Success(insurance_policy)
         end
 
@@ -26,18 +26,18 @@ module InsurancePolicies
           end
         end
 
-        def find_tax_household(validated_params)
+        def find_enrollment(validated_params)
           scope = search_scope(validated_params)
-          thh = ::InsurancePolicies::AcaIndividuals::TaxHousehold.where(scope).first
+          enrollment = ::InsurancePolicies::AcaIndividuals::Enrollment.where(scope).first
 
-          if thh.present?
-            thh_group_hash = thh.as_json(include: [:tax_household_members]).deep_symbolize_keys
-            Success(thh_group_hash)
+          if enrollment.present?
+            enrollment_hash = enrollment.to_hash
+            Success(enrollment_hash)
           else
-            Failure("Unable to find tax household with ID #{validated_params[:criterion]}.")
+            Failure("Unable to find enrollment with ID #{validated_params[:criterion]}.")
           end
         rescue StandardError
-          Failure("Unable to find tax household with #{validated_params[:criterion]}.")
+          Failure("Unable to find enrollment with #{validated_params[:criterion]}.")
         end
 
         def search_scope(params)

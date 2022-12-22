@@ -17,8 +17,8 @@ module InsurancePolicies
       belongs_to :enrollment, class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
       accepts_nested_attributes_for :enrollment
 
-      # has_many :enrolled_members_tax_household_members,
-      #          class_name: 'InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers'
+      has_many :enrolled_members_tax_household_members,
+               class_name: 'InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers'
 
       field :applied_aptc, type: Money
       field :available_max_aptc, type: Money

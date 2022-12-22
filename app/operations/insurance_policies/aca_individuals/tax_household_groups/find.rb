@@ -28,7 +28,7 @@ module InsurancePolicies
 
         def find_tax_household_group(validated_params)
           scope = search_scope(validated_params)
-          thh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup.where(scope)
+          thh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup.where(scope).first
 
           if thh_group.present?
             thh_group_hash = thh_group.as_json(include: [:tax_households]).deep_symbolize_keys

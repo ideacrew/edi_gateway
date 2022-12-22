@@ -12,6 +12,7 @@ module InsurancePolicies
       accepts_nested_attributes_for :person
 
       embeds_one :premium_schedule, class_name: 'InsurancePolicies::PremiumSchedule'
+      accepts_nested_attributes_for :premium_schedule
 
       # Subscriber Association
       embedded_in :aca_individuals_enrollment,
@@ -25,6 +26,7 @@ module InsurancePolicies
 
       field :insurer_assigned_id, type: String
       field :encrypted_ssn, type: String
+      field :ssn, type: String
       field :dob, type: Date, as: :date_of_birth
       field :gender, type: String
 
