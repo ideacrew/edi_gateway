@@ -22,5 +22,14 @@ module InsurancePolicies
 
     index({ hios_id: 1 }, { unique: true })
     index({ fein: 1 }, { unique: true })
+
+    def issuer_me_name
+      carrier_names = {
+        "311705652" => "ANTHEM HEALTH PLANS OF MAINE",
+        "042452600" => "HARVARD PILGRIM HEALTH CARE INC",
+        "453416923" => "MAINE COMMUNITY HEALTH OPTIONS"
+      }
+      carrier_names[self.fein]
+    end
   end
 end

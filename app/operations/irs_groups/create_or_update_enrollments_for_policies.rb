@@ -38,7 +38,7 @@ module IrsGroups
         hbx_id: enrollment.hbx_id,
         effective_on: enrollment.effective_on,
         aasm_state: enrollment.aasm_state,
-        end_on: enrollment.terminated_on,
+        terminated_on: enrollment.terminated_on,
         market_place_kind: enrollment.market_place_kind,
         enrollment_period_kind: enrollment.enrollment_period_kind,
         product_kind: enrollment.product_kind,
@@ -109,9 +109,13 @@ module IrsGroups
     def persist_enrollments
       insurance_agreements = fetch_insurance_agreements
       insurance_agreements.each do |insurance_agreement|
+        next if insurance_agreement.insurance_policies.blank?
+
         insurance_agreement.insurance_policies.each do |insurance_policy|
           insurance_policy_enrollment_ids = insurance_policy.hbx_enrollment_ids
           enrollments_from_cv3 = fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
+          next if enrollments_from_cv3.blank?
+
           enrollments_from_cv3.each do |enrollment|
             enrollment_hash = InsurancePolicies::AcaIndividuals::Enrollments::Find.
               new.call({scope_name: :by_hbx_id, criterion: enrollment.hbx_id})
@@ -124,6 +128,13 @@ module IrsGroups
 
             persist_subscriber(insurance_policy, enrollment.hbx_enrollment_members, new_enr_hash.value!)
             persist_dependents(insurance_policy, enrollment.hbx_enrollment_members, new_enr_hash.value!)
+            if enrollment.tax_households_references.blank?
+              tax_household = create_tax_hh_group_and_households(enrollment, insurance_policy)
+              create_enrollments_tax_households(enrollment, new_enr_hash.value!, tax_household)
+            else
+              ::IrsGroups::CreateOrUpdateEnrollmentsTaxHouseholds.new.call({enrollment: enrollment,
+                                                                            family: @family})
+            end
           end
         end
       end
@@ -156,6 +167,46 @@ module IrsGroups
         InsurancePolicies::AcaIndividuals::EnrolledMembers::Create.new.call(params)
       end
     end
+
+    def create_tax_hh_group_and_households(enrollment, insurance_policy)
+      tax_hh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup.
+        create!({start_on: enrollment.effective_on,
+                 end_on: enrollment.aasm_state == "coverage_canceled" ? enrollment.effective_on : enrollment.terminated_on,
+                 is_aqhp: false,
+                 hbx_id: 9.times.map{rand(9)}.join,
+                 assistance_year: @year,
+                 irs_group_id: insurance_policy.irs_group.id })
+
+      tax_household = ::InsurancePolicies::AcaIndividuals::TaxHousehold.
+        create!({is_aqhp: false,
+                 hbx_id: 9.times.map{rand(9)}.join,
+                 start_on: enrollment.effective_on,
+                 tax_household_group_id: tax_hh_group&.id})
+
+      enrollment.hbx_enrollment_members.each do |member|
+        person = find_or_create_person(member)
+        ::InsurancePolicies::AcaIndividuals::TaxHouseholdMember.
+          create!({hbx_id: 9.times.map{rand(9)}.join,
+                   is_subscriber: member.is_subscriber,
+                   is_uqhp_eligible: true,
+                   person_id: person.value![:id],
+                   tax_household_id: tax_household.id})
+      end
+      tax_household
+    end
+
+    def create_enrollments_tax_households(enrollment, enrollment_hash, tax_household)
+      enr_tax_household = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.
+        create!(tax_household_id: tax_household.id,
+                enrollment_id: enrollment_hash[:id])
+      enrollment.hbx_enrollment_members.each do |member|
+        person = find_or_create_person(member)
+        ::InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers.
+          create!({person_id: person.value![:id],
+                   enrollments_tax_households_id: enr_tax_household.id})
+      end
+    end
+
 
     def fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
       @family.households.first.hbx_enrollments.select do |enrollment|

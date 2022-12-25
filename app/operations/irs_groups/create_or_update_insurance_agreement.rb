@@ -38,6 +38,8 @@ module IrsGroups
       { start_on: glue_policy.policy_start, end_on: glue_policy.policy_end,
         policy_id: glue_policy.eg_id,
         hbx_enrollment_ids: glue_policy.hbx_enrollment_ids,
+        aasm_state: glue_policy.aasm_state,
+        carrier_policy_id: glue_policy.subscriber.cp_id
       }
     end
 
@@ -99,7 +101,7 @@ module IrsGroups
 
     def persist_irs_group(glue_policy)
       date = glue_policy.subscriber.coverage_start.beginning_of_year
-      return Success({} )if non_eligible_policy(glue_policy)
+      # return Success({} )if non_eligible_policy(glue_policy)
 
       glue_person = find_person_from_glue_policy(glue_policy)
       irs_group_id = construct_irs_group_id(date.year.to_s.last(2), glue_person.authority_member_id)

@@ -16,13 +16,11 @@ module InsurancePolicies
 
       # Subscriber Association
       embedded_in :aca_individuals_enrollment,
-                  class_name: 'InsurancePolicies::AcaIndividuals::Enrollment',
-                  inverse_of: :subscriber_member
+                  class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
 
       # Dependnet Association
       embedded_in :aca_individuals_enrollment,
-                  class_name: 'InsurancePolicies::AcaIndividuals::Enrollment',
-                  inverse_of: :dependent_members
+                  class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
 
       field :insurer_assigned_id, type: String
       field :encrypted_ssn, type: String

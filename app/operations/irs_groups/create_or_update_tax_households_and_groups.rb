@@ -90,8 +90,11 @@ module IrsGroups
     end
 
     def persist_tax_household_groups
-      Success(true) if @family.tax_household_groups.blank?
+      return Success(true) if @family.tax_household_groups.blank?
+
       tax_household_groups = fetch_thh_groups_for_year(@family.tax_household_groups)
+      return Success(true) if tax_household_groups.blank?
+
       tax_household_groups.each do |tax_hh_group|
         insurance_thh_group = InsurancePolicies::AcaIndividuals::TaxHouseholdGroups::Find.
           new.call({scope_name: :by_hbx_id, criterion: tax_hh_group.hbx_id})

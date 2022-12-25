@@ -51,21 +51,33 @@ module Generators
       end
 
       def serialize_taxhouseholds(irs_hhg_xml)
-        insurance_agreement = irs_group.insurance_agreements.first
-        irs_hhg_xml.TaxHousehold do |thh_xml|
-          (1..max_month).each do |calendar_month|
-            tax_household = insurance_agreement.covered_month_tax_household(calendar_year, calendar_month)
-            next if Policy.policies_for_month(calendar_month, calendar_year, policies).empty?
+        irs_group.irs_households_for_duration(calendar_year, max_month, policies).each do |tax_household|
+          irs_hhg_xml.TaxHousehold do |thh_xml|
+            (1..max_month).each do |calendar_month|
+              policies_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
+                enrollments_for_month(max_month, calendar_year, policies)
+              result = if tax_household.is_aqhp == false
+                         policies_for_month
+                       else
+                         thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.
+                           where(tax_household_id: tax_household.id)
+                         policies_for_month.map(&:hbx_id) & thh_enrollments.map(&:enrollment).map(&:hbx_id)
+                       end
+              next if result.blank?
 
-            serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
+              serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
+            end
           end
         end
       end
 
       def thh_to_pick(tax_household, calendar_month)
         aptc_to_pick = []
-        Policy.policies_for_month(calendar_month, calendar_year, policies).each do |policy|
-          _slcsp, aptc, _pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
+        enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
+          enrollments_for_month(calendar_month, calendar_year, policies)
+        enrs_for_month.each do |enrollment|
+         thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
+          _slcsp, aptc, _pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
           aptc_to_pick << aptc.to_f
         end
 
@@ -78,38 +90,27 @@ module Generators
       def serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
         thh_xml.TaxHouseholdCoverage do |thhc_xml|
           thhc_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
-
           if thh_to_pick(tax_household, calendar_month)
             thhc_xml.Household do |hh_xml|
               serialize_household_members(hh_xml, tax_household)
-              Policy.policies_for_month(calendar_month, calendar_year, policies).each do |policy|
-                serialize_associated_policy(hh_xml, tax_household, calendar_month, policy)
+              enrs_for_month= ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
+                enrollments_for_month(max_month, calendar_year, policies)
+              enrs_for_month.each do |enrollment|
+                serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
               end
             end
           else
             thhc_xml.OtherRelevantAdult do |hh_xml|
-              individual = fetch_thh_primary_person(tax_household)
-              next if individual.blank?
+              contract_holder = irs_group.aca_individual_insurance_policies.last.insurance_agreement.contract_holder
+              next if contract_holder.blank?
 
-              auth_mem = individual.authority_member
-              serialize_names(hh_xml, individual)
-              hh_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
-              hh_xml.BirthDt date_formatter(auth_mem.dob)
-              serialize_address(hh_xml, individual.addresses[0])
+              serialize_names(hh_xml, contract_holder)
+              glue_person = Person.where(authority_member_id: contract_holder.hbx_id).first.authority_member
+              hh_xml.SSN glue_person.ssn unless glue_person.ssn.blank?
+              hh_xml.BirthDt date_formatter(glue_person.dob)
+              serialize_address(hh_xml, contract_holder.addresses[0])
             end
           end
-        end
-      end
-
-      def fetch_thh_primary_person(tax_household)
-        contract_holder = irs_group.insurance_agreements.first.contract_holder
-        aqhp_primary = tax_household.primary
-        if aqhp_primary.present?
-          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using aqhp_primary: #{aqhp_primary.person_hbx_id}")
-          aqhp_primary.thm_individual
-        else
-          @logger.info("IrsGroup: #{irs_group.irs_group_id}, using uqhp_primary: #{contract_holder&.hbx_member_id}")
-          contract_holder&.primary_person
         end
       end
 
@@ -122,27 +123,29 @@ module Generators
       end
 
       def serialize_tax_individual(hh_xml, tax_household_member, relation)
-        individual = tax_household_member&.thm_individual
-        return if individual.blank?
+        return if tax_household_member.blank?
+
+        person = tax_household_member&.person
+        glue_person = Person.where(authority_member_id: person.hbx_id).first.authority_member
+        return if glue_person.blank?
 
         hh_xml.send("#{relation}Grp") do |rel_grp_xml|
           relation = 'DependentPerson' if relation == 'Dependent'
           rel_grp_xml.send(relation) do |person_xml|
-            auth_mem = individual.authority_member
-            serialize_names(person_xml, individual)
-            person_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
-            person_xml.BirthDt date_formatter(auth_mem.dob)
-            serialize_address(person_xml, individual.addresses[0]) if relation == 'Primary'
+            serialize_names(person_xml, person)
+            person_xml.SSN glue_person.ssn unless glue_person.ssn.blank?
+            person_xml.BirthDt date_formatter(glue_person.dob)
+            serialize_address(person_xml, person.addresses[0]) if relation == 'Primary'
           end
         end
       end
 
       def serialize_names(person_xml, individual)
         person_xml.CompletePersonName do |xml|
-          xml.PersonFirstName individual.name_first
-          xml.PersonMiddleName individual.name_middle
-          xml.PersonLastName individual.name_last
-          xml.SuffixName individual.name_sfx
+          xml.PersonFirstName individual.name.first_name
+          xml.PersonMiddleName individual.name.middle_name
+          xml.PersonLastName individual.name.last_name
+          xml.SuffixName individual.name.name_sfx
         end
       end
 
@@ -153,18 +156,19 @@ module Generators
           pag_xml.USAddressGrp do |xml|
             xml.AddressLine1Txt address.address_1
             xml.AddressLine2Txt address.address_2
-            xml.CityNm address.city.gsub(/[.,]/, '')
-            xml.USStateCd address.state
-            xml.USZIPCd address.zip.split('-')[0]
+            xml.CityNm address.city_name.gsub(/[.,]/, '')
+            xml.USStateCd address.state_abbreviation
+            xml.USZIPCd address.zip_code.split('-')[0]
           end
         end
       end
 
-      def serialize_associated_policy(hh_xml, tax_household, calendar_month, policy)
-        slcsp, aptc, pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
+      def serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
+        thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
+        slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
         hh_xml.AssociatedPolicy do |xml|
-          xml.QHPPolicyNum policy.eg_id
-          xml.QHPIssuerEIN policy&.carrier&.fein
+          xml.QHPPolicyNum enrollment.insurance_policy.policy_id
+          xml.QHPIssuerEIN enrollment&.insurance_policy&.insurance_product&.insurance_provider&.fein
           xml.SLCSPAdjMonthlyPremiumAmt slcsp
           xml.HouseholdAPTCAmt aptc
           xml.TotalHsldMonthlyPremiumAmt pre_amt_tot
@@ -172,55 +176,55 @@ module Generators
       end
 
       def serialize_insurance_policies(irs_hhg_xml)
-        insurance_agreement = irs_group.insurance_agreements.first
         policies.each do |policy|
           irs_hhg_xml.InsurancePolicy do |insured_pol_xml|
-            serialize_insurance_coverages(insured_pol_xml, policy, insurance_agreement)
+            serialize_insurance_coverages(insured_pol_xml, policy)
           end
         end
       end
 
-      def serialize_insurance_coverages(insured_pol_xml, policy, insurance_agreement)
+      def serialize_insurance_coverages(insured_pol_xml, policy)
         (1..max_month).each do |calendar_month|
-          next if Policy.policy_reported_month(calendar_month, calendar_year, policy).nil?
+          enrollment = policy.enrollment_for_month(calendar_month, calendar_year)
+          enrolled_members_for_month = [[enrollment.subscriber] + enrollment.dependents].flatten
+          policy = enrollment.insurance_policy
+          next if enrollment.blank?
 
-          tax_household = insurance_agreement.covered_month_tax_household(calendar_year, calendar_month)
-          slcsp, aptc, pre_amt_tot = policy.fetch_npt_h36_prems(tax_household, calendar_month)
+          slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
             insured_cov_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
-            insured_cov_xml.QHPPolicyNum policy.eg_id
-            insured_cov_xml.QHPIssuerEIN policy.carrier.fein
-            insured_cov_xml.IssuerNm policy.carrier.issuer_me_name
-            insured_cov_xml.PolicyCoverageStartDt date_formatter(policy.policy_start)
+            insured_cov_xml.QHPPolicyNum policy.policy_id
+            insured_cov_xml.QHPIssuerEIN policy.insurance_product.insurance_provider.fein
+            insured_cov_xml.IssuerNm policy.insurance_product.insurance_provider.issuer_me_name
+            insured_cov_xml.PolicyCoverageStartDt date_formatter(policy.start_on)
             insured_cov_xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
             insured_cov_xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
             insured_cov_xml.APTCPaymentAmt aptc
 
-            if policy.covered_enrollees_as_of(calendar_month, calendar_year).empty?
+            if enrolled_members_for_month.empty?
               raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
             end
 
-            policy.covered_enrollees_as_of(calendar_month, calendar_year).each do |enrollee|
+            enrolled_members_for_month.each do |enrollee|
               serialize_covered_individual(insured_cov_xml, enrollee)
             end
-            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) unless thh_to_pick(tax_household, calendar_month)
+            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) unless enrollment.total_premium_adjustment_amount.to_f > 0.0
           end
         end
       end
 
       def serialize_covered_individual(insured_cov_xml, enrollee)
         individual = enrollee&.person
-        auth_mem = individual&.authority_member
-        return if auth_mem.nil?
+        return if individual.nil?
 
         insured_cov_xml.CoveredIndividual do |cov_ind_xml|
           cov_ind_xml.InsuredPerson do |person_xml|
             serialize_names(person_xml, individual)
-            person_xml.SSN auth_mem.ssn unless auth_mem.ssn.blank?
-            person_xml.BirthDt date_formatter(auth_mem.dob)
+            person_xml.SSN enrollee.ssn unless enrollee.ssn.blank?
+            person_xml.BirthDt date_formatter(enrollee.dob)
           end
-          cov_ind_xml.CoverageStartDt date_formatter(enrollee.coverage_start)
-          cov_ind_xml.CoverageEndDt date_formatter(enrollee.coverage_end_date)
+          cov_ind_xml.CoverageStartDt date_formatter(enrollee.aca_individuals_enrollment.start_on)
+          cov_ind_xml.CoverageEndDt date_formatter(enrollee.aca_individuals_enrollment.coverage_end_on)
         end
       end
 

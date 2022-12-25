@@ -29,10 +29,12 @@ module InsurancePolicies
             create!(policy_id: attrs[:policy_id], hbx_enrollment_ids: attrs[:hbx_enrollment_ids],
                     start_on: attrs[:start_on],
                     end_on: attrs[:end_on],
+                    aasm_state: attrs[:aasm_state],
                     insurance_product_id: product[:id],
                     insurance_agreement_id: agreement[:id],
-                    irs_group_id: irs_group[:id])
-          
+                    irs_group_id: irs_group[:id],
+                    carrier_policy_id: attrs[:carrier_policy_id])
+
           if insurance_policy.present?
             insurance_policy_hash = insurance_policy.as_json(include: [:insurance_product, :insurance_agreement, :enrollments]).deep_symbolize_keys
             Success(insurance_policy_hash)

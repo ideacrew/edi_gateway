@@ -6,13 +6,13 @@ require 'dry/monads/do'
 module InsurancePolicies
   module AcaIndividuals
     # Operation to find tax_household group.
-    module EnrolledMembersTaxHouseholdMembers
+    module EnrolledMembersAndTaxHouseholdMembers
       class Find
         send(:include, Dry::Monads[:result, :do])
 
         def call(params)
           validated_params = yield validate(params)
-          insurance_policy = yield find_tax_household_group(validated_params)
+          insurance_policy = yield find_member(validated_params)
           Success(insurance_policy)
         end
 
@@ -28,10 +28,10 @@ module InsurancePolicies
 
         def find_member(validated_params)
           scope = search_scope(validated_params)
-          result = ::InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers.where(scope)
+          result = ::InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers.where(scope).first
 
           if result.present?
-            result_hash = result.first.deep_symbolize_keys
+            result_hash = result.as_json(include: [:enrollments_tax_households]).deep_symbolize_keys
             Success(result_hash)
           else
             Failure("Unable to find tax household group with ID #{validated_params[:scope_name]}.")
@@ -43,7 +43,7 @@ module InsurancePolicies
         def search_scope(params)
           case params[:scope_name]
           when :by_person_hbx_id
-            { person_hbx_id: params[:person_hbx_id] }
+            { person_id: params[:person_hbx_id] }
           end
         end
       end

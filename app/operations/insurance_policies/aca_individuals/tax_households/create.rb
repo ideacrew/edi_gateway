@@ -29,8 +29,8 @@ module InsurancePolicies
                     allocated_aptc: attrs[:allocated_aptc],
                     max_aptc: attrs[:max_aptc],
                     is_eligibility_determined: attrs[:is_eligibility_determined],
-                    start_on: attrs[:start_on],
-                    end_on: attrs[:end_on],
+                    start_on: attrs[:start_date],
+                    end_on: attrs[:end_date],
                     yearly_expected_contribution: attrs[:yearly_expected_contribution],
                     tax_household_group_id: tax_household_group[:id])
 

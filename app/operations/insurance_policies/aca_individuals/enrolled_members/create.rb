@@ -37,7 +37,8 @@ module InsurancePolicies
                   dob: glue_enrollee.person.authority_member.dob,
                   gender: glue_enrollee.person.authority_member.gender,
                   person_id: person_hash[:id],
-                  premium_schedule: { premium_amount: glue_enrollee.pre_amt })
+                  premium_schedule: { premium_amount: glue_enrollee.pre_amt,
+                                      benchmark_ehb_premium_amount: validated_params[:slcsp_member_premium]})
             enrollment.save!
           when "dependent"
             enrollment.dependents << ::InsurancePolicies::AcaIndividuals::EnrolledMember.
@@ -45,7 +46,8 @@ module InsurancePolicies
                   dob: glue_enrollee.person.authority_member.dob,
                   gender: glue_enrollee.person.authority_member.gender,
                   person_id: person_hash[:id],
-                  premium_schedule: {premium_amount: glue_enrollee.pre_amt})
+                  premium_schedule: {premium_amount: glue_enrollee.pre_amt,
+                                     benchmark_ehb_premium_amount: validated_params[:slcsp_member_premium]})
           end
           if enrollment.present?
             enrollment_hash = enrollment.to_hash

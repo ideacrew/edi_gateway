@@ -26,6 +26,7 @@ module InsurancePolicies
           attrs = validated_params.to_h
           enrollment = ::InsurancePolicies::AcaIndividuals::Enrollment.
             create!(hbx_id: attrs[:hbx_id],
+                    aasm_state: attrs[:aasm_state],
                     total_premium_amount: attrs[:total_premium],
                     total_premium_adjustment_amount: attrs[:applied_aptc_amount],
                     effectuated_on: attrs[:effective_on],
