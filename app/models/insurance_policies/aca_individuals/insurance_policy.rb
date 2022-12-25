@@ -36,8 +36,8 @@ module InsurancePolicies
         end_on.present? ? end_on : start_on.end_of_year
       end
 
-      def enrollment_for_month(calendar_year, calendar_month)
-        self.class.enrollments_for_month(calendar_year, calendar_month, [self])&.last
+      def enrollments_for_month(calendar_year, calendar_month)
+        self.class.enrollments_for_month(calendar_year, calendar_month, [self])
       end
 
       # def covered_enrollees_as_of(month, year)

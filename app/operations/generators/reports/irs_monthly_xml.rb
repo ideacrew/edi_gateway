@@ -51,12 +51,16 @@ module Generators
       end
 
       def serialize_taxhouseholds(irs_hhg_xml)
-        irs_group.irs_households_for_duration(calendar_year, max_month, policies).each do |tax_household|
+        tax_households = irs_group.irs_households_for_duration(calendar_year, max_month, policies).sort_by(&:start_on)
+        tax_households.each do |tax_household|
           irs_hhg_xml.TaxHousehold do |thh_xml|
             (1..max_month).each do |calendar_month|
               policies_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
-                enrollments_for_month(max_month, calendar_year, policies)
-              result = if tax_household.is_aqhp == false
+                enrollments_for_month(calendar_month, calendar_year, policies)
+              any_aptc_applied_policies = policies_for_month.any? do |enr|
+                enr.total_premium_adjustment_amount.to_f > 0.0
+              end
+              result = if tax_household.is_aqhp == false || !any_aptc_applied_policies
                          policies_for_month
                        else
                          thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.
@@ -94,7 +98,7 @@ module Generators
             thhc_xml.Household do |hh_xml|
               serialize_household_members(hh_xml, tax_household)
               enrs_for_month= ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
-                enrollments_for_month(max_month, calendar_year, policies)
+                enrollments_for_month(calendar_month, calendar_year, policies)
               enrs_for_month.each do |enrollment|
                 serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
               end
@@ -185,13 +189,15 @@ module Generators
 
       def serialize_insurance_coverages(insured_pol_xml, policy)
         (1..max_month).each do |calendar_month|
-          enrollment = policy.enrollment_for_month(calendar_month, calendar_year)
-          enrolled_members_for_month = [[enrollment.subscriber] + enrollment.dependents].flatten
-          policy = enrollment.insurance_policy
-          next if enrollment.blank?
+          enrollments = policy.enrollments_for_month(calendar_month, calendar_year)
+          next if enrollments.blank?
 
-          slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
+          sorted_enrollments = enrollments.sort_by(&:start_on)
+          policy = sorted_enrollments.first.insurance_policy
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
+            enrolled_members_for_month = [[sorted_enrollments.map(&:subscriber)] +
+                                            sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
+            slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
             insured_cov_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
             insured_cov_xml.QHPPolicyNum policy.policy_id
             insured_cov_xml.QHPIssuerEIN policy.insurance_product.insurance_provider.fein
@@ -201,14 +207,18 @@ module Generators
             insured_cov_xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
             insured_cov_xml.APTCPaymentAmt aptc
 
-            if enrolled_members_for_month.empty?
-              raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
-            end
+            sorted_enrollments.each do |enrollment|
+              enrolled_members_for_month = [[enrollment.subscriber] + enrollment.dependents].flatten
 
-            enrolled_members_for_month.each do |enrollee|
-              serialize_covered_individual(insured_cov_xml, enrollee)
+              if enrolled_members_for_month.empty?
+                raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
+              end
+
+              enrolled_members_for_month.each do |enrollee|
+                serialize_covered_individual(insured_cov_xml, enrollee)
+              end
             end
-            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) unless enrollment.total_premium_adjustment_amount.to_f > 0.0
+            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) if sorted_enrollments.first.total_premium_adjustment_amount.to_f > 0.0
           end
         end
       end

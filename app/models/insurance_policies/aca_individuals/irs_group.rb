@@ -30,13 +30,15 @@ module InsurancePolicies
         thh_groups = self.tax_household_groups.select { |group| group.assistance_year == 2022 }
         tax_households = thh_groups.map(&:tax_households).flatten!
         result = tax_households.select do |tax_household|
+          next if tax_household.is_aqhp == false
+
           had_coverage(tax_household, max_month, year, policies)
         end
 
         if result.present?
           result
         else
-          self.tax_household_groups.where(is_aqhp: false).first.tax_households
+          [self.tax_household_groups.where(is_aqhp: false).first.tax_households.last]
           # insurance_agreements.first.tax_households.select{ |thh| thh.is_immediate_family == true }
         end
       end
