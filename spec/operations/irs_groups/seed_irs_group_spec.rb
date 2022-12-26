@@ -88,13 +88,30 @@ RSpec.describe IrsGroups::SeedIrsGroup do
                         year: Date.today.year)
     enrollee = Enrollee.new(m_id: person.authority_member.hbx_member_id, rel_code: 'self',
                             coverage_start: Date.new(Date.today.year, 1, 1), cp_id: "12345")
-    _policy = Policy.create!(enrollment_group_id: "12345", plan: plan,
-                             kind: 'individual',
-                             aasm_state: "submitted",
-                             broker_id: broker.id,
-                             responsible_party: person.responsible_parties.first,
-                             carrier_id: carrier.id,
-                             enrollees: [enrollee])
+    policy = Policy.create!(enrollment_group_id: "1000", plan: plan,
+                            kind: 'individual',
+                            aasm_state: "submitted",
+                            hbx_enrollment_ids: ["1000"],
+                            broker_id: broker.id,
+                            responsible_party: person.responsible_parties.first,
+                            carrier_id: carrier.id,
+                            enrollees: [enrollee])
+    contract_holder = People::Person.create!(hbx_id: person.authority_member_id)
+
+    insurance_provider = InsurancePolicies::InsuranceProvider.create!(hios_id: "33653", title: "test")
+    insurance_product = InsurancePolicies::InsuranceProduct.create!(hios_plan_id: "33635ME12344",
+                                                                    plan_year: policy.plan.year,
+                                                                    insurance_provider: insurance_provider)
+
+    insurance_agreement = InsurancePolicies::InsuranceAgreement.create!(insurance_provider: insurance_provider,
+                                                                        contract_holder: contract_holder)
+    irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.create!(irs_group_id: "2200000001234567")
+
+    _insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicy.create!(policy_id: "1000",
+                                                                                   hbx_enrollment_ids: ["1000"],
+                                                                                   insurance_product: insurance_product,
+                                                                                   insurance_agreement: insurance_agreement,
+                                                                                   irs_group: irs_group)
 
     res = subject.call({ payload: family_params.to_h })
     expect(res.success?).to be_truthy

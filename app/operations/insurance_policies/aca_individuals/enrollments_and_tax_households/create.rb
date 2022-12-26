@@ -5,8 +5,8 @@ require 'dry/monads/do'
 
 module InsurancePolicies
   module AcaIndividuals
-    # Operation to create tax_household group.
     module EnrollmentsAndTaxHouseholds
+      # Operation to create enrollments_tax_households.
       class Create
         send(:include, Dry::Monads[:result, :do])
 
@@ -24,11 +24,11 @@ module InsurancePolicies
         end
 
         def create(params, tax_household_hash, enrollment_hash)
-          enrollment_thh = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.
-            create!(applied_aptc: params[:applied_aptc],
-                    available_max_aptc: params[:available_max_aptc],
-                    enrollment_id: enrollment_hash[:id],
-                    tax_household_id: tax_household_hash[:id])
+          enrollment_thh = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+                           .create!(applied_aptc: params[:applied_aptc],
+                                    available_max_aptc: params[:available_max_aptc],
+                                    enrollment_id: enrollment_hash[:id],
+                                    tax_household_id: tax_household_hash[:id])
 
           if enrollment_thh.present?
             thh_group_hash = enrollment_thh.as_json(include: [:enrolled_members_tax_household_members]).deep_symbolize_keys

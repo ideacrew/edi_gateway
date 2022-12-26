@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/ClassLength
 module IrsGroups
   # Parse CV3 family payload and store necessary information
   class CreateOrUpdateTaxHouseholdsAndGroups
@@ -60,6 +62,8 @@ module IrsGroups
       end
     end
 
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
     def tax_household_member_hash(thh_member)
       result = {
         is_subscriber: thh_member.is_subscriber,
@@ -72,8 +76,9 @@ module IrsGroups
           is_without_assistance: thh_member.product_eligibility_determination.is_without_assistance
         },
         family_member_reference: {
-         relation_with_primary: thh_member.family_member_reference.relation_with_primary,
-         family_member_hbx_id: thh_member.family_member_reference.family_member_hbx_id }
+          relation_with_primary: thh_member.family_member_reference.relation_with_primary,
+          family_member_hbx_id: thh_member.family_member_reference.family_member_hbx_id
+        }
       }
 
       if thh_member.slcsp_benchmark_premium.present?
@@ -82,13 +87,18 @@ module IrsGroups
       end
       result
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
 
     def fetch_thh_groups_for_year(tax_household_groups)
       tax_household_groups.select do |thh_group|
-        thh_group.start_on.between?(Date.new(@year,1,1), Date.new(@year,12,31))
+        thh_group.start_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
       end
     end
 
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength
     def persist_tax_household_groups
       return Success(true) if @family.tax_household_groups.blank?
 
@@ -96,8 +106,8 @@ module IrsGroups
       return Success(true) if tax_household_groups.blank?
 
       tax_household_groups.each do |tax_hh_group|
-        insurance_thh_group = InsurancePolicies::AcaIndividuals::TaxHouseholdGroups::Find.
-          new.call({scope_name: :by_hbx_id, criterion: tax_hh_group.hbx_id})
+        insurance_thh_group = InsurancePolicies::AcaIndividuals::TaxHouseholdGroups::Find
+                              .new.call({ scope_name: :by_hbx_id, criterion: tax_hh_group.hbx_id })
         next insurance_thh_group if insurance_thh_group.success?
 
         thh_and_members_params = tax_hh_group.tax_households.collect do |tax_household|
@@ -109,7 +119,7 @@ module IrsGroups
         thh_group_params = { hbx_id: tax_hh_group.hbx_id, start_on: tax_hh_group.start_on,
                              end_on: tax_hh_group.end_on, application_hbx_id: tax_hh_group.application_hbx_id,
                              assistance_year: tax_hh_group.assistance_year, tax_households: thh_and_members_params,
-                             irs_group_id: irs_group_id}
+                             irs_group_id: irs_group_id }
 
         thh_group_hash = InsurancePolicies::AcaIndividuals::TaxHouseholdGroups::Create.new.call(thh_group_params)
         return Failure("Unable to persist thh groups") if thh_group_hash.failure?
@@ -118,11 +128,14 @@ module IrsGroups
       end
       Success(true)
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength
 
     def persist_tax_households(tax_households, thh_group_hash)
       tax_households.each do |tax_household|
-        insurance_thh = InsurancePolicies::AcaIndividuals::TaxHouseholds::Find.
-          new.call({scope_name: :by_hbx_id, criterion: tax_household.hbx_id})
+        insurance_thh = InsurancePolicies::AcaIndividuals::TaxHouseholds::Find
+                        .new.call({ scope_name: :by_hbx_id, criterion: tax_household.hbx_id })
         next insurance_thh if insurance_thh.success?
 
         thh_params = build_tax_household_and_members(tax_household)
@@ -136,10 +149,10 @@ module IrsGroups
 
     def persist_tax_household_members(tax_household, insurance_thh_hash)
       tax_household.tax_household_members.each do |thh_member|
-        insurance_thh_member = InsurancePolicies::AcaIndividuals::TaxHouseholdMembers::Find.
-          new.call({scope_name: :by_person_hbx_id_tax_household_id,
-                    person_hbx_id: thh_member.family_member_reference.family_member_hbx_id,
-                    tax_household_id: insurance_thh_hash[:id] })
+        insurance_thh_member = InsurancePolicies::AcaIndividuals::TaxHouseholdMembers::Find
+                               .new.call({ scope_name: :by_person_hbx_id_tax_household_id,
+                                           person_hbx_id: thh_member.family_member_reference.family_member_hbx_id,
+                                           tax_household_id: insurance_thh_hash[:id] })
         next insurance_thh_member if insurance_thh_member.success?
 
         person = find_or_create_person(thh_member)
@@ -167,3 +180,5 @@ module IrsGroups
     end
   end
 end
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/ClassLength

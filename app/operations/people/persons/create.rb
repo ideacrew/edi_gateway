@@ -41,25 +41,17 @@ module People
         end
       end
 
+      # rubocop:disable Metrics/AbcSize
       def construct_person_name(person)
-        if @type == "Enroll"
-          {
-            first_name: person.person_name.first_name,
-            last_name: person.person_name.last_name,
-            name_pfx: person.person_name.name_pfx,
-            name_sfx: person.person_name.name_sfx,
-            middle_name: person.person_name.middle_name
-          }
-        else
-          {
-            first_name: person.name_first,
-            last_name: person.name_last,
-            name_pfx: person.name_pfx,
-            name_sfx: person.name_sfx,
-            middle_name: person.name_middle
-          }
-        end
+        {
+          first_name: @type == "Enroll" ? person.person_name.first_name : person.name_first,
+          last_name: @type == "Enroll" ? person.person_name.last_name : person.name_last,
+          name_pfx: @type == "Enroll" ? person.person_name.name_pfx : person.name_pfx,
+          name_sfx: @type == "Enroll" ? person.person_name.name_sfx : person.name_sfx,
+          middle_name: @type == "Enroll" ? person.person_name.middle_name : person.name_middle
+        }
       end
+      # rubocop:enable Metrics/AbcSize
 
       def construct_addresses(person)
         person.addresses.collect do |address|
@@ -90,7 +82,7 @@ module People
           {
             kind: @type == "Enroll" ? phone.kind : phone.phone_type,
             country_code: phone.country_code,
-            area_code: @type == "Enroll" ? phone.area_code: phone.phone_number.slice(0..2),
+            area_code: @type == "Enroll" ? phone.area_code : phone.phone_number.slice(0..2),
             number: @type == "Enroll" ? phone.number : phone.phone_number.slice(3..9),
             extension: phone.extension,
             primary: phone.primary

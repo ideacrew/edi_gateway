@@ -5,8 +5,8 @@ require 'dry/monads/do'
 
 module InsurancePolicies
   module AcaIndividuals
-    # Operation to find tax_household group.
     module IrsGroups
+      # Operation to create irs_group.
       class Create
         send(:include, Dry::Monads[:result, :do])
 

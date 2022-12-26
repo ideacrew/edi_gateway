@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # AcaEntities::Ledger::Contracts::PolicyContract.new.call(new_state)
 
 def new_state

@@ -45,7 +45,7 @@ module InsurancePolicies
           when :by_enrollment_id
             { enrollment_id: params[:enrollment_id] }
           when :by_enrollment_id_tax_household_id
-            { enrollment_id: params[:enrollment_id], tax_household_id:  params[:tax_household_id]}
+            { enrollment_id: params[:enrollment_id], tax_household_id: params[:tax_household_id] }
           end
         end
       end

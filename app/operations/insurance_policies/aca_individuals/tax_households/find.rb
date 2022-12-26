@@ -3,10 +3,11 @@
 require 'dry/monads'
 require 'dry/monads/do'
 
+# Operation to find tax_household.
 module InsurancePolicies
   module AcaIndividuals
-    # Operation to find tax_household.
     module TaxHouseholds
+      # Operation to find tax_household.
       class Find
         send(:include, Dry::Monads[:result, :do])
 

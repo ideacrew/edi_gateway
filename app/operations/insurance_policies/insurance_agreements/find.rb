@@ -27,13 +27,14 @@ module InsurancePolicies
       end
 
       def find_insurance_agreement(validated_params)
-        insurance_agreement = ::InsurancePolicies::InsuranceAgreement.
-          where(plan_year: validated_params[:plan_year],
-                insurance_provider_id: validated_params[:insurance_provider_id],
-                contract_holder_id: validated_params[:contract_holder_id]).first
+        insurance_agreement = ::InsurancePolicies::InsuranceAgreement
+                              .where(plan_year: validated_params[:plan_year],
+                                     insurance_provider_id: validated_params[:insurance_provider_id],
+                                     contract_holder_id: validated_params[:contract_holder_id]).first
 
         if insurance_agreement.present?
-          insurance_agreement_hash = insurance_agreement.as_json(include: [:contract_holder, :insurance_provider, :insurance_policy]).deep_symbolize_keys
+          insurance_agreement_hash = insurance_agreement.as_json(include: [:contract_holder, :insurance_provider,
+                                                                           :insurance_policy]).deep_symbolize_keys
           Success(insurance_agreement_hash)
         else
           Failure("Unable to find insurance_agreement with ID #{validated_params[:hios_plan_id]}.")

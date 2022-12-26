@@ -57,27 +57,27 @@ insurer_accounts = [{ kind: 'asset', name: '', number: 1, parent: 'account_0' }]
 # Journals (Ledgers)
 general_ledger =
   Keepr::Journal.create keepr_postings_attributes: [
-                          { keepr_account: account_1000, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_1010, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_1100, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_1200, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_4000, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_4110, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_4400, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_4410, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_4420, amount: 0.00, side: 'credit' },
-                          { keepr_account: account_5200, amount: 0.00, side: 'credit' }
-                        ]
+    { keepr_account: account_1000, amount: 0.00, side: 'credit' },
+    { keepr_account: account_1010, amount: 0.00, side: 'credit' },
+    { keepr_account: account_1100, amount: 0.00, side: 'credit' },
+    { keepr_account: account_1200, amount: 0.00, side: 'credit' },
+    { keepr_account: account_4000, amount: 0.00, side: 'credit' },
+    { keepr_account: account_4110, amount: 0.00, side: 'credit' },
+    { keepr_account: account_4400, amount: 0.00, side: 'credit' },
+    { keepr_account: account_4410, amount: 0.00, side: 'credit' },
+    { keepr_account: account_4420, amount: 0.00, side: 'credit' },
+    { keepr_account: account_5200, amount: 0.00, side: 'credit' }
+  ]
 
 ar_sub_ledger =
   Keepr::Journal.create keepr_postings_attributes: [
-                          { keepr_account: account_1100, amount: 0.00, side: 'debit' },
-                          { keepr_account: account_1200, amount: 0.00, side: 'debit' }
-                        ]
+    { keepr_account: account_1100, amount: 0.00, side: 'debit' },
+    { keepr_account: account_1200, amount: 0.00, side: 'debit' }
+  ]
 
 ap_sub_ledger =
   Keepr::Journal.create keepr_postings_attributes: [
-                          { keepr_account: account_4920, amount: 0.00, side: 'debit' },
-                          { keepr_account: account_1576, amount: 0.00, side: 'debit' },
-                          { keepr_account: account_1600, amount: 0.00, side: 'credit' }
-                        ]
+    { keepr_account: account_4920, amount: 0.00, side: 'debit' },
+    { keepr_account: account_1576, amount: 0.00, side: 'debit' },
+    { keepr_account: account_1600, amount: 0.00, side: 'credit' }
+  ]

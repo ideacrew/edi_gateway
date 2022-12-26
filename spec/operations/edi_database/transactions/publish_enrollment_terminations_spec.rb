@@ -234,10 +234,10 @@ RSpec.describe EdiDatabase::Transactions::PublishEnrollmentTerminations, db_clea
         expect(
           result
             .success
-            .each_with_object([]) { |list, monad|
+            .each_with_object([]) do |list, monad|
               list << monad.success.class.name
               list
-            }
+            end
         ).to eq policy_and_thh_class_names
       end
     end

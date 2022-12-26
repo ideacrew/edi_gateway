@@ -67,6 +67,7 @@ module UserFees
 
         def create_account(params)
           return if Keepr::Account.find_by(number: params[:number]).present?
+
           Keepr::Account.create!(params)
         end
 
@@ -75,8 +76,8 @@ module UserFees
             EdiGatewayRegistry[:journal_keys].item.map do |journal|
               params =
                 EdiGatewayRegistry[journal]
-                  .settings
-                  .reduce({}) { |attrs, setting| attrs.merge!(setting.key => setting.item) }
+                .settings
+                .reduce({}) { |attrs, setting| attrs.merge!(setting.key => setting.item) }
               create_journal(params)
             end
           Success(journals)

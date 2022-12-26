@@ -19,7 +19,7 @@ module InsurancePolicies
       # # accepts_nested_attributes_for :insurance_policy
 
       has_many :tax_household_groups, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup',
-               dependent: :destroy
+                                      dependent: :destroy
       # accepts_nested_attributes_for :tax_household_group
 
       field :irs_group_id, type: String
@@ -43,15 +43,12 @@ module InsurancePolicies
         end
       end
 
-
       def had_coverage(tax_household, max_month, year, policies)
         thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(tax_household_id: tax_household.id)
         (1..max_month).each do |month|
           eg_ids = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.enrollments_for_month(month, year, policies).map(&:hbx_id)
 
-          if (thh_enrollments.flat_map(&:enrollment).map(&:hbx_id) & eg_ids).any?
-            return true
-          end
+          return true if (thh_enrollments.flat_map(&:enrollment).map(&:hbx_id) & eg_ids).any?
         end
         false
       end

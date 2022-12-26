@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/ClassLength
+# Module to create enrollments from cv3
 module IrsGroups
   # persist insurance agreements and nested models
-
   class CreateOrUpdateEnrollmentsForPolicies
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
@@ -66,7 +68,7 @@ module IrsGroups
         is_subscriber: enr_member.is_subscriber,
         coverage_start_on: enr_member.coverage_start_on,
         coverage_end_on: enr_member.coverage_end_on,
-        eligibility_date: enr_member.eligibility_date,
+        eligibility_date: enr_member.eligibility_date
       }
       if enr_member.slcsp_member_premium.present?
         result.merge!(slcsp_member_premium: { cents: enr_member.slcsp_member_premium&.cents,
@@ -75,8 +77,9 @@ module IrsGroups
       result
     end
 
+    # rubocop:disable Metrics/MethodLength
     def build_product_reference(product_reference)
-      result =  {
+      result = {
         hios_id: product_reference.hios_id,
         name: product_reference.name,
         active_year: product_reference.active_year,
@@ -88,15 +91,21 @@ module IrsGroups
       }
       if product_reference.family_rated_premiums.present?
         result.merge!(family_rated_premiums: {
-          exchange_provided_code: product_reference.family_rated_premiums.exchange_provided_code,
-          primary_enrollee: product_reference.family_rated_premiums.primary_enrollee,
-          primary_enrollee_one_dependent: product_reference.family_rated_premiums.primary_enrollee_one_dependent,
-          primary_enrollee_many_dependent: product_reference.family_rated_premiums.primary_enrollee_many_dependent })
+                        exchange_provided_code: product_reference.family_rated_premiums.exchange_provided_code,
+                        primary_enrollee: product_reference.family_rated_premiums.primary_enrollee,
+                        primary_enrollee_one_dependent: product_reference.family_rated_premiums
+                                                                         .primary_enrollee_one_dependent,
+                        primary_enrollee_many_dependent: product_reference.family_rated_premiums
+                                                                          .primary_enrollee_many_dependent
+                      })
       end
 
-      result.merge!(pediatric_dental_ehb: product_reference.pediatric_dental_ehb) if product_reference.pediatric_dental_ehb.present?
+      if product_reference.pediatric_dental_ehb.present?
+        result.merge!(pediatric_dental_ehb: product_reference.pediatric_dental_ehb)
+      end
       result
     end
+    # rubocop:enable Metrics/MethodLength
 
     def build_issuer_profile_reference(issuer_profile_reference)
       {
@@ -106,6 +115,9 @@ module IrsGroups
       }
     end
 
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/PerceivedComplexity
+    # rubocop:disable Metrics/CyclomaticComplexity
     def persist_enrollments
       insurance_agreements = fetch_insurance_agreements
       insurance_agreements.each do |insurance_agreement|
@@ -117,8 +129,8 @@ module IrsGroups
           next if enrollments_from_cv3.blank?
 
           enrollments_from_cv3.each do |enrollment|
-            enrollment_hash = InsurancePolicies::AcaIndividuals::Enrollments::Find.
-              new.call({scope_name: :by_hbx_id, criterion: enrollment.hbx_id})
+            enrollment_hash = InsurancePolicies::AcaIndividuals::Enrollments::Find
+                              .new.call({ scope_name: :by_hbx_id, criterion: enrollment.hbx_id })
             next enrollment_hash.value! if enrollment_hash.success?
 
             enrollment_and_member_hash = build_enrollment_and_member_hash(enrollment)
@@ -132,17 +144,20 @@ module IrsGroups
               tax_household = create_tax_hh_group_and_households(enrollment, insurance_policy)
               create_enrollments_tax_households(enrollment, new_enr_hash.value!, tax_household)
             else
-              ::IrsGroups::CreateOrUpdateEnrollmentsTaxHouseholds.new.call({enrollment: enrollment,
-                                                                            family: @family})
+              ::IrsGroups::CreateOrUpdateEnrollmentsTaxHouseholds.new.call({ enrollment: enrollment,
+                                                                             family: @family })
             end
           end
         end
       end
       Success(true)
     end
+    # rubocop:enable Metrics/PerceivedComplexity
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength
 
     def persist_subscriber(insurance_policy, enrollment_members, insurance_enr_hash)
-      subscriber = enrollment_members.detect{ |member| member.is_subscriber == true }
+      subscriber = enrollment_members.detect { |member| member.is_subscriber == true }
       return Success(true) if subscriber.blank?
 
       glue_enrollee = fetch_person_from_glue(insurance_policy, subscriber)
@@ -168,50 +183,52 @@ module IrsGroups
       end
     end
 
+    # rubocop:disable Metrics/MethodLength
     def create_tax_hh_group_and_households(enrollment, insurance_policy)
-      tax_hh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup.
-        create!({start_on: enrollment.effective_on,
-                 end_on: enrollment.aasm_state == "coverage_canceled" ? enrollment.effective_on : enrollment.terminated_on,
-                 is_aqhp: false,
-                 hbx_id: 9.times.map{rand(9)}.join,
-                 assistance_year: @year,
-                 irs_group_id: insurance_policy.irs_group.id })
+      end_on = enrollment.aasm_state == "coverage_canceled" ? enrollment.effective_on : enrollment.terminated_on
+      tax_hh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup
+                     .create!({ start_on: enrollment.effective_on,
+                                end_on: end_on,
+                                is_aqhp: false,
+                                hbx_id: 9.times.map { rand(9) }.join,
+                                assistance_year: @year,
+                                irs_group_id: insurance_policy.irs_group.id })
 
-      tax_household = ::InsurancePolicies::AcaIndividuals::TaxHousehold.
-        create!({is_aqhp: false,
-                 hbx_id: 9.times.map{rand(9)}.join,
-                 start_on: enrollment.effective_on,
-                 tax_household_group_id: tax_hh_group&.id})
+      tax_household = ::InsurancePolicies::AcaIndividuals::TaxHousehold
+                      .create!({ is_aqhp: false,
+                                 hbx_id: 9.times.map { rand(9) }.join,
+                                 start_on: enrollment.effective_on,
+                                 tax_household_group_id: tax_hh_group&.id })
 
       enrollment.hbx_enrollment_members.each do |member|
         person = find_or_create_person(member)
-        ::InsurancePolicies::AcaIndividuals::TaxHouseholdMember.
-          create!({hbx_id: 9.times.map{rand(9)}.join,
-                   is_subscriber: member.is_subscriber,
-                   is_uqhp_eligible: true,
-                   person_id: person.value![:id],
-                   tax_household_id: tax_household.id})
+        ::InsurancePolicies::AcaIndividuals::TaxHouseholdMember
+          .create!({ hbx_id: 9.times.map { rand(9) }.join,
+                     is_subscriber: member.is_subscriber,
+                     is_uqhp_eligible: true,
+                     person_id: person.value![:id],
+                     tax_household_id: tax_household.id })
       end
       tax_household
     end
+    # rubocop:enable Metrics/MethodLength
 
     def create_enrollments_tax_households(enrollment, enrollment_hash, tax_household)
-      enr_tax_household = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.
-        create!(tax_household_id: tax_household.id,
-                enrollment_id: enrollment_hash[:id])
+      enr_tax_household = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+                          .create!(tax_household_id: tax_household.id,
+                                   enrollment_id: enrollment_hash[:id])
       enrollment.hbx_enrollment_members.each do |member|
         person = find_or_create_person(member)
-        ::InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers.
-          create!({person_id: person.value![:id],
-                   enrollments_tax_households_id: enr_tax_household.id})
+        ::InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers
+          .create!({ person_id: person.value![:id],
+                     enrollments_tax_households_id: enr_tax_household.id })
       end
     end
-
 
     def fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
       @family.households.first.hbx_enrollments.select do |enrollment|
         insurance_policy_enrollment_ids.include?(enrollment.hbx_id) &&
-          enrollment.effective_on.between?(Date.new(@year, 1,1), Date.new(2023, 12,31))
+          enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(2023, 12, 31))
       end
     end
 
@@ -240,3 +257,5 @@ module IrsGroups
     end
   end
 end
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/ClassLength

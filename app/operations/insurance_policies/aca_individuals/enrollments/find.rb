@@ -5,8 +5,8 @@ require 'dry/monads/do'
 
 module InsurancePolicies
   module AcaIndividuals
-    # Operation to find tax_household group.
     module Enrollments
+      # Operation to find enrollment.
       class Find
         send(:include, Dry::Monads[:result, :do])
 

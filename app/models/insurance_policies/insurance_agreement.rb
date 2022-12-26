@@ -14,7 +14,7 @@ module InsurancePolicies
     belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider'
 
     has_many :insurance_policies, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy',
-             inverse_of: :insurance_agreement
+                                  inverse_of: :insurance_agreement
 
     # def covered_month_tax_household(calendar_year, calendar_month)
     #   tax_household = covered_calendar_year_thh(calendar_year, calendar_month)

@@ -33,7 +33,7 @@ module InsurancePolicies
                dependent: :destroy
 
       has_many :tax_household_members, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdMember',
-               inverse_of: :tax_household, dependent: :destroy
+                                       inverse_of: :tax_household, dependent: :destroy
       accepts_nested_attributes_for :tax_household_members
 
       def enrollments
@@ -42,7 +42,7 @@ module InsurancePolicies
 
       def primary
         tax_household_members.where(tax_filer_status: "tax_filer").first ||
-        tax_household_members.where(relation_with_primary: "self").first
+          tax_household_members.where(relation_with_primary: "self").first
       end
 
       def spouse

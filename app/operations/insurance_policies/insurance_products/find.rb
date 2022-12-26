@@ -26,8 +26,8 @@ module InsurancePolicies
       end
 
       def find_product(validated_params)
-        insurance_product = ::InsurancePolicies::InsuranceProduct.
-          where(hios_plan_id: validated_params[:hios_plan_id], plan_year: validated_params[:plan_year]).first
+        insurance_product = ::InsurancePolicies::InsuranceProduct
+                            .where(hios_plan_id: validated_params[:hios_plan_id], plan_year: validated_params[:plan_year]).first
 
         if insurance_product.present?
           product_hash = insurance_product.as_json(include: [:insurance_provider]).deep_symbolize_keys

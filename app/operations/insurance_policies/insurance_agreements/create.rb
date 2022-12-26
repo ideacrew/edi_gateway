@@ -13,7 +13,7 @@ module InsurancePolicies
       # @option params [ AcaEntities::InsurancePolicies::InsuranceAgreement] required
       # @return [Dry::Monad::Success] agreement record created
       # @return [Dry::Monad::Failure] failed to create agreement record
-      #params: { plan_year: plan_year, insurance_provider: {insurance_provider_hash},
+      # params: { plan_year: plan_year, insurance_provider: {insurance_provider_hash},
       # contract_holder: {contract_holder_hash} }
       def call(params)
         values = yield validate(params)
@@ -44,5 +44,3 @@ module InsurancePolicies
     end
   end
 end
-
-

@@ -20,10 +20,11 @@ module InsurancePolicies
 
         # params - cv3 + edi_gateway merge {}
         def validate(params)
-          AcaEntities::Contracts::PremiumCredits::TaxHouseholdMemberEnrollmentMemberContract.new.call(params.
-            except(:enrollment_tax_household, :person))
+          AcaEntities::Contracts::PremiumCredits::TaxHouseholdMemberEnrollmentMemberContract.new.call(params
+            .except(:enrollment_tax_household, :person))
         end
 
+        # rubocop:disable Metrics/AbcSize
         def create(params, enrollment_tax_household, person)
           result = ::InsurancePolicies::AcaIndividuals::EnrolledMembersTaxHouseholdMembers
                    .create!(person_hbx_id: params[:family_member_reference][:family_member_hbx_id],
@@ -44,6 +45,7 @@ module InsurancePolicies
           Failure("Unable to create enrollment member thh member with
 #{params[:family_member_reference][:family_member_hbx_id]}.")
         end
+        # rubocop:enable Metrics/AbcSize
       end
     end
   end

@@ -89,12 +89,12 @@ module EdiDatabase
         return nil if tax_hhs.nil? || tax_hhs.empty? || tax_hhs == new_tax_hhs
 
         termed_tax_household_set =
-          new_tax_hhs.reduce([]) do |list, nthh|
+          new_tax_hhs.each_with_object([]) do |nthh, list|
             list << nthh unless tax_hhs.include? nthh
-            list
           end
 
         return nil if termed_tax_household_set.empty?
+
         build_event('tax_households_terminated', termed_tax_household_set, customer_state, customer_new_state)
       end
 
@@ -113,12 +113,12 @@ module EdiDatabase
         return nil if policies == new_policies
 
         termed_policy_set =
-          new_policies.reduce([]) do |list, np|
+          new_policies.each_with_object([]) do |np, list|
             list << np unless policies.include? np
-            list
           end
 
         return nil if termed_policy_set.empty?
+
         build_event('policies_terminated', termed_policy_set, customer_state, customer_new_state)
       end
 

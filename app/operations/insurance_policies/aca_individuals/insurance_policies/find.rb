@@ -5,8 +5,8 @@ require 'dry/monads/do'
 
 module InsurancePolicies
   module AcaIndividuals
-    # Operation to find insurance policy by plna_id.
-      module InsurancePolicies
+    module InsurancePolicies
+      # Operation to find insurance policy by policy_id.
       class Find
         send(:include, Dry::Monads[:result, :do])
 
@@ -25,11 +25,12 @@ module InsurancePolicies
         end
 
         def find_insurance_policy(validated_params)
-          insurance_policy = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
-            where(policy_id: validated_params[:policy_id]).first
+          insurance_policy = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
+                             .where(policy_id: validated_params[:policy_id]).first
 
           if insurance_policy.present?
-            insurance_policy_hash = insurance_policy.as_json(include: [:insurance_product, :insurance_agreement, :enrollments]).deep_symbolize_keys
+            insurance_policy_hash = insurance_policy.as_json(include: [:insurance_product, :insurance_agreement,
+                                                                       :enrollments]).deep_symbolize_keys
             Success(insurance_policy_hash)
           else
             Failure("Unable to find insurance_policy with ID #{validated_params[:policy_id]}.")

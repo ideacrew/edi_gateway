@@ -99,5 +99,4 @@ class Inbound834Transaction
   field :transaction_set_reference_number, type: String
 
   index({ one_time_tag: 1 }, { unique: true })
-
 end

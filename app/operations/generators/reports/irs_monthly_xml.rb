@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/CyclomaticComplexity
+# rubocop:disable Metrics/MethodLength
+# rubocop:disable Metrics/PerceivedComplexity
 
 module Generators
   module Reports
@@ -55,16 +59,16 @@ module Generators
         tax_households.each do |tax_household|
           irs_hhg_xml.TaxHousehold do |thh_xml|
             (1..max_month).each do |calendar_month|
-              policies_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
-                enrollments_for_month(calendar_month, calendar_year, policies)
+              policies_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
+                                   .enrollments_for_month(calendar_month, calendar_year, policies)
               any_aptc_applied_policies = policies_for_month.any? do |enr|
                 enr.total_premium_adjustment_amount.to_f > 0.0
               end
               result = if tax_household.is_aqhp == false || !any_aptc_applied_policies
                          policies_for_month
                        else
-                         thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.
-                           where(tax_household_id: tax_household.id)
+                         thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+                                           .where(tax_household_id: tax_household.id)
                          policies_for_month.map(&:hbx_id) & thh_enrollments.map(&:enrollment).map(&:hbx_id)
                        end
               next if result.blank?
@@ -77,10 +81,10 @@ module Generators
 
       def thh_to_pick(tax_household, calendar_month)
         aptc_to_pick = []
-        enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
-          enrollments_for_month(calendar_month, calendar_year, policies)
+        enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
+                         .enrollments_for_month(calendar_month, calendar_year, policies)
         enrs_for_month.each do |enrollment|
-         thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
+          thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
           _slcsp, aptc, _pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
           aptc_to_pick << aptc.to_f
         end
@@ -97,8 +101,8 @@ module Generators
           if thh_to_pick(tax_household, calendar_month)
             thhc_xml.Household do |hh_xml|
               serialize_household_members(hh_xml, tax_household)
-              enrs_for_month= ::InsurancePolicies::AcaIndividuals::InsurancePolicy.
-                enrollments_for_month(calendar_month, calendar_year, policies)
+              enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
+                               .enrollments_for_month(calendar_month, calendar_year, policies)
               enrs_for_month.each do |enrollment|
                 serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
               end
@@ -196,7 +200,7 @@ module Generators
           policy = sorted_enrollments.first.insurance_policy
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
             enrolled_members_for_month = [[sorted_enrollments.map(&:subscriber)] +
-                                            sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
+              sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
             slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
             insured_cov_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
             insured_cov_xml.QHPPolicyNum policy.policy_id
@@ -262,3 +266,7 @@ module Generators
 end
 
 # rubocop:enable Metrics/ClassLength
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/CyclomaticComplexity
+# rubocop:enable Metrics/MethodLength
+# rubocop:enable Metrics/PerceivedComplexity

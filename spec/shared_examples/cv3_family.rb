@@ -112,11 +112,11 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
 
   let(:tax_household_member_enrollment_member) do
     {
-      hbx_enrollment_member: {family_member_reference: family_member_reference, is_subscriber: true,
-                              eligibility_date: Date.today, coverage_start_on: Date.today},
-      tax_household_member: {family_member_reference: family_member_reference,
-                             product_eligibility_determination: tax_household_member_eligibity_determination,
-                             is_subscriber: true},
+      hbx_enrollment_member: { family_member_reference: family_member_reference, is_subscriber: true,
+                               eligibility_date: Date.today, coverage_start_on: Date.today },
+      tax_household_member: { family_member_reference: family_member_reference,
+                              product_eligibility_determination: tax_household_member_eligibity_determination,
+                              is_subscriber: true },
       age_on_effective_date: 45,
       family_member_reference: family_member_reference,
       relationship_with_primary: "self",
@@ -149,7 +149,6 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
         product_kind: 'health',
         hbx_id: '1000',
         aasm_state: 'coverage_selected',
-        enrollment_period_kind: 'open_enrollment',
         coverage_kind: 'health',
         effective_on: Date.today,
         is_any_enrollment_member_outstanding: false,

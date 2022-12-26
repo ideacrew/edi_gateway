@@ -15,7 +15,7 @@ module InsurancePolicies
       belongs_to :insurance_product, class_name: 'InsurancePolicies::InsuranceProduct'
 
       belongs_to :insurance_agreement, class_name: 'InsurancePolicies::InsuranceAgreement',
-                 inverse_of: :insurance_policies
+                                       inverse_of: :insurance_policies
 
       belongs_to :irs_group, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup', optional: true
 
@@ -31,7 +31,6 @@ module InsurancePolicies
       field :aasm_state, type: String
       field :carrier_policy_id, type: String
 
-
       def policy_end_on
         end_on.present? ? end_on : start_on.end_of_year
       end
@@ -40,26 +39,11 @@ module InsurancePolicies
         self.class.enrollments_for_month(calendar_year, calendar_month, [self])
       end
 
-      # def covered_enrollees_as_of(month, year)
-      #   month_begin = Date.new(year, month, 1)
-      #   month_end = month_begin.end_of_month
-      #   effectuated_enrollments = enrollments.select do |enrollment|
-      #     next if enrollment.aasm_state == "coverage_canceled"
-      #     enrollment
-      #   end
-      #
-      #   enrollees = effectuated_enrollments.flat_map(&:subscriber) + effectuated_enrollments.flat_map(&:dependents)
-      #
-      #   enrollees.compact.flatten.select do |enrollee|
-      #     enrollment = enrollee.aca_individuals_enrollment
-      #     enrollee_coverage_end = enrollment.end_on.present? ? enrollee.end_on : enrollee.start_on.end_of_year
-      #     (enrollee.start_on <= month_end) && (enrollee_coverage_end >= month_begin)
-      #   end
-      # end
-
+      # rubocop:disable Metrics/AbcSize
       def self.enrollments_for_month(month, year, policies)
-        effectuated_enrollments = policies.flat_map(&:enrollments).select {|enrollment| enrollment.aasm_state != "coverage_canceled"}
-        effectuated_enrollments.select do |enrollment|
+        policies.flat_map(&:enrollments).select do |enrollment|
+          next if enrollment.aasm_state == "coverage_canceled"
+
           start_date = enrollment.effectuated_on
           end_date = enrollment.end_on.present? ? enrollment.end_on : start_date.end_of_year
           end_of_month = Date.new(year, month, 1).end_of_month
@@ -70,6 +54,7 @@ module InsurancePolicies
           (start_date.month..coverage_end_month).include?(month)
         end
       end
+      # rubocop:enable Metrics/AbcSize
     end
   end
 end

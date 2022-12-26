@@ -2,7 +2,8 @@
 
 require "rails_helper"
 
-RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers and a payload for a transaction it has never seen" do
+RSpec.describe Inbound834::CreateTransactionAndEnvelope,
+               "given valid headers and a payload for a transaction it has never seen" do
   let(:headers) do
     {
       interchange_control_number: "12345",
@@ -72,7 +73,8 @@ RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers an
   end
 end
 
-RSpec.describe Inbound834::CreateTransactionAndEnvelope, "given valid headers and a payload for a transaction it has already seen" do
+RSpec.describe Inbound834::CreateTransactionAndEnvelope,
+               "given valid headers and a payload for a transaction it has already seen" do
   let(:headers) do
     {
       interchange_control_number: "12345",

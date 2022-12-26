@@ -5,7 +5,6 @@ module Inbound834
   class ExtractGatewayEnvelope
     send(:include, Dry::Monads[:result, :do, :try])
 
-
     # Extract the GatewayEnvelope information.
     # @param headers [Hash] the hash of headers from the AMQP message.
     # @return [Dry::Result<AcaX12Entities::X220A1::GatewayEnvelope>] the new

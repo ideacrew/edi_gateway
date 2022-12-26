@@ -2,6 +2,7 @@
 
 # This module handles behavior for maintaining a document's history
 module DomainModels
+  # This module handles behavior for maintaining a document's history
   module Domainable
     extend ActiveSupport::Concern
 

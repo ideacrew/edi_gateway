@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/ClassLength
+
 module IrsGroups
   # persist insurance agreements and nested models
   class CreateOrUpdateInsuranceAgreement
@@ -39,15 +42,14 @@ module IrsGroups
         policy_id: glue_policy.eg_id,
         hbx_enrollment_ids: glue_policy.hbx_enrollment_ids,
         aasm_state: glue_policy.aasm_state,
-        carrier_policy_id: glue_policy.subscriber.cp_id
-      }
+        carrier_policy_id: glue_policy.subscriber.cp_id }
     end
 
     def map_person_to_contract_params(person_hash)
       person_hash.merge!(person_name: person_hash[:name])
 
       person_hash[:addresses].collect do |address|
-        address[:city]  = address[:city_name]
+        address[:city] = address[:city_name]
       end
       person_hash
     end
@@ -79,15 +81,15 @@ module IrsGroups
       result = People::Persons::Find.new.call({ hbx_id: glue_person.authority_member_id })
       return result if result.success?
 
-      People::Persons::Create.new.call({person: glue_person})
+      People::Persons::Create.new.call({ person: glue_person })
     end
 
     def persist_insurance_agreement(policy, person_hash, provider_hash, product_hash)
       plan_year = policy.plan.year
-      agreement = InsurancePolicies::InsuranceAgreements::Find.
-        new.call({ plan_year: plan_year,
-                   insurance_provider_id: provider_hash[:id],
-                   contract_holder_id: person_hash[:id]})
+      agreement = InsurancePolicies::InsuranceAgreements::Find
+                  .new.call({ plan_year: plan_year,
+                              insurance_provider_id: provider_hash[:id],
+                              contract_holder_id: person_hash[:id] })
       return agreement if agreement.success?
 
       person_params_hash = map_person_to_contract_params(person_hash)
@@ -106,18 +108,17 @@ module IrsGroups
       glue_person = find_person_from_glue_policy(glue_policy)
       irs_group_id = construct_irs_group_id(date.year.to_s.last(2), glue_person.authority_member_id)
 
-      irs_group = InsurancePolicies::AcaIndividuals::IrsGroups::Find.
-        new.call({scope_name: :by_irs_group_id, criterion: irs_group_id })
+      irs_group = InsurancePolicies::AcaIndividuals::IrsGroups::Find
+                  .new.call({ scope_name: :by_irs_group_id, criterion: irs_group_id })
       return irs_group if irs_group.success?
 
-      InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({irs_group_id: irs_group_id,
-                                                                    start_on: date})
+      InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({ irs_group_id: irs_group_id,
+                                                                      start_on: date })
     end
 
-
     def persist_insurance_policy(glue_policy, agreement_hash, product_hash, irs_group_hash)
-      insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicies::Find.
-        new.call({ policy_id: glue_policy.eg_id })
+      insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicies::Find
+                         .new.call({ policy_id: glue_policy.eg_id })
       return insurance_policy if insurance_policy.success?
 
       policy_hash_params = build_insurance_policy_hash(glue_policy)
@@ -152,3 +153,5 @@ module IrsGroups
     end
   end
 end
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/ClassLength
