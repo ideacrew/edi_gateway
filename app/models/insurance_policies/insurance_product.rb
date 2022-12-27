@@ -19,6 +19,10 @@ module InsurancePolicies
     field :market_type, type: String
     field :ehb, type: BigDecimal, default: 0.0
     field :plan_year, type: Integer
+    field :rating_method, type: String
+    field :primary_enrollee, type: Float
+    field :primary_enrollee_one_dependent, type: Float
+    field :primary_enrollee_many_dependent, type: Float
 
     belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider'
 

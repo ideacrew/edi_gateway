@@ -33,6 +33,7 @@ module InsurancePolicies
             .new(ssn: glue_enrollee.person.authority_member.ssn,
                  dob: glue_enrollee.person.authority_member.dob,
                  gender: glue_enrollee.person.authority_member.gender,
+                 relation_with_primary: glue_enrollee.rel_code,
                  person_id: person_id,
                  premium_schedule: { premium_amount: glue_enrollee.pre_amt,
                                      benchmark_ehb_premium_amount: slcsp_member_premium })

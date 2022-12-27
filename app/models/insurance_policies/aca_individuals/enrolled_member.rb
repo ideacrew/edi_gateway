@@ -45,6 +45,7 @@ module InsurancePolicies
       # end
       field :disabled, type: Boolean, default: false
       field :age_off_exempt, type: Boolean, default: false
+      field :relation_with_primary, type: String
     end
   end
 end

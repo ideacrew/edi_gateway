@@ -115,6 +115,16 @@ module IrsGroups
       }
     end
 
+    def update_pediatric_dental_values(enrollment, insurance_policy)
+      insurance_product = insurance_policy.insurance_product
+      family_rated_premiums = enrollment.product_reference.family_rated_premiums
+      insurance_product.update!(ehb: enrollment.product_reference.pediatric_dental_ehb,
+                                rating_method: enrollment.product_reference.rating_method,
+                                primary_enrollee: family_rated_premiums.primary_enrollee,
+                                primary_enrollee_one_dependent: family_rated_premiums.primary_enrollee_one_dependent,
+                                primary_enrollee_many_dependent: family_rated_premiums.primary_enrollee_many_dependent)
+    end
+
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
@@ -133,6 +143,7 @@ module IrsGroups
                               .new.call({ scope_name: :by_hbx_id, criterion: enrollment.hbx_id })
             next enrollment_hash.value! if enrollment_hash.success?
 
+            update_pediatric_dental_values(enrollment, insurance_policy) if enrollment.product_kind == "dental"
             enrollment_and_member_hash = build_enrollment_and_member_hash(enrollment)
             enrollment_and_member_hash.merge!(insurance_policy: insurance_policy.to_hash)
             new_enr_hash = InsurancePolicies::AcaIndividuals::Enrollments::Create.new.call(enrollment_and_member_hash)

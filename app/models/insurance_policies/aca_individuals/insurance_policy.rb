@@ -35,8 +35,8 @@ module InsurancePolicies
         end_on.present? ? end_on : start_on.end_of_year
       end
 
-      def enrollments_for_month(calendar_year, calendar_month)
-        self.class.enrollments_for_month(calendar_year, calendar_month, [self])
+      def enrollments_for_month(calendar_month, calendar_year)
+        self.class.enrollments_for_month(calendar_month, calendar_year, [self])
       end
 
       # rubocop:disable Metrics/AbcSize

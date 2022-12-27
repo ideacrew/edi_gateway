@@ -174,12 +174,15 @@ module Generators
       def serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
         thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
         slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
+        pediatric_dental_pre = enrollment.pediatric_dental_premium(tax_household.tax_household_members,
+                                                                       calendar_month)
+        total_premium = pre_amt_tot.to_f + pediatric_dental_pre
         hh_xml.AssociatedPolicy do |xml|
           xml.QHPPolicyNum enrollment.insurance_policy.policy_id
           xml.QHPIssuerEIN enrollment&.insurance_policy&.insurance_product&.insurance_provider&.fein
           xml.SLCSPAdjMonthlyPremiumAmt slcsp
           xml.HouseholdAPTCAmt aptc
-          xml.TotalHsldMonthlyPremiumAmt pre_amt_tot
+          xml.TotalHsldMonthlyPremiumAmt total_premium.to_s
         end
       end
 
@@ -191,24 +194,37 @@ module Generators
         end
       end
 
+      def fetch_tax_household_members(enrollments)
+        enrs_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(:"enrollment_id".in =>
+                                                                                          enrollments.map(&:id))
+        thhs = ::InsurancePolicies::AcaIndividuals::TaxHousehold.where(:"id".in => enrs_thhs.map(&:tax_household_id))
+
+        thhs&.map(&:tax_household_members).flatten.uniq(&:person_id)
+      end
+
       def serialize_insurance_coverages(insured_pol_xml, policy)
         (1..max_month).each do |calendar_month|
           enrollments = policy.enrollments_for_month(calendar_month, calendar_year)
           next if enrollments.blank?
 
           sorted_enrollments = enrollments.sort_by(&:start_on)
+          thh_members = fetch_tax_household_members(sorted_enrollments)
           policy = sorted_enrollments.first.insurance_policy
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
             enrolled_members_for_month = [[sorted_enrollments.map(&:subscriber)] +
               sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
-            slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
+            slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month,
+                                                                                    calendar_month)
+            pediatric_dental_pre = sorted_enrollments.first.pediatric_dental_premium(thh_members,
+                                                                                         calendar_month)
+            total_premium = pre_amt_tot.to_f + pediatric_dental_pre
             insured_cov_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
             insured_cov_xml.QHPPolicyNum policy.policy_id
             insured_cov_xml.QHPIssuerEIN policy.insurance_product.insurance_provider.fein
             insured_cov_xml.IssuerNm policy.insurance_product.insurance_provider.issuer_me_name
             insured_cov_xml.PolicyCoverageStartDt date_formatter(policy.start_on)
             insured_cov_xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
-            insured_cov_xml.TotalQHPMonthlyPremiumAmt pre_amt_tot
+            insured_cov_xml.TotalQHPMonthlyPremiumAmt total_premium.to_s
             insured_cov_xml.APTCPaymentAmt aptc
 
             sorted_enrollments.each do |enrollment|
