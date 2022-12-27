@@ -175,7 +175,7 @@ module Generators
         thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
         slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
         pediatric_dental_pre = enrollment.pediatric_dental_premium(tax_household.tax_household_members,
-                                                                       calendar_month)
+                                                                   calendar_month)
         total_premium = pre_amt_tot.to_f + pediatric_dental_pre
         hh_xml.AssociatedPolicy do |xml|
           xml.QHPPolicyNum enrollment.insurance_policy.policy_id
@@ -195,11 +195,11 @@ module Generators
       end
 
       def fetch_tax_household_members(enrollments)
-        enrs_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(:"enrollment_id".in =>
+        enrs_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(:enrollment_id.in =>
                                                                                           enrollments.map(&:id))
-        thhs = ::InsurancePolicies::AcaIndividuals::TaxHousehold.where(:"id".in => enrs_thhs.map(&:tax_household_id))
+        thhs = ::InsurancePolicies::AcaIndividuals::TaxHousehold.where(:id.in => enrs_thhs.map(&:tax_household_id))
 
-        thhs&.map(&:tax_household_members).flatten.uniq(&:person_id)
+        thhs&.map(&:tax_household_members)&.flatten&.uniq(&:person_id)
       end
 
       def serialize_insurance_coverages(insured_pol_xml, policy)
@@ -216,7 +216,7 @@ module Generators
             slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month,
                                                                                     calendar_month)
             pediatric_dental_pre = sorted_enrollments.first.pediatric_dental_premium(thh_members,
-                                                                                         calendar_month)
+                                                                                     calendar_month)
             total_premium = pre_amt_tot.to_f + pediatric_dental_pre
             insured_cov_xml.ApplicableCoverageMonthNum prepend_zeros(calendar_month.to_s, 2)
             insured_cov_xml.QHPPolicyNum policy.policy_id

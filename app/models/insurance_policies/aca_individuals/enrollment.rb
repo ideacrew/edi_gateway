@@ -67,16 +67,18 @@ module InsurancePolicies
       end
       # rubocop:enable Metrics/AbcSize
 
+      # rubocop:disable Metrics/AbcSize
       def pediatric_dental_premium(tax_household_members, calendar_month)
-        thh_members = tax_household_members.reject {|member| member.is_medicaid_chip_eligible == true }
+        thh_members = tax_household_members.reject { |member| member.is_medicaid_chip_eligible == true }
         thh_mem_person_hbx_ids = thh_members.map(&:person).map(&:hbx_id)
         eligible_enrollees = [[subscriber] + dependents].flatten.select do |enrollee|
           thh_mem_person_hbx_ids.include?(enrollee.person.hbx_id)
         end
-        ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({enrollment: self,
-                                                                         enrolled_people: eligible_enrollees,
-                                                                         month: calendar_month }).value!.to_f
+        ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ enrollment: self,
+                                                                          enrolled_people: eligible_enrollees,
+                                                                          month: calendar_month }).value!.to_f
       end
+      # rubocop:enable Metrics/AbcSize
     end
   end
 end

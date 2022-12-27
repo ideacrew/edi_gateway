@@ -69,29 +69,30 @@ module Generators
         start = Time.now
 
         fetch_irs_groups.each do |irs_group|
-          hbx_member_id = irs_group.insurance_agreements.first.contract_holder.hbx_member_id
-          primary_person = Person.where(authority_member_id: hbx_member_id).first
-          if primary_person.nil?
-            @logger.info("primary person not found for hbx_member_id: #{hbx_member_id}, irs_group_id: #{irs_group.irs_group_id}")
+          contract_holder = irs_group.aca_individual_insurance_policies.last.insurance_agreement&.contract_holder
+          if contract_holder.nil?
+            @logger.info("contract_holder not found for irs_group: #{irs_group.irs_group_id}")
             next
           end
-          policies = primary_person.policies.to_a
-          policies.reject! do |pol|
+
+          if irs_group.tax_household_groups.empty?
+            @logger.info("No tax households found for irs_group: #{irs_group.irs_group_id}, person: #{contract_holder.hbx_id}")
+            next
+          end
+
+          policies = irs_group.aca_individual_insurance_policies
+          result = policies.reject do |pol|
             non_eligible_policy(pol, calendar_year, max_month)
           end
-          policies.reject! do |pol|
-            if pol.enrollees.any? { |en| en.try(:person).try(:authority_member).blank? }
-              @logger.info("For policy_id: #{pol.id} authority member missing!!, irs_group_id: #{irs_group.irs_group_id}")
-            end
-            next
-          end
-          if policies.count.zero?
+
+          if result.count.zero?
             @logger.info("No policies found for irs_group_id: #{irs_group.irs_group_id}")
             next
           end
 
+          sorted_policies = result.sort_by(&:start_on)
           folder_path = "#{@h36_root_folder}/#{@h36_folder_name}"
-          group_xml = Generators::Reports::IrsMonthlyXml.new(irs_group, policies, calendar_year, max_month, folder_path)
+          group_xml = Generators::Reports::IrsMonthlyXml.new(irs_group, sorted_policies, calendar_year, max_month, folder_path)
           group_xml.serialize
 
           count += 1
@@ -117,13 +118,12 @@ module Generators
       end
 
       def non_eligible_policy(pol, calendar_year, max_month)
-        return true if pol.canceled?
-        return true if pol.kind == "coverall"
-        return true if pol.plan.coverage_type == 'dental'
-        return true if pol.plan.metal_level == "catastrophic"
-        return true if pol.subscriber.cp_id.blank?
+        return true if pol.aasm_state == "canceled"
+        return true if pol.insurance_product.coverage_type == 'dental'
+        return true if pol.insurance_product.metal_level == "catastrophic"
+        return true if pol.carrier_policy_id.blank?
 
-        return true if max_month != 12 && (pol.subscriber.coverage_start >= Date.new(calendar_year, (max_month + 1), 1))
+        return true if max_month != 12 && (pol.start_on >= Date.new(calendar_year, (max_month + 1), 1))
 
         false
       end
