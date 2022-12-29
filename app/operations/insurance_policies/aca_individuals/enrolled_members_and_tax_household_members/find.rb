@@ -43,7 +43,7 @@ module InsurancePolicies
         def search_scope(params)
           case params[:scope_name]
           when :by_person_hbx_id
-            { person_id: params[:person_hbx_id] }
+            { person_hbx_id: params[:person_hbx_id] }
           end
         end
       end
