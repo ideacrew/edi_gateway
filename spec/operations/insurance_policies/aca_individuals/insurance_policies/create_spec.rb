@@ -49,8 +49,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::Create do
 
     before do
       params.merge!(insurance_agreement: insurance_agreement.as_json.deep_symbolize_keys)
-      params.merge!(insurance_product: { name: insurance_product.name, hios_plan_id: insurance_product.hios_plan_id, plan_year: insurance_product.plan_year,
-                                         coverage_type: insurance_product.coverage_type, metal_level: insurance_product.metal_level,
+      params.merge!(insurance_product: { name: insurance_product.name,
+                                         hios_plan_id: insurance_product.hios_plan_id,
+                                         plan_year: insurance_product.plan_year,
+                                         coverage_type: insurance_product.coverage_type,
+                                         metal_level: insurance_product.metal_level,
                                          market_type: insurance_product.market_type, ehb: insurance_product.ehb })
       params.merge!(irs_group: irs_group.as_json.deep_symbolize_keys)
       @result = subject.call(params)

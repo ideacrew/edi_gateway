@@ -11,47 +11,56 @@ module InsurancePolicies
                class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy',
                inverse_of: :irs_group
 
-      # belongs_to :aca_individual_insurance_policies_irs_groups,
-      #            class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'
-      #
-      #
-      # has_many :aca_individual_insurance_policies_irs_groups
-      # # accepts_nested_attributes_for :insurance_policy
-
       has_many :tax_household_groups, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup',
                                       dependent: :destroy
-      # accepts_nested_attributes_for :tax_household_group
+
 
       field :irs_group_id, type: String
       field :start_on, type: Date
       field :end_on, type: Date
 
-      def irs_households_for_duration(year, max_month, policies)
-        thh_groups = self.tax_household_groups.select { |group| group.assistance_year == 2022 }
-        tax_households = thh_groups.map(&:tax_households).flatten!
-        result = tax_households.select do |tax_household|
-          next if tax_household.is_aqhp == false
 
-          had_coverage(tax_household, max_month, year, policies)
+      def active_tax_household_group(calendar_year)
+        tax_household_groups.where(end_on: Date.new(calendar_year, 12, 31), assistance_year: calendar_year)&.first ||
+          tax_household_groups.where(end_on: nil, assistance_year: calendar_year)&.first
+      end
+
+      def active_thhs_with_tax_filer(calendar_year)
+        active_tax_household_group(calendar_year)&.tax_households&.select do |thh|
+          thh if thh.tax_household_members.where(tax_filer_status: "tax_filer").present?
         end
+      end
 
+      def active_tax_households(calendar_year)
+        result = active_thhs_with_tax_filer(calendar_year)
         if result.present?
-          result
+          result.to_a
+        elsif tax_household_groups.where(is_aqhp: false).present?
+          [tax_household_groups.where(is_aqhp: false, assistance_year: calendar_year).first.tax_households.last]
         else
-          [self.tax_household_groups.where(is_aqhp: false).first.tax_households.last]
-          # insurance_agreements.first.tax_households.select{ |thh| thh.is_immediate_family == true }
+          [tax_household_groups.all.last.tax_households].flatten
         end
       end
 
-      def had_coverage(tax_household, max_month, year, policies)
-        thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(tax_household_id: tax_household.id)
-        (1..max_month).each do |month|
-          eg_ids = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.enrollments_for_month(month, year, policies).map(&:hbx_id)
+      # rubocop:disable Metrics/AbcSize
+      # rubocop:disable Metrics/CyclomaticComplexity
+      def active_thh_for_month(month, year)
+        tax_household_groups.flat_map(&:tax_households).detect do |thh|
+          next if thh.start_on == thh.end_on
+          next if thh.tax_household_group.is_aqhp == false
 
-          return true if (thh_enrollments.flat_map(&:enrollment).map(&:hbx_id) & eg_ids).any?
+          end_of_month = Date.new(year, month, 1).end_of_month
+          next unless thh.start_on < end_of_month
+
+          start_date = thh.start_on
+          end_date = thh.end_on.present? ? thh.end_on.month : start_date.end_of_year
+          coverage_end_month = end_date.month
+          coverage_end_month = 12 if year != end_date.year
+          (start_date.month..coverage_end_month).include?(month)
         end
-        false
       end
+      # rubocop:enable Metrics/AbcSize
+      # rubocop:enable Metrics/CyclomaticComplexity
     end
   end
 end

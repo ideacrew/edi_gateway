@@ -45,8 +45,8 @@ module InsurancePolicies
         end
       end
 
-      def fetch_npt_h36_prems(enrolled_thh_people, calendar_month)
-        slcsp, pre_amt_tot_month = slcsp_pre_amt_tot_values(calendar_month, enrolled_thh_people)
+      def fetch_npt_h36_prems(enrolled_thh_people)
+        slcsp, pre_amt_tot_month = slcsp_pre_amt_tot_values(enrolled_thh_people)
         aptc = total_premium_adjustment_amount || 0.0
         [format('%.2f', slcsp), format('%.2f', aptc), format('%.2f', pre_amt_tot_month)]
       end
@@ -56,10 +56,7 @@ module InsurancePolicies
       end
 
       # rubocop:disable Metrics/AbcSize
-      def slcsp_pre_amt_tot_values(calendar_month, enrolled_thh_people)
-        policy_end_on = insurance_policy_end_on
-        return [0.0, 0.0] if policy_end_on.month == calendar_month
-
+      def slcsp_pre_amt_tot_values(enrolled_thh_people)
         slcsp = enrolled_thh_people.map { |mem| mem.premium_schedule.benchmark_ehb_premium_amount.to_f }.sum
         pre_amt_tot_month = enrolled_thh_people.map { |mem| mem.premium_schedule.premium_amount.to_f }.sum
         pre_amt_tot_month = (pre_amt_tot_month * insurance_policy.insurance_product.ehb).to_f.round(2)
@@ -70,6 +67,8 @@ module InsurancePolicies
       # rubocop:disable Metrics/AbcSize
       def pediatric_dental_premium(tax_household_members, calendar_month)
         thh_members = tax_household_members.reject { |member| member.is_medicaid_chip_eligible == true }
+        return 0.0 if thh_members.empty?
+
         thh_mem_person_hbx_ids = thh_members.map(&:person).map(&:hbx_id)
         eligible_enrollees = [[subscriber] + dependents].flatten.select do |enrollee|
           thh_mem_person_hbx_ids.include?(enrollee.person.hbx_id)

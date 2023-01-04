@@ -129,7 +129,7 @@ module IrsGroups
     end
 
     def find_person_from_glue_policy(policy)
-      if policy.responsible_party.present?
+      if policy.responsible_party_id.present?
         Person.where("responsible_parties._id" => policy.responsible_party_id).first
       else
         policy.subscriber.person

@@ -17,9 +17,6 @@ RSpec.describe InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds, type
 
     let(:valid_params) do
       {
-        household_health_benchmark_ehb_premium: household_health_benchmark_ehb_premium,
-        household_dental_benchmark_ehb_premium: household_dental_benchmark_ehb_premium,
-        household_benchmark_ehb_premium: household_benchmark_ehb_premium,
         applied_aptc: applied_aptc,
         available_max_aptc: available_max_aptc,
         tax_household: shared_insurance_policies_tax_household_one

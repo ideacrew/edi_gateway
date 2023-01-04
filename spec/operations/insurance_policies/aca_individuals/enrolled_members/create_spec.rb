@@ -31,7 +31,9 @@ RSpec.describe InsurancePolicies::AcaIndividuals::EnrolledMembers::Create do
   end
 
   let!(:subscriber_params) do
-    hbx_enrollment_members.first.merge!(person_hash: people.first.as_json.deep_symbolize_keys, enrollment_hash: hbx_enrollment.as_json.deep_symbolize_keys, glue_enrollee: enrollees.first,
+    hbx_enrollment_members.first.merge!(person_hash: people.first.as_json.deep_symbolize_keys,
+                                        enrollment_hash: hbx_enrollment.as_json.deep_symbolize_keys,
+                                        glue_enrollee: enrollees.first,
                                         type: "subscriber")
   end
 

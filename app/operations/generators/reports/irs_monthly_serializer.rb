@@ -68,7 +68,7 @@ module Generators
         count = 0
         start = Time.now
 
-        fetch_irs_groups.each do |irs_group|
+        fetch_irs_groups.no_timeout.each do |irs_group|
           contract_holder = irs_group.aca_individual_insurance_policies.last.insurance_agreement&.contract_holder
           if contract_holder.nil?
             @logger.info("contract_holder not found for irs_group: #{irs_group.irs_group_id}")

@@ -39,6 +39,17 @@ module InsurancePolicies
         self.class.enrollments_for_month(calendar_month, calendar_year, [self])
       end
 
+      def is_effectuated?(month, year)
+        end_of_month = Date.new(year, month, 1).end_of_month
+        return unless start_on < end_of_month
+
+        start_date = start_on
+        end_date = end_on.present? ? end_on.month : start_date.end_of_year
+        coverage_end_month = end_date.month
+        coverage_end_month = 12 if year != end_date.year
+        (start_date.month..coverage_end_month).include?(month)
+      end
+
       # rubocop:disable Metrics/AbcSize
       def self.enrollments_for_month(month, year, policies)
         policies.flat_map(&:enrollments).select do |enrollment|

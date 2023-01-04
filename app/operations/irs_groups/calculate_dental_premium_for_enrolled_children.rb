@@ -40,7 +40,7 @@ module IrsGroups
     def group_ehb_premium(dental_product)
       if dental_product.rating_method == "Age-Based Rates"
         # 'Age-Based Rates'
-        total_premium
+        total_premium(dental_product)
       else
         # 'Family-Tier Rates'
         family_tier_total_premium(dental_product)
@@ -53,7 +53,7 @@ module IrsGroups
 
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
-    def total_premium
+    def total_premium(dental_product)
       # Finalize total number of members
       members = if @child_members.count > 3
                   @child_members.sort_by do |member|
@@ -74,7 +74,7 @@ module IrsGroups
         (sum + member.premium_schedule.premium_amount).round(2)
       end
 
-      BigDecimal(members_premium.round(2).to_s)
+      BigDecimal((members_premium * dental_product.ehb).round(2).to_s)
     end
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/MethodLength

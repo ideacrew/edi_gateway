@@ -195,6 +195,7 @@ module IrsGroups
     end
 
     # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/CyclomaticComplexity
     def create_tax_hh_group_and_households(enrollment, insurance_policy)
       end_on = enrollment.aasm_state == "coverage_canceled" ? enrollment.effective_on : enrollment.terminated_on
       tax_hh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup
@@ -216,6 +217,7 @@ module IrsGroups
         ::InsurancePolicies::AcaIndividuals::TaxHouseholdMember
           .create!({ hbx_id: 9.times.map { rand(9) }.join,
                      is_subscriber: member.is_subscriber,
+                     relation_with_primary: member.is_subscriber == true ? "self" : find_relation_with_primary(member),
                      is_uqhp_eligible: true,
                      person_id: person.value![:id],
                      tax_household_id: tax_household.id })
@@ -223,6 +225,7 @@ module IrsGroups
       tax_household
     end
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/CyclomaticComplexity
 
     def create_enrollments_tax_households(enrollment, enrollment_hash, tax_household)
       enr_tax_household = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
@@ -239,7 +242,7 @@ module IrsGroups
     def fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
       @family.households.first.hbx_enrollments.select do |enrollment|
         insurance_policy_enrollment_ids.include?(enrollment.hbx_id) &&
-          enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(2023, 12, 31))
+          enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
       end
     end
 
@@ -252,6 +255,21 @@ module IrsGroups
       return Failure("unable to create or find person") if result.failure?
 
       result
+    end
+
+    def find_relation_with_primary(member)
+      primary_member = primary_family_member
+      family_member = fetch_person_details_from_family(member)
+      person_relation = primary_member.person.person_relationships.detect do |relation|
+        relation.relative.hbx_id == family_member.person.hbx_id
+      end
+      person_relation.kind
+    end
+
+    def primary_family_member
+      @family.family_members.detect do |family_member|
+        family_member.is_primary_applicant == true
+      end
     end
 
     def fetch_person_details_from_family(member)

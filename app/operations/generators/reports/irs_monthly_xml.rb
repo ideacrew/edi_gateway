@@ -55,25 +55,33 @@ module Generators
       end
 
       def serialize_taxhouseholds(irs_hhg_xml)
-        tax_households = irs_group.irs_households_for_duration(calendar_year, max_month, policies).sort_by(&:start_on)
+        tax_households = irs_group.active_tax_households(calendar_year).sort_by(&:start_on)
         tax_households.each do |tax_household|
           irs_hhg_xml.TaxHousehold do |thh_xml|
             (1..max_month).each do |calendar_month|
-              policies_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
-                                   .enrollments_for_month(calendar_month, calendar_year, policies)
-              any_aptc_applied_policies = policies_for_month.any? do |enr|
+              enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
+                               .enrollments_for_month(calendar_month, calendar_year, policies)
+
+              active_thh_for_month = irs_group.active_thh_for_month(calendar_month, calendar_year)
+              covered_month_thh = if tax_households.count > 1 || active_thh_for_month.blank?
+                                    tax_household
+                                  else
+                                    active_thh_for_month
+                                  end
+
+              any_aptc_applied_policies = enrs_for_month.any? do |enr|
                 enr.total_premium_adjustment_amount.to_f > 0.0
               end
-              result = if tax_household.is_aqhp == false || !any_aptc_applied_policies
-                         policies_for_month
+              result = if covered_month_thh.is_aqhp == false || !any_aptc_applied_policies
+                         enrs_for_month
                        else
                          thh_enrollments = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
-                                           .where(tax_household_id: tax_household.id)
-                         policies_for_month.map(&:hbx_id) & thh_enrollments.map(&:enrollment).map(&:hbx_id)
+                                           .where(:enrollment_id.in => enrs_for_month.map(&:id))
+                         enrs_for_month.map(&:hbx_id) & thh_enrollments.map(&:enrollment).map(&:hbx_id)
                        end
               next if result.blank?
 
-              serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
+              serialize_taxhousehold_coverage(thh_xml, covered_month_thh, calendar_month)
             end
           end
         end
@@ -85,15 +93,12 @@ module Generators
                          .enrollments_for_month(calendar_month, calendar_year, policies)
         enrs_for_month.each do |enrollment|
           thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
-          _slcsp, aptc, _pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
+          _slcsp, aptc, _pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members)
           aptc_to_pick << aptc.to_f
         end
 
         aptc_to_pick.any?(&:positive?)
       end
-
-      # rubocop:disable Metrics/AbcSize
-      # rubocop:disable Metrics/MethodLength
 
       def serialize_taxhousehold_coverage(thh_xml, tax_household, calendar_month)
         thh_xml.TaxHouseholdCoverage do |thhc_xml|
@@ -173,7 +178,7 @@ module Generators
 
       def serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
         thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
-        slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members, calendar_month)
+        slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members)
         pediatric_dental_pre = enrollment.pediatric_dental_premium(tax_household.tax_household_members,
                                                                    calendar_month)
         total_premium = pre_amt_tot.to_f + pediatric_dental_pre
@@ -182,7 +187,7 @@ module Generators
           xml.QHPIssuerEIN enrollment&.insurance_policy&.insurance_product&.insurance_provider&.fein
           xml.SLCSPAdjMonthlyPremiumAmt slcsp
           xml.HouseholdAPTCAmt aptc
-          xml.TotalHsldMonthlyPremiumAmt total_premium.to_s
+          xml.TotalHsldMonthlyPremiumAmt format('%.2f', total_premium)
         end
       end
 
@@ -202,19 +207,22 @@ module Generators
         thhs&.map(&:tax_household_members)&.flatten&.uniq(&:person_id)
       end
 
+      def aptc_positive?
+        policies.flat_map(&:enrollments).map(&:total_premium_adjustment_amount).any? { |aptc| aptc.to_f > 0.0 }
+      end
+
       def serialize_insurance_coverages(insured_pol_xml, policy)
         (1..max_month).each do |calendar_month|
-          enrollments = policy.enrollments_for_month(calendar_month, calendar_year)
-          next if enrollments.blank?
+          is_effectuated = policy.is_effectuated?(calendar_month, calendar_year)
+          next unless is_effectuated
 
-          sorted_enrollments = enrollments.sort_by(&:start_on)
+          sorted_enrollments = policy.enrollments.sort_by(&:start_on)
           thh_members = fetch_tax_household_members(sorted_enrollments)
           policy = sorted_enrollments.first.insurance_policy
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
             enrolled_members_for_month = [[sorted_enrollments.map(&:subscriber)] +
               sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
-            slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month,
-                                                                                    calendar_month)
+            slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month)
             pediatric_dental_pre = sorted_enrollments.first.pediatric_dental_premium(thh_members,
                                                                                      calendar_month)
             total_premium = pre_amt_tot.to_f + pediatric_dental_pre
@@ -224,21 +232,14 @@ module Generators
             insured_cov_xml.IssuerNm policy.insurance_product.insurance_provider.issuer_me_name
             insured_cov_xml.PolicyCoverageStartDt date_formatter(policy.start_on)
             insured_cov_xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
-            insured_cov_xml.TotalQHPMonthlyPremiumAmt total_premium.to_s
+            insured_cov_xml.TotalQHPMonthlyPremiumAmt format('%.2f', total_premium)
             insured_cov_xml.APTCPaymentAmt aptc
+            raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}" if enrolled_members_for_month.empty?
 
-            sorted_enrollments.each do |enrollment|
-              enrolled_members_for_month = [[enrollment.subscriber] + enrollment.dependents].flatten
-
-              if enrolled_members_for_month.empty?
-                raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}"
-              end
-
-              enrolled_members_for_month.each do |enrollee|
-                serialize_covered_individual(insured_cov_xml, enrollee)
-              end
+            enrolled_members_for_month.each do |enrollee|
+              serialize_covered_individual(insured_cov_xml, enrollee)
             end
-            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) if sorted_enrollments.first.total_premium_adjustment_amount.to_f > 0.0
+            (insured_cov_xml.SLCSPMonthlyPremiumAmt slcsp) unless aptc_positive?
           end
         end
       end
@@ -254,7 +255,7 @@ module Generators
             person_xml.BirthDt date_formatter(enrollee.dob)
           end
           cov_ind_xml.CoverageStartDt date_formatter(enrollee.aca_individuals_enrollment.start_on)
-          cov_ind_xml.CoverageEndDt date_formatter(enrollee.aca_individuals_enrollment.coverage_end_on)
+          cov_ind_xml.CoverageEndDt date_formatter(enrollee.aca_individuals_enrollment.insurance_policy.policy_end_on)
         end
       end
 
@@ -282,7 +283,5 @@ module Generators
 end
 
 # rubocop:enable Metrics/ClassLength
-# rubocop:enable Metrics/AbcSize
 # rubocop:enable Metrics/CyclomaticComplexity
-# rubocop:enable Metrics/MethodLength
 # rubocop:enable Metrics/PerceivedComplexity
