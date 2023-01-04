@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :tax_household, class: InsurancePolicies::AcaIndividuals::TaxHousehold do
     tax_household_group
-    hbx_id { rand(10**6) }
+    sequence(:hbx_id)
     is_eligibility_determined { true }
     allocated_aptc { 0.0 }
     max_aptc { 0.0 }

@@ -5,10 +5,10 @@ require 'shared_examples/cv3_family'
 RSpec.describe InsurancePolicies::AcaIndividuals::EnrollmentsAndTaxHouseholds::Create do
   subject { described_class.new }
   include_context 'cv3_family'
-  let!(:enr_hash) {hbx_enrollments.first}
-  let!(:thh_hash) {tax_households.first}
-  let!(:enr) {FactoryBot.create(:enrollment, hbx_id: enr_hash[:hbx_id], total_premium_amount: enr_hash[:total_premium])}
-  let!(:thh) {FactoryBot.create(:tax_household, hbx_id: thh_hash[:hbx_id])}
+  let!(:enr_hash) { hbx_enrollments.first }
+  let!(:thh_hash) { tax_households.first }
+  let!(:enr) { FactoryBot.create(:enrollment, hbx_id: enr_hash[:hbx_id], total_premium_amount: enr_hash[:total_premium]) }
+  let!(:thh) { FactoryBot.create(:tax_household, hbx_id: thh_hash[:hbx_id]) }
 
   context 'with invalid payload' do
     it "return failure" do
@@ -21,7 +21,8 @@ RSpec.describe InsurancePolicies::AcaIndividuals::EnrollmentsAndTaxHouseholds::C
     before do
       enr_hash.merge!(id: enr.id)
       thh_hash.merge!(id: thh.id)
-      @res = subject.call(tax_households_references_params.merge(tax_household: tax_households.first, enrollment: hbx_enrollments.first ))
+      @res = subject.call(tax_households_references_params.merge(tax_household: tax_households.first,
+                                                                 enrollment: hbx_enrollments.first))
     end
 
     it "return success" do

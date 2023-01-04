@@ -11,7 +11,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::EnrolledMembersAndTaxHousehold
   context 'with invalid payload' do
     it "return failure" do
       res = subject.call({ scope_name: :by_person_hbx_id,
-                           person_hbx_id: ""})
+                           person_hbx_id: "" })
       expect(res.failure?).to be_truthy
     end
   end
@@ -25,7 +25,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::EnrolledMembersAndTaxHousehold
 
     it "return object hash" do
       res = subject.call({ scope_name: :by_person_hbx_id,
-                           person_hbx_id: enr_members_thhm.person.hbx_id})
+                           person_hbx_id: enr_members_thhm.person.hbx_id })
       expect(res.success.class).to be Hash
     end
   end

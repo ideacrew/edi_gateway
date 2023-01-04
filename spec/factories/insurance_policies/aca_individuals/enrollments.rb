@@ -4,7 +4,7 @@ FactoryBot.define do
   factory :enrollment, class: InsurancePolicies::AcaIndividuals::Enrollment do
     insurance_policy
 
-    hbx_id { rand(10**6) }
+    sequence(:hbx_id)
     aasm_state { "coverage_selected" }
     total_premium_amount { 0.0 }
     total_premium_adjustment_amount { 0.0 }

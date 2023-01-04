@@ -5,6 +5,5 @@ FactoryBot.define do
     insurance_product
     insurance_agreement
     irs_group
-
   end
 end
