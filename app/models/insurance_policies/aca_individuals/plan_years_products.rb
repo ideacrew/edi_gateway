@@ -3,8 +3,8 @@
 module InsurancePolicies
   module AcaIndividuals
     class PlanYearsProducts
-      belongs_to :plan_year
-      belongs_to :product
+      # belongs_to :plan_year
+      # belongs_to :product
     end
   end
 end

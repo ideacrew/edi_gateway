@@ -5,7 +5,7 @@ module InsurancePolicies
     class ResponsibleParty
       include Mongoid::Document
       include Mongoid::Timestamps
-      include DomainModelHelpers
+      include DomainModels::Domainable
 
       field :kind, type: String
       field :hbx_id, type: String
