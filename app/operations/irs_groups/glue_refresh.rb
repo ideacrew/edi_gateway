@@ -37,7 +37,7 @@ module IrsGroups
       counter = 0
 
       logger.info("Operation started at #{DateTime.now} ")
-      [policies.last].each do |policy|
+      policies.no_timeout.each do |policy|
         event = event("events.edi_database.irs_groups.policy_and_insurance_agreement_created",
                       attributes: { policy_id: policy.id })
         event.success.publish
