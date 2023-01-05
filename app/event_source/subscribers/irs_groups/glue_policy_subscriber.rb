@@ -4,31 +4,31 @@ module Subscribers
   # Receive family payload from enroll
   module IrsGroups
     # Parse CV3 Family payload
-    class SeedRequestedEventSubscriber
+    class GluePolicySubscriber
       send(:include, Dry::Monads[:result, :do])
-      include ::EventSource::Subscriber[amqp: 'irs_groups.seed_requested']
+      include ::EventSource::Subscriber[amqp: 'edi_gateway.edi_database.irs_groups']
 
       # rubocop:disable Lint/RescueException
       # rubocop:disable Style/LineEndConcatenation
       # rubocop:disable Style/StringConcatenation
-      subscribe(:on_built_requested_seed) do |delivery_info, _properties, payload|
-        subscriber_logger = subscriber_logger_for(:on_built_requested_seed)
+      subscribe(:on_policy_and_insurance_agreement_created) do |delivery_info, _properties, payload|
+        subscriber_logger = subscriber_logger_for(:on_policy_and_insurance_agreement_created)
         parsed_payload = JSON.parse(payload, symbolize_names: true)
-        result = ::IrsGroups::SeedIrsGroup.new.call(parsed_payload)
+        result = ::IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(parsed_payload)
         if result.success?
           subscriber_logger.info(
-            "OK: :Created IRS Group successfully and acked for family #{parsed_payload[:hbx_id]}"
+            "OK: :Created Insurance_Policy successfully and acked for policy #{parsed_payload[:policy_id]}"
           )
         else
           subscriber_logger.info(
-            "Error: Unable to create IRS group; failed for family #{parsed_payload[:hbx_id]} due to:#{result.inspect}"
+            "Error: Unable to create Insurance_Policy; failed for policy #{parsed_payload[:policy_id]} due to:#{result.inspect}"
           )
         end
         ack(delivery_info.delivery_tag)
 
       rescue Exception => e
         subscriber_logger.info(
-          "Exception: Unable to create IRS group for family #{parsed_payload[:hbx_id]} \n Exception: #{e.inspect}" +
+          "Exception: Unable to create Insurance_Policy for policy #{parsed_payload[:policy_id]} \n Exception: #{e.inspect}" +
             "\nBacktrace:\n" + e.backtrace.join("\n")
         )
         ack(delivery_info.delivery_tag)

@@ -11,7 +11,7 @@ module IrsGroups
 
     def call(params)
       validated_params = yield validate(params)
-      glue_policy = validated_params[:policy]
+      glue_policy = yield fetch_policy_from_glue(validated_params[:policy_id])
       insurance_provider_hash = yield persist_insurance_provider(glue_policy)
       insurance_product_hash = yield persist_insurance_product(insurance_provider_hash, glue_policy)
       person_hash = yield persist_contract_holder(glue_policy)
@@ -27,7 +27,16 @@ module IrsGroups
     private
 
     def validate(params)
+      return Failure("Unable to find policy_id") if params[:policy_id].blank?
+
       Success(params)
+    end
+
+    def fetch_policy_from_glue(policy_id)
+      policy = Policy.find(policy_id)
+      Success(policy)
+    rescue Mongoid::Errors::DocumentNotFound
+      Failure("Unable to find Policy with ID #{policy_id}.")
     end
 
     def build_insurance_product_hash(glue_policy)
