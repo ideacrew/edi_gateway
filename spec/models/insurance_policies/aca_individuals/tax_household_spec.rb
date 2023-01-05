@@ -6,6 +6,10 @@ require './spec/models/domain_models/domainable_spec'
 RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db_clean: :before do
   include_context 'shared_insurance_policies'
 
+  before do
+    DatabaseCleaner.clean
+  end
+
   context 'Domain Model behavior' do
     it_behaves_like 'domainable'
   end

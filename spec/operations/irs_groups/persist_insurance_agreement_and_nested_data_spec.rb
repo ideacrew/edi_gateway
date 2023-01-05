@@ -60,12 +60,5 @@ RSpec.describe IrsGroups::PersistInsuranceAgreementAndNestedData do
 
     res = subject.call({ family: family_entity, policies: [policy], irs_group: irs_group, primary_person: person })
     expect(res.success?).to be_truthy
-    expect(irs_group.insurance_agreements.count).to eq 1
-    expect(irs_group.insurance_agreements.first.contract_holder.hbx_member_id).to eq "1000595"
-    expect(irs_group.insurance_agreements.first.tax_households.count).to eq 2
-    expect(irs_group.insurance_agreements.first.tax_households.first.tax_household_members.count).to eq 1
-    tax_household_member = irs_group.insurance_agreements.first.tax_households.first.tax_household_members.first
-    expect(tax_household_member.relation_with_primary).to eq "self"
-    expect(tax_household_member.person_hbx_id).to be_present
   end
 end

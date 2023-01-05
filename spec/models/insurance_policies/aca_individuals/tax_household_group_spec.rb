@@ -5,6 +5,10 @@ require './spec/shared_examples/insurance_policies/shared_insurance_policies'
 RSpec.describe InsurancePolicies::AcaIndividuals::TaxHouseholdGroup, type: :model, db_clean: :before do
   include_context 'shared_insurance_policies'
 
+  before do
+    DatabaseCleaner.clean
+  end
+
   context "Given valid params to initialize a #{described_class} instance" do
     let(:hbx_id) { '12124' }
     let(:assistance_year) { 2022 }

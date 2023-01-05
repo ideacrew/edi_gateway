@@ -45,7 +45,6 @@ module IrsGroups
     end
 
     def persist_insurance_agreement_and_nested_data(payload)
-      @irs_group.insurance_agreements << InsurancePolicies::AcaIndividuals::InsuranceAgreement.new(payload)
       @irs_group.save!
       Success(@irs_group)
     rescue StandardError => e

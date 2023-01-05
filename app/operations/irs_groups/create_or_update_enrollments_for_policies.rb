@@ -30,7 +30,7 @@ module IrsGroups
     def fetch_insurance_agreements
       primary_member = @family.family_members.detect { |member| member.is_primary_applicant == true }
       contract_holder = People::Persons::Find.new.call({ hbx_id: primary_member.person.hbx_id })
-      return Failure("Unable to find contract holder") if contract_holder.failure?
+      return if contract_holder.failure?
 
       InsurancePolicies::InsuranceAgreement.where(contract_holder_id: contract_holder.value![:id])
     end
@@ -130,6 +130,8 @@ module IrsGroups
     # rubocop:disable Metrics/CyclomaticComplexity
     def persist_enrollments
       insurance_agreements = fetch_insurance_agreements
+      return Failure("Unable to fetch insurance agreements") if insurance_agreements.blank?
+
       insurance_agreements.each do |insurance_agreement|
         next if insurance_agreement.insurance_policies.blank?
 

@@ -9,7 +9,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::EnrolledMembersAndTaxHousehold
   let!(:person_hash) { person }
   let!(:thh_hash) { tax_households.first }
   let!(:person_persisted) do
-    FactoryBot.create(:h36_person, hbx_id: person_hash[:hbx_id])
+    FactoryBot.create(:people_person, hbx_id: person_hash[:hbx_id])
   end
   let!(:enr_thh) { FactoryBot.create(:enrollments_tax_households) }
 

@@ -305,7 +305,8 @@ RSpec.shared_context "cv3_family", dbclean: :after_each do
         start_date: Date.today,
         end_date: Date.today,
         tax_household_members: tax_household_members,
-        eligibility_determinations: []
+        eligibility_determinations: [],
+        yearly_expected_contribution: currency
       }
     ]
   end
