@@ -27,7 +27,7 @@ module IrsGroups
 
     def fetch_glue_policies_for_year(params)
       Success(Policy.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => params[:start_date],
-                                                                                  :'$lt' => params[:end_date] } } }).limit(100))
+                                                                                  :'$lt' => params[:end_date] } } }))
     end
 
     # rubocop:disable Metrics/AbcSize
