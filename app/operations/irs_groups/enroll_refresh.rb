@@ -38,7 +38,7 @@ module IrsGroups
 
       logger.info("Operation started at #{DateTime.now} ")
       policies.no_timeout.each do |policy|
-        event = event("events.families.cv3_family.requested", attributes: { policy_id: policy.eg_id} )
+        event = event("events.families.cv3_family.requested", attributes: { policy_id: policy.eg_id })
         event.success.publish
         counter += 1
         logger.info("published #{counter} out of #{total_policies_count}") if (counter % 100).zero?
