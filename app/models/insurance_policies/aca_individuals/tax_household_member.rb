@@ -30,7 +30,7 @@ module InsurancePolicies
       field :tax_filer_status, type: String
 
       # indexes
-      index({ hbx_id: 1 }, { unique: true })
+      index({ hbx_id: 1 })
       index({ tax_filer_status: 1 })
       index({ is_subscriber: 1 })
       index({ is_ia_eligible: 1 })

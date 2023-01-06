@@ -24,7 +24,7 @@ module InsurancePolicies
       field :end_on, type: Date
 
       # indexes
-      index({ hbx_id: 1 }, { unique: true })
+      index({ hbx_id: 1 })
       index({ application_hbx_id: 1 })
       index({ is_aqhp: 1 })
       index({ assistance_year: 1 })

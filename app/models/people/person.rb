@@ -28,7 +28,7 @@ module People
     accepts_nested_attributes_for :phones, allow_destroy: true
 
     # indexes
-    index({ hbx_id: 1 }, { sparse: true, unique: true })
+    index({ hbx_id: 1 })
     index({ "name.first_name" => 1 })
     index({ "name.last_name" => 1 })
 

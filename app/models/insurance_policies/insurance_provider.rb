@@ -20,8 +20,8 @@ module InsurancePolicies
     #          inverse_of: :insurance_provider,
     #          counter_cache: true
 
-    index({ hios_id: 1 }, { unique: true })
-    index({ fein: 1 }, { unique: true })
+    index({ hios_id: 1 })
+    index({ fein: 1 })
 
     def issuer_me_name
       carrier_names = {
