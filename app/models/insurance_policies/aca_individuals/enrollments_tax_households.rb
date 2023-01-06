@@ -11,10 +11,10 @@ module InsurancePolicies
 
       Money.default_currency = 'USD'
 
-      belongs_to :tax_household, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
+      belongs_to :tax_household, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold', index: true
       accepts_nested_attributes_for :tax_household
 
-      belongs_to :enrollment, class_name: 'InsurancePolicies::AcaIndividuals::Enrollment'
+      belongs_to :enrollment, class_name: 'InsurancePolicies::AcaIndividuals::Enrollment', index: true
       accepts_nested_attributes_for :enrollment
 
       has_many :enrolled_members_tax_household_members,
@@ -24,6 +24,11 @@ module InsurancePolicies
 
       field :applied_aptc, type: Money
       field :available_max_aptc, type: Money
+
+      # indexes
+      index({ applied_aptc: 1 })
+      index({ available_max_aptc: 1 })
+      index({ tax_household_id: 1, enrollment_id: 1 })
     end
   end
 end

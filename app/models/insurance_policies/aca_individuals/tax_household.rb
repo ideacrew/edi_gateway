@@ -11,7 +11,8 @@ module InsurancePolicies
 
       Money.default_currency = 'USD'
 
-      belongs_to :tax_household_group, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup'
+      belongs_to :tax_household_group, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup',
+                                       index: true
 
       # embeds_one :aptc_accumulator
       # embeds_one :contribution_accumulator
@@ -27,6 +28,10 @@ module InsurancePolicies
 
       field :start_on, type: Date
       field :end_on, type: Date
+
+      # indexes
+      index({ hbx_id: 1 })
+      index({ is_aqhp: 1 })
 
       has_many :enrollments_tax_households,
                class_name: 'InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds',

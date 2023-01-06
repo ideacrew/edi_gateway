@@ -8,7 +8,7 @@ module InsurancePolicies
       include Mongoid::Timestamps
       include DomainModels::Domainable
 
-      belongs_to :irs_group, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup'
+      belongs_to :irs_group, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup', index: true
       accepts_nested_attributes_for :irs_group
 
       has_many :tax_households, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
@@ -23,8 +23,11 @@ module InsurancePolicies
       field :start_on, type: Date
       field :end_on, type: Date
 
+      # indexes
       index({ hbx_id: 1 }, { unique: true })
       index({ application_hbx_id: 1 })
+      index({ is_aqhp: 1 })
+      index({ assistance_year: 1 })
 
       # def insurance_policies
       #   InsurancePolicy.in(id: irs_groups.pluck(:irs_groups_id))

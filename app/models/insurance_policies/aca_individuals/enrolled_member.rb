@@ -8,7 +8,7 @@ module InsurancePolicies
       include Mongoid::Timestamps
       include DomainModels::Domainable
 
-      belongs_to :person, class_name: 'People::Person'
+      belongs_to :person, class_name: 'People::Person', index: true
       accepts_nested_attributes_for :person
 
       embeds_one :premium_schedule, class_name: 'InsurancePolicies::PremiumSchedule'

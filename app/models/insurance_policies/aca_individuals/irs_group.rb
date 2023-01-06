@@ -19,6 +19,8 @@ module InsurancePolicies
       field :start_on, type: Date
       field :end_on, type: Date
 
+      # indexes
+      index({ irs_group_id: 1 })
 
       def active_tax_household_group(calendar_year)
         tax_household_groups.where(end_on: Date.new(calendar_year, 12, 31), assistance_year: calendar_year)&.first ||

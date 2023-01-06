@@ -9,9 +9,9 @@ module InsurancePolicies
       include Mongoid::Timestamps
       include DomainModels::Domainable
 
-      belongs_to :tax_household, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold'
+      belongs_to :tax_household, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold', index: true
 
-      belongs_to :person, class_name: 'People::Person'
+      belongs_to :person, class_name: 'People::Person', index: true
       accepts_nested_attributes_for :person
 
       field :hbx_id, type: String
@@ -28,6 +28,16 @@ module InsurancePolicies
 
       field :relation_with_primary, type: String
       field :tax_filer_status, type: String
+
+      # indexes
+      index({ hbx_id: 1 }, { unique: true })
+      index({ tax_filer_status: 1 })
+      index({ is_subscriber: 1 })
+      index({ is_ia_eligible: 1 })
+      index({ relation_with_primary: 1 })
+      index({ relation_with_primary: 1 })
+      index({ person_id: 1, tax_household: 1 })
+
 
       # TODO: rename slcsp_benchmark_premium to slcsp_benchmark_premium_amount and use
       # in Enrollment model (THHs will not show up in UQHP CV3s)

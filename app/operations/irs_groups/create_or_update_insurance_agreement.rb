@@ -87,6 +87,9 @@ module IrsGroups
 
     def persist_contract_holder(glue_policy)
       glue_person = find_person_from_glue_policy(glue_policy)
+      authority_member = glue_person.authority_member
+      return Failure("No authority member for policy #{glue_policy.eg_id}") if authority_member.blank?
+
       result = People::Persons::Find.new.call({ hbx_id: glue_person.authority_member_id })
       return result if result.success?
 

@@ -10,7 +10,7 @@ module InsurancePolicies
       field :kind, type: String
       field :hbx_id, type: String
 
-      belongs_to :person, class_name: "People::Person"
+      belongs_to :person, class_name: "People::Person", index: true
     end
   end
 end

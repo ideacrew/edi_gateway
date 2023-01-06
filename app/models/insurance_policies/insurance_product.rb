@@ -24,7 +24,7 @@ module InsurancePolicies
     field :primary_enrollee_one_dependent, type: Float
     field :primary_enrollee_many_dependent, type: Float
 
-    belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider'
+    belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider', index: true
 
     # TODO: Confirm with Dan (inside or outisde aca_individuals structure)
     # embeds_many :insurance_product_features,

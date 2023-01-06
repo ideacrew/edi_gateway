@@ -34,16 +34,16 @@ module InsurancePolicies
             thh_member_hash = thh_member.as_json(include: [:tax_household]).deep_symbolize_keys
             Success(thh_member_hash)
           else
-            Failure("Unable to find tax household member with ID #{validated_params[:person_hbx_id]}.")
+            Failure("Unable to find tax household member with ID #{validated_params[:person_id]}.")
           end
         rescue StandardError
-          Failure("Unable to find tax household member with #{validated_params[:person_hbx_id]}.")
+          Failure("Unable to find tax household member with #{validated_params[:person_id]}.")
         end
 
         def search_scope(params)
           case params[:scope_name]
-          when :by_person_hbx_id_tax_household_id
-            { person_hbx_id: params[:person_hbx_id], tax_household_id: params[:tax_household_id] }
+          when :by_person_id_tax_household_id
+            { person_id: params[:person_id], tax_household_id: params[:tax_household_id] }
           end
         end
       end

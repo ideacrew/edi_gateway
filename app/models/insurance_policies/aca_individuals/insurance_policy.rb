@@ -12,12 +12,13 @@ module InsurancePolicies
 
       accepts_nested_attributes_for :enrollments
 
-      belongs_to :insurance_product, class_name: 'InsurancePolicies::InsuranceProduct'
+      belongs_to :insurance_product, class_name: 'InsurancePolicies::InsuranceProduct', index: true
 
       belongs_to :insurance_agreement, class_name: 'InsurancePolicies::InsuranceAgreement',
-                                       inverse_of: :insurance_policies
+                                       inverse_of: :insurance_policies, index: true
 
-      belongs_to :irs_group, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup', optional: true
+      belongs_to :irs_group, class_name: 'InsurancePolicies::AcaIndividuals::IrsGroup', optional: true,
+                             index: true
 
       # TODO: NEED confirmation
       # belongs_to :plan_years_products, class_name: 'InsurancePolicies::AcaIndividuals::PlanYearsProducts'
@@ -30,6 +31,13 @@ module InsurancePolicies
       field :end_on, type: Date
       field :aasm_state, type: String
       field :carrier_policy_id, type: String
+
+      # indexes
+      index({ "policy_id" => 1 })
+      index({ "hbx_enrollment_ids" => 1 })
+      index({ "aasm_state" => 1 })
+      index({ "start_on" => 1 })
+      index({ "end_on" => 1 })
 
       def policy_end_on
         end_on.present? ? end_on : start_on.end_of_year

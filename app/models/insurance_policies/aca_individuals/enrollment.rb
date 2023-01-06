@@ -13,7 +13,7 @@ module InsurancePolicies
                dependent: :destroy
       accepts_nested_attributes_for :enrollments_tax_households
 
-      belongs_to :insurance_policy, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy'
+      belongs_to :insurance_policy, class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy', index: true
 
       embeds_one :subscriber, class_name: 'AcaIndividuals::EnrolledMember'
       embeds_many :dependents, class_name: 'AcaIndividuals::EnrolledMember'
@@ -27,6 +27,13 @@ module InsurancePolicies
 
       field :start_on, type: Date
       field :end_on, type: Date
+
+      # indexes
+      index({ "hbx_id" => 1 })
+      index({ "aasm_state" => 1 })
+      index({ "effectuated_on" => 1 })
+      index({ "start_on" => 1 })
+      index({ "end_on" => 1 })
 
       def coverage_end_on
         end_on.present? ? end_on : start_on.end_of_year

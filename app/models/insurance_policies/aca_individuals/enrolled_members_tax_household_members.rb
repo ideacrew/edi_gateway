@@ -13,10 +13,14 @@ module InsurancePolicies
       field :date_of_birth, type: Date
 
       belongs_to :enrollments_tax_households,
-                 class_name: "::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds"
+                 class_name: "::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds", index: true
 
-      belongs_to :person, class_name: 'People::Person'
+      belongs_to :person, class_name: 'People::Person', index: true
       accepts_nested_attributes_for :person
+
+      # indexes
+      index({ person_hbx_id: 1 })
+      index({ relationship_with_primary: 1 })
     end
   end
 end

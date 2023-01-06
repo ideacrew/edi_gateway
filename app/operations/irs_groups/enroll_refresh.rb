@@ -11,7 +11,9 @@ module IrsGroups
     def call(params)
       validated_params = yield validate(params)
       policies = yield fetch_glue_policies_for_year(validated_params)
-      result = yield persist(policies)
+      insurance_policies = yield fetch_insurance_policies(policies)
+      contract_holder_ids = yield fetch_contract_holders(insurance_policies)
+      result = yield fetch_cv3_family(contract_holder_ids, params)
       Success(result)
     end
 
@@ -30,24 +32,55 @@ module IrsGroups
                                                                                   :'$lt' => params[:end_date] } } }))
     end
 
-    # rubocop:disable Metrics/AbcSize
-    def request_cv3_family(policies)
-      logger = Logger.new("#{Rails.root}/log/enroll_refresh_#{Date.today.strftime('%Y_%m_%d')}.log")
-      total_policies_count = policies.count
-      counter = 0
+    def fetch_insurance_policies(policies)
+      glue_policy_ids = policies.pluck(:eg_id)
+      InsurancePolicies::AcaIndividuals::InsurancePolicy.where(:policy_id.in => glue_policy_ids)
+    end
 
+    def fetch_contract_holders(insurance_policies)
+      insurance_policy_ids = insurance_policies.pluck(:policy_id)
+      contract_holder_ids = contract_holder_ids_query(insurance_policy_ids)
+      Success(contract_holder_ids)
+    end
+
+    def contract_holder_ids_query(insurance_policy_ids)
+      InsurancePolicies::InsuranceAgreement.collection.aggregate([{ '$lookup' =>
+                                                      { from: 'insurance_policies_aca_individuals_insurance_policies',
+                                                        localField: '_id',
+                                                        foreignField: "insurance_agreement_id",
+                                                        as: 'insurance_policies' } },
+                                                                  { '$match' => {
+                                                                    'insurance_policies.policy_id' =>
+                                                                      { "$in" => insurance_policy_ids }
+                                                                  } },
+                                                                  { '$project' => {
+                                                                    contract_holder_id: 1
+                                                                  } }], { allowDiskUse: true }).map do |rec|
+        rec["contract_holder_id"]
+      end
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
+    def fetch_cv3_family(contract_holder_ids, params)
+      logger = Logger.new("#{Rails.root}/log/enroll_refresh_#{Date.today.strftime('%Y_%m_%d')}.log")
+      total_people_count = contract_holder_ids.count
+      counter = 0
       logger.info("Operation started at #{DateTime.now} ")
-      policies.no_timeout.each do |policy|
-        event = event("events.families.cv3_family.requested", attributes: { policy_id: policy.eg_id })
+      contract_holder_ids.no_timeout.each do |id|
+        person = People::Person.find(id)
+        event = event("events.families.cv3_family.requested", attributes: { person_hbx_id: person.hbx_id,
+                                                                            year: params[:start_date].year })
         event.success.publish
         counter += 1
-        logger.info("published #{counter} out of #{total_policies_count}") if (counter % 100).zero?
+        logger.info("published #{counter} out of #{total_people_count}") if (counter % 100).zero?
       rescue StandardError => e
-        logger.info("unable to publish policy with policy_id #{policy.id} due to #{e.inspect}")
+        logger.info("unable to publish member with id #{id} due to #{e.inspect}")
       end
       logger.info("Operation ended at #{DateTime.now} ")
-      Success("requested cv3 family for all policies")
+      Success("requested cv3 family for all people")
     end
     # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
   end
 end

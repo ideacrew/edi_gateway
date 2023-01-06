@@ -149,9 +149,10 @@ module IrsGroups
 
     def persist_tax_household_members(tax_household, insurance_thh_hash)
       tax_household.tax_household_members.each do |thh_member|
+        person = find_or_create_person(thh_member)
         insurance_thh_member = InsurancePolicies::AcaIndividuals::TaxHouseholdMembers::Find
                                .new.call({ scope_name: :by_person_hbx_id_tax_household_id,
-                                           person_hbx_id: thh_member.family_member_reference.family_member_hbx_id,
+                                           person_id: person.value![:id],
                                            tax_household_id: insurance_thh_hash[:id] })
         next insurance_thh_member if insurance_thh_member.success?
 
