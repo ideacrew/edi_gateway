@@ -124,7 +124,7 @@ jobs:
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
           build-args: |
             HOSTNAME=172.17.0.1
-            BUNDLE_GITHUB__COM=${{ secrets.X12_TOKEN }}
+            BUNDLE_GITHUB__COM=x-access-token:${{ secrets.X12_TOKEN }}
 
       - name: Move cache
         run: |
