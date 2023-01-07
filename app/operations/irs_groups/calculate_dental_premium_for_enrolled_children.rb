@@ -31,7 +31,7 @@ module IrsGroups
       dental_policy = fetch_dental_policy
       return Success(0.0) if dental_policy.blank?
 
-      @child_members = fetch_children_from_dental_enrollment(dental_policy, 1)
+      @child_members = fetch_children_from_dental_enrollment(dental_policy, validated_params[:month])
       return Success(0.0) if @child_members.blank?
 
       Success(group_ehb_premium(dental_policy.insurance_product))
@@ -117,7 +117,7 @@ module IrsGroups
 
     def fetch_children_from_dental_enrollment(insurance_policy, month)
       dental_enrollment = dental_enrollment_for(insurance_policy, month)
-      return 0.0 if dental_enrollment.blank?
+      return [] if dental_enrollment.blank?
 
       enrolled_members = [[dental_enrollment.subscriber] + dental_enrollment.dependents].flatten
       enrolled_members.select do |member|

@@ -53,7 +53,7 @@ module Generators
       end
 
       def fetch_irs_groups
-        Success InsurancePolicies::AcaIndividuals::IrsGroup.all.no_timeout
+        Success InsurancePolicies::AcaIndividuals::IrsGroup.all
       end
 
       # rubocop:disable Metrics/AbcSize
