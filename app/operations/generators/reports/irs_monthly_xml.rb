@@ -217,7 +217,7 @@ module Generators
           next unless is_effectuated
 
           enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
-                            .enrollments_for_month(calendar_month, calendar_year, [policy])
+                           .enrollments_for_month(calendar_month, calendar_year, [policy])
           sorted_enrollments = enrs_for_month.sort_by(&:start_on)
           thh_members = fetch_tax_household_members(sorted_enrollments)
           policy = sorted_enrollments.first.insurance_policy
