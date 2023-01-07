@@ -17,18 +17,18 @@ module Subscribers
         result = ::IrsGroups::SeedIrsGroup.new.call(parsed_payload)
         if result.success?
           subscriber_logger.info(
-            "OK: :Created IRS Group successfully and acked for family #{parsed_payload[:hbx_id]}"
+            "OK: :Created IRS Group successfully and acked for family #{parsed_payload[:payload][:hbx_id]}"
           )
         else
           subscriber_logger.info(
-            "Error: Unable to create IRS group; failed for family #{parsed_payload[:hbx_id]} due to:#{result.inspect}"
+            "Error: Unable to create IRS group; failed for family #{parsed_payload[:payload][:hbx_id]} due to:#{result.inspect}"
           )
         end
         ack(delivery_info.delivery_tag)
 
       rescue Exception => e
         subscriber_logger.info(
-          "Exception: Unable to create IRS group for family #{parsed_payload[:hbx_id]} \n Exception: #{e.inspect}" +
+          "Exception: Unable to create IRS group for family #{parsed_payload[:payload][:hbx_id]} \n Exception: #{e.inspect}" +
             "\nBacktrace:\n" + e.backtrace.join("\n")
         )
         ack(delivery_info.delivery_tag)

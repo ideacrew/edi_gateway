@@ -64,10 +64,10 @@ module IrsGroups
     # rubocop:disable Metrics/MethodLength
     def fetch_cv3_family(contract_holder_ids, params)
       logger = Logger.new("#{Rails.root}/log/enroll_refresh_#{Date.today.strftime('%Y_%m_%d')}.log")
-      total_people_count = contract_holder_ids.count
+      total_people_count = contract_holder_ids.uniq.count
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
-      contract_holder_ids.no_timeout.each do |id|
+      contract_holder_ids.uniq.each do |id|
         person = People::Person.find(id)
         event = event("events.families.cv3_family.requested", attributes: { person_hbx_id: person.hbx_id,
                                                                             year: params[:start_date].year })

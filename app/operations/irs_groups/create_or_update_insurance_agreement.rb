@@ -51,7 +51,8 @@ module IrsGroups
         policy_id: glue_policy.eg_id,
         hbx_enrollment_ids: glue_policy.hbx_enrollment_ids,
         aasm_state: glue_policy.aasm_state,
-        carrier_policy_id: glue_policy.subscriber.cp_id }
+        carrier_policy_id: glue_policy.subscriber.cp_id,
+        term_for_np: glue_policy.term_for_np }
     end
 
     def map_person_to_contract_params(person_hash)

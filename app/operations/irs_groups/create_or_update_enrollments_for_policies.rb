@@ -265,7 +265,7 @@ module IrsGroups
       person_relation = primary_member.person.person_relationships.detect do |relation|
         relation.relative.hbx_id == family_member.person.hbx_id
       end
-      person_relation.kind
+      person_relation&.kind
     end
 
     def primary_family_member

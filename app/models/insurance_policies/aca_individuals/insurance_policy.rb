@@ -31,6 +31,7 @@ module InsurancePolicies
       field :end_on, type: Date
       field :aasm_state, type: String
       field :carrier_policy_id, type: String
+      field :term_for_np, type: Boolean, default: false
 
       # indexes
       index({ "policy_id" => 1 })
@@ -52,7 +53,7 @@ module InsurancePolicies
         return unless start_on < end_of_month
 
         start_date = start_on
-        end_date = end_on.present? ? end_on.month : start_date.end_of_year
+        end_date = end_on.present? ? end_on : start_date.end_of_year
         coverage_end_month = end_date.month
         coverage_end_month = 12 if year != end_date.year
         (start_date.month..coverage_end_month).include?(month)

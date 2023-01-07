@@ -80,6 +80,8 @@ module InsurancePolicies
         eligible_enrollees = [[subscriber] + dependents].flatten.select do |enrollee|
           thh_mem_person_hbx_ids.include?(enrollee.person.hbx_id)
         end
+        return 0.0 if eligible_enrollees.empty?
+
         ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ enrollment: self,
                                                                           enrolled_people: eligible_enrollees,
                                                                           month: calendar_month }).value!.to_f
