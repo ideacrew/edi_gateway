@@ -4,7 +4,7 @@ module Publishers
   module InsurancePolicies
     module Notices
       module IvlTax1095A
-        # Publisher will send request to EA for application submissions and determinations
+        # Publisher will send request to Polypress to generate catastrophic_notice for ivl_tax 1095a.
         class CatastrophicNoticeGenerationRequestedPublisher
           include ::EventSource::Publisher[amqp: 'edi_gateway.insurance_policies.notices.ivl_tax_1095a.catastrophic_notice_generation']
 
