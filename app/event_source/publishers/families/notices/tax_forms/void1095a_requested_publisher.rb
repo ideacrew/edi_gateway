@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 module Publishers
-  module InsurancePolicies
+  module Families
     module Notices
-      module IvlTax1095A
+      module TaxForms
         # Publisher will send request to Polypress to generate void_notice for ivl_tax 1095a.
-        class VoidNoticeGenerationRequestedPublisher
-          include ::EventSource::Publisher[amqp: 'edi_gateway.insurance_policies.notices.ivl_tax_1095a.void_notice_generation']
+        class Void1095aRequestedPublisher
+          include ::EventSource::Publisher[amqp: 'edi_gateway.families.notices.tax_forms.void1095a']
 
           register_event 'requested'
         end
