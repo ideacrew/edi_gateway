@@ -122,7 +122,7 @@ module Generators
         return true if pol.insurance_product.coverage_type == 'dental'
         return true if pol.insurance_product.metal_level == "catastrophic"
         return true if pol.carrier_policy_id.blank?
-
+        return true if pol.start_on.year != calendar_year
         return true if max_month != 12 && (pol.start_on >= Date.new(calendar_year, (max_month + 1), 1))
 
         false

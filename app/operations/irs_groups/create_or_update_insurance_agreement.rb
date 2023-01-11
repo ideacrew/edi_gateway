@@ -129,10 +129,21 @@ module IrsGroups
                                                                       start_on: date })
     end
 
+    def update_insurance_policy(glue_policy)
+      insurance_policy = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.where(policy_id: glue_policy.eg_id).first
+      insurance_policy.update!(start_on: glue_policy.policy_start,
+                               end_on: glue_policy.policy_end,
+                               aasm_state: glue_policy.aasm_state,
+                               carrier_policy_id: glue_policy.subscriber.cp_id,
+                               term_for_np: glue_policy.term_for_np)
+      Success(insurance_policy.as_json(include: [:insurance_product, :insurance_agreement,
+                                                 :enrollments]).deep_symbolize_keys)
+    end
+
     def persist_insurance_policy(glue_policy, agreement_hash, product_hash, irs_group_hash)
       insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicies::Find
                          .new.call({ policy_id: glue_policy.eg_id })
-      return insurance_policy if insurance_policy.success?
+      return update_insurance_policy(glue_policy) if insurance_policy.success?
 
       policy_hash_params = build_insurance_policy_hash(glue_policy)
       policy_hash_params.merge!(insurance_agreement: agreement_hash,

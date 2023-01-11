@@ -156,12 +156,6 @@ module IrsGroups
 
     def persist_enrolled_members_tax_household_members(thh_enr_reference, enrollment_tax_household_hash)
       thh_enr_reference.tax_household_members_enrollment_members.each do |thh_member_enr_member|
-        insurance_thh_member = InsurancePolicies::AcaIndividuals::EnrolledMembersAndTaxHouseholdMembers::Find
-                               .new.call({ scope_name: :by_person_hbx_id,
-                                           person_hbx_id: thh_member_enr_member.family_member_reference
-                                             .family_member_hbx_id })
-        next insurance_thh_member if insurance_thh_member.success?
-
         person = find_or_create_person(thh_member_enr_member)
         enr_member_thh_member_params = enr_member_thh_member_hash(thh_member_enr_member)
         enr_member_thh_member_params.merge!(enrollment_tax_household: enrollment_tax_household_hash,

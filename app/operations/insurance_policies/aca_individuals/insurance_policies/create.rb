@@ -31,6 +31,7 @@ module InsurancePolicies
                              .create!(policy_id: attrs[:policy_id], hbx_enrollment_ids: attrs[:hbx_enrollment_ids],
                                       start_on: attrs[:start_on],
                                       end_on: attrs[:end_on],
+                                      term_for_np: attrs[:term_for_np],
                                       aasm_state: attrs[:aasm_state],
                                       insurance_product_id: product[:id],
                                       insurance_agreement_id: agreement[:id],

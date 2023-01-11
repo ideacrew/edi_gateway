@@ -54,16 +54,25 @@ module Generators
         end
       end
 
+      def any_thh_members_enrolled?(tax_household, enrs_for_month)
+        all_enrolled_members = enrs_for_month.flat_map(&:subscriber) + enrs_for_month.flat_map(&:dependents)
+        tax_household.tax_household_members.any? do |member|
+          all_enrolled_members.map(&:person_id).uniq.include?(member.person_id)
+        end
+      end
+
       def serialize_taxhouseholds(irs_hhg_xml)
         tax_households = irs_group.active_tax_households(calendar_year).sort_by(&:start_on)
+        @is_mthh = tax_households.count > 1
         tax_households.each do |tax_household|
           irs_hhg_xml.TaxHousehold do |thh_xml|
             (1..max_month).each do |calendar_month|
-              enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
-                               .enrollments_for_month(calendar_month, calendar_year, policies)
+              enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.enrollments_for_month(calendar_month,
+                                                                                                          calendar_year, policies)
+              next unless any_thh_members_enrolled?(tax_household, enrs_for_month)
 
               active_thh_for_month = irs_group.active_thh_for_month(calendar_month, calendar_year)
-              covered_month_thh = if tax_households.count > 1 || active_thh_for_month.blank?
+              covered_month_thh = if @is_mthh || active_thh_for_month.blank?
                                     tax_household
                                   else
                                     active_thh_for_month
@@ -72,6 +81,7 @@ module Generators
               any_aptc_applied_policies = enrs_for_month.any? do |enr|
                 enr.total_premium_adjustment_amount.to_f > 0.0
               end
+
               result = if covered_month_thh.is_aqhp == false || !any_aptc_applied_policies
                          enrs_for_month
                        else
@@ -87,13 +97,12 @@ module Generators
         end
       end
 
-      def thh_to_pick(tax_household, calendar_month)
+      def thh_to_pick(_tax_household, calendar_month)
         aptc_to_pick = []
         enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
                          .enrollments_for_month(calendar_month, calendar_year, policies)
         enrs_for_month.each do |enrollment|
-          thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
-          _slcsp, aptc, _pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members)
+          aptc = enrollment.insurance_policy.fetch_aptc_tax_credit([enrollment])
           aptc_to_pick << aptc.to_f
         end
 
@@ -177,16 +186,16 @@ module Generators
       end
 
       def serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
-        thh_enrolled_members = enrollment.enrolled_members_from_tax_household(tax_household)
-        slcsp, aptc, pre_amt_tot = enrollment.fetch_npt_h36_prems(thh_enrolled_members)
-        pediatric_dental_pre = enrollment.pediatric_dental_premium(tax_household.tax_household_members,
-                                                                   calendar_month)
+        enrolled_thh_members = enrollment.enrolled_members_from_tax_household(tax_household)
+        slcsp, pre_amt_tot = enrollment.fetch_npt_h36_prems(enrolled_thh_members, calendar_month)
+        aptc_tax_credit = enrollment.insurance_policy.fetch_aptc_tax_credit([enrollment], tax_household)
+        pediatric_dental_pre = enrollment.pediatric_dental_premium(tax_household.tax_household_members, calendar_month)
         total_premium = pre_amt_tot.to_f + pediatric_dental_pre
         hh_xml.AssociatedPolicy do |xml|
           xml.QHPPolicyNum enrollment.insurance_policy.policy_id
           xml.QHPIssuerEIN enrollment&.insurance_policy&.insurance_product&.insurance_provider&.fein
           xml.SLCSPAdjMonthlyPremiumAmt slcsp
-          xml.HouseholdAPTCAmt aptc
+          xml.HouseholdAPTCAmt aptc_tax_credit
           xml.TotalHsldMonthlyPremiumAmt format('%.2f', total_premium)
         end
       end
@@ -219,12 +228,14 @@ module Generators
           enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
                            .enrollments_for_month(calendar_month, calendar_year, [policy])
           sorted_enrollments = enrs_for_month.sort_by(&:start_on)
+          next if sorted_enrollments.blank?
+
           thh_members = fetch_tax_household_members(sorted_enrollments)
-          policy = sorted_enrollments.first.insurance_policy
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
             enrolled_members_for_month = [[sorted_enrollments.map(&:subscriber)] +
               sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
-            slcsp, aptc, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month)
+            slcsp, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
+            aptc_tax_credit = policy.fetch_aptc_tax_credit(sorted_enrollments)
             pediatric_dental_pre = sorted_enrollments.first.pediatric_dental_premium(thh_members,
                                                                                      calendar_month)
             total_premium = pre_amt_tot.to_f + pediatric_dental_pre
@@ -235,7 +246,7 @@ module Generators
             insured_cov_xml.PolicyCoverageStartDt date_formatter(policy.start_on)
             insured_cov_xml.PolicyCoverageEndDt date_formatter(policy.policy_end_on)
             insured_cov_xml.TotalQHPMonthlyPremiumAmt format('%.2f', total_premium)
-            insured_cov_xml.APTCPaymentAmt aptc
+            insured_cov_xml.APTCPaymentAmt aptc_tax_credit
             raise "Missing enrollees #{policy.policy_id} #{calendar_month} #{calendar_year}" if enrolled_members_for_month.empty?
 
             enrolled_members_for_month.each do |enrollee|

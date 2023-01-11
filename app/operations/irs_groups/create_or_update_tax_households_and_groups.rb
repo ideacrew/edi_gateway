@@ -150,13 +150,6 @@ module IrsGroups
     def persist_tax_household_members(tax_household, insurance_thh_hash)
       tax_household.tax_household_members.each do |thh_member|
         person = find_or_create_person(thh_member)
-        insurance_thh_member = InsurancePolicies::AcaIndividuals::TaxHouseholdMembers::Find
-                               .new.call({ scope_name: :by_person_hbx_id_tax_household_id,
-                                           person_id: person.value![:id],
-                                           tax_household_id: insurance_thh_hash[:id] })
-        next insurance_thh_member if insurance_thh_member.success?
-
-        person = find_or_create_person(thh_member)
         thh_member_params = tax_household_member_hash(thh_member)
         thh_member_params.merge!(tax_household: insurance_thh_hash, person: person.value!)
         InsurancePolicies::AcaIndividuals::TaxHouseholdMembers::Create.new.call(thh_member_params)

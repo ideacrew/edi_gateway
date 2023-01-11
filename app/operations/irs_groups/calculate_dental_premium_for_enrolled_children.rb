@@ -102,8 +102,8 @@ module IrsGroups
     end
 
     def fetch_dental_policy
-      insurance_agreement = @enrollment.insurance_policy.insurance_agreement
-      insurance_agreement.insurance_policies.detect do |insurance_policy|
+      insurance_policies = @enrollment.insurance_policy.irs_group.aca_individual_insurance_policies
+      insurance_policies.detect do |insurance_policy|
         next if insurance_policy.aasm_state == "canceled"
 
         insurance_policy.insurance_product.coverage_type == "dental" &&

@@ -40,9 +40,8 @@ module InsurancePolicies
       end
 
       def tax_households
-        InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.in(
-          id: enrollments_tax_households.pluck(:tax_household_id)
-        )
+        ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+          .where(:_id.in => self.enrollments_tax_households.pluck(:_id)).map(&:tax_household)
       end
 
       def enrolled_members_from_tax_household(tax_household)
@@ -52,10 +51,9 @@ module InsurancePolicies
         end
       end
 
-      def fetch_npt_h36_prems(enrolled_thh_people)
-        slcsp, pre_amt_tot_month = slcsp_pre_amt_tot_values(enrolled_thh_people)
-        aptc = total_premium_adjustment_amount || 0.0
-        [format('%.2f', slcsp), format('%.2f', aptc), format('%.2f', pre_amt_tot_month)]
+      def fetch_npt_h36_prems(enrolled_thh_people, calendar_month)
+        slcsp, pre_amt_tot_month = slcsp_pre_amt_tot_values(enrolled_thh_people, calendar_month)
+        [format('%.2f', slcsp), format('%.2f', pre_amt_tot_month)]
       end
 
       def insurance_policy_end_on
@@ -63,11 +61,15 @@ module InsurancePolicies
       end
 
       # rubocop:disable Metrics/AbcSize
-      def slcsp_pre_amt_tot_values(enrolled_thh_people)
-        slcsp = enrolled_thh_people.map { |mem| mem.premium_schedule.benchmark_ehb_premium_amount.to_f }.sum
-        pre_amt_tot_month = enrolled_thh_people.map { |mem| mem.premium_schedule.premium_amount.to_f }.sum
-        pre_amt_tot_month = (pre_amt_tot_month * insurance_policy.insurance_product.ehb).to_f.round(2)
-        [slcsp, pre_amt_tot_month]
+      def slcsp_pre_amt_tot_values(enrolled_thh_people, calendar_month)
+        if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
+          [0.0, 0.0]
+        else
+          slcsp = enrolled_thh_people.map { |mem| mem.premium_schedule.benchmark_ehb_premium_amount.to_f }.sum
+          pre_amt_tot_month = enrolled_thh_people.map { |mem| mem.premium_schedule.premium_amount.to_f }.sum
+          pre_amt_tot_month = (pre_amt_tot_month * insurance_policy.insurance_product.ehb).to_f.round(2)
+          [slcsp, pre_amt_tot_month]
+        end
       end
       # rubocop:enable Metrics/AbcSize
 

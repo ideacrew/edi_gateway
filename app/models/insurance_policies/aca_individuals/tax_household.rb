@@ -51,7 +51,10 @@ module InsurancePolicies
       end
 
       def spouse
-        tax_household_members.where(relation_with_primary: 'spouse').first
+        spouse = tax_household_members.where(relation_with_primary: 'spouse').first
+        return nil if spouse&.id&.to_s == primary&.id&.to_s
+
+        spouse
       end
 
       def dependents

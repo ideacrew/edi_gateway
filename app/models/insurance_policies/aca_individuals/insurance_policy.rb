@@ -59,6 +59,27 @@ module InsurancePolicies
         (start_date.month..coverage_end_month).include?(month)
       end
 
+      def fetch_aptc_tax_credit(enrs_for_month, tax_household = nil)
+        applied_aptc = enrs_for_month.map(&:total_premium_adjustment_amount).max
+        return format('%.2f', (applied_aptc || 0.0)) if tax_household.blank?
+
+        tax_credit = fetch_aptc_from_tax_household(tax_household, enrs_for_month, applied_aptc)
+        format('%.2f', tax_credit)
+      end
+
+      def fetch_aptc_from_tax_household(tax_household, enrs_for_month, applied_aptc)
+        tax_filer = tax_household.primary
+        enr_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+                   .where(:enrollment_id.in => enrs_for_month.pluck(:id))
+        enr_thh_for_month = enr_thhs.detect do |enr_thh|
+          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
+        end
+
+        return applied_aptc || 0.0 if enr_thh_for_month.blank?
+
+        enr_thh_for_month.applied_aptc.to_f
+      end
+
       # rubocop:disable Metrics/AbcSize
       def self.enrollments_for_month(month, year, policies)
         policies.flat_map(&:enrollments).select do |enrollment|

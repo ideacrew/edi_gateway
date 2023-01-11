@@ -125,6 +125,17 @@ module IrsGroups
                                 primary_enrollee_many_dependent: family_rated_premiums.primary_enrollee_many_dependent)
     end
 
+    def update_enrollment(ea_enrollment)
+      insurance_enrollment = ::InsurancePolicies::AcaIndividuals::Enrollment
+                             .where(hbx_id: ea_enrollment.hbx_id).first
+
+      insurance_enrollment.update!(start_on: ea_enrollment.effective_on,
+                                   effectuated_on: ea_enrollment.effective_on,
+                                   end_on: ea_enrollment.terminated_on,
+                                   aasm_state: ea_enrollment.aasm_state)
+      Success(insurance_enrollment.to_hash)
+    end
+
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
@@ -143,7 +154,10 @@ module IrsGroups
           enrollments_from_cv3.each do |enrollment|
             enrollment_hash = InsurancePolicies::AcaIndividuals::Enrollments::Find
                               .new.call({ scope_name: :by_hbx_id, criterion: enrollment.hbx_id })
-            next enrollment_hash.value! if enrollment_hash.success?
+            if enrollment_hash.success?
+              result = update_enrollment(enrollment)
+              next result.value!
+            end
 
             update_pediatric_dental_values(enrollment, insurance_policy) if enrollment.product_kind == "dental"
             enrollment_and_member_hash = build_enrollment_and_member_hash(enrollment)
@@ -219,8 +233,9 @@ module IrsGroups
         ::InsurancePolicies::AcaIndividuals::TaxHouseholdMember
           .create!({ hbx_id: 9.times.map { rand(9) }.join,
                      is_subscriber: member.is_subscriber,
-                     relation_with_primary: member.is_subscriber == true ? "self" : find_relation_with_primary(member),
+                     relation_with_primary: find_relation_with_primary(member),
                      is_uqhp_eligible: true,
+                     tax_filer_status: member.is_subscriber == true ? "tax_filer" : "dependent",
                      person_id: person.value![:id],
                      tax_household_id: tax_household.id })
       end
