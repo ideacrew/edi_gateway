@@ -10,7 +10,7 @@ module Subscribers
 
         subscribe(:on_requested) do |delivery_info, _metadata, response|
           routing_key = delivery_info[:routing_key]
-          logger.info "Polypress: invoked Initial1095aNoticeRequestedSubscriber with delivery_info: 
+          logger.info "Polypress: invoked Initial1095aNoticeRequestedSubscriber with delivery_info:
                         #{delivery_info} routing_key: #{routing_key}"
           payload = JSON.parse(response, symbolize_names: true)
 
