@@ -3,7 +3,7 @@
 module Subscribers
   module Families
     module Notices
-      # Subscriber will receive response payload from medicaid gateway and generate documents
+      # Subscriber will receive initial1095a_notice event from enroll to generate 1095a tax_payload
       class Initial1095aNoticeRequestedSubscriber
         include EventSource::Logging
         include ::EventSource::Subscriber[amqp: 'enroll.families.notices.initial1095a_notice']
@@ -13,11 +13,8 @@ module Subscribers
           logger.info "Polypress: invoked Initial1095aNoticeRequestedSubscriber with delivery_info:
                         #{delivery_info} routing_key: #{routing_key}"
           payload = JSON.parse(response, symbolize_names: true)
+          result = Success(true) # TODO: Add domain model that builds respective payload and publish event to polypress
 
-          result =
-            PolicyTaxHouseholds::GenerateAndPublishTaxDocuments.new.call(
-              { payload: payload, event_key: routing_key }
-            )
           if result.success?
             logger.info "Polypress: Catastrophic1095aNoticeRequestedSubscriber; acked for #{routing_key}"
           else

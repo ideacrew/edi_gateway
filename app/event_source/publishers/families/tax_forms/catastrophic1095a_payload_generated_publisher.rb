@@ -3,7 +3,7 @@
 module Publishers
   module Families
     module Notices
-      # Publisher will send request to Polypress to generate catastrophic_notice for ivl_tax 1095a.
+      # Publisher will send catastrophic1095a_payload to Polypress to generate catastrophic1095a_notice.
       class Catastrophic1095aRequestedPublisher
         include ::EventSource::Publisher[amqp: 'edi_gateway.families.tax_forms.catastrophic1095a_payload']
 
