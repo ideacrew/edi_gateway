@@ -10,7 +10,6 @@ module Subscribers
         include ::EventSource::Subscriber[amqp: 'enroll.families.notices.ivl_tax1095a']
 
         subscribe(:on_corrected_notice_requested) do |delivery_info, _metadata, response|
-          binding.pry
           routing_key = delivery_info[:routing_key]
           logger.info "Polypress: invoked Corrected1095aNoticeRequestedSubscriber with delivery_info:
                       #{delivery_info} routing_key: #{routing_key}"
