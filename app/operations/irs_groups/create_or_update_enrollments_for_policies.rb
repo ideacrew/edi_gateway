@@ -235,11 +235,21 @@ module IrsGroups
                      is_subscriber: member.is_subscriber,
                      relation_with_primary: find_relation_with_primary(member),
                      is_uqhp_eligible: true,
-                     tax_filer_status: member.is_subscriber == true ? "tax_filer" : "dependent",
+                     tax_filer_status: tax_filer_status(member),
                      person_id: person.value![:id],
-                     tax_household_id: tax_household.id })
+                     tax_household_id: tax_household&.id })
       end
       tax_household
+    end
+
+    def tax_filer_status(member)
+      primary_member = primary_family_member
+      family_member = fetch_person_details_from_family(member)
+      if primary_member&.person&.hbx_id == family_member&.person&.hbx_id
+        "tax_filer"
+      else
+        "dependent"
+      end
     end
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/CyclomaticComplexity
