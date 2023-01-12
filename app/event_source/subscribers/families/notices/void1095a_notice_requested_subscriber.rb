@@ -5,6 +5,7 @@ module Subscribers
     module Notices
       # Subscriber will receive void1095a_notice event from enroll to generate 1095a tax_payload
       class Void1095aNoticeRequestedSubscriber
+        include EventSource::Command
         include EventSource::Logging
         include ::EventSource::Subscriber[amqp: 'enroll.families.notices.ivl_tax1095a']
 
