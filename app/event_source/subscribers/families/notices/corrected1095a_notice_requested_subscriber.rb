@@ -6,9 +6,9 @@ module Subscribers
       # Subscriber will receive corrected1095a_notice event from enroll to generate 1095a tax_payload
       class Corrected1095aNoticeRequestedSubscriber
         include EventSource::Logging
-        include ::EventSource::Subscriber[amqp: 'enroll.families.notices.corrected1095a_notice']
+        include ::EventSource::Subscriber[amqp: 'enroll.families.notices.ivl_tax1095a']
 
-        subscribe(:on_requested) do |delivery_info, _metadata, response|
+        subscribe(:on_corrected_notice_requested) do |delivery_info, _metadata, response|
           routing_key = delivery_info[:routing_key]
           logger.info "Polypress: invoked Corrected1095aNoticeRequestedSubscriber with delivery_info:
                       #{delivery_info} routing_key: #{routing_key}"

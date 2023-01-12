@@ -6,9 +6,9 @@ module Subscribers
       # Subscriber will receive initial1095a_notice event from enroll to generate 1095a tax_payload
       class Initial1095aNoticeRequestedSubscriber
         include EventSource::Logging
-        include ::EventSource::Subscriber[amqp: 'enroll.families.notices.initial1095a_notice']
+        include ::EventSource::Subscriber[amqp: 'enroll.families.notices.ivl_tax1095a']
 
-        subscribe(:on_requested) do |delivery_info, _metadata, response|
+        subscribe(:on_initial_notice_requested) do |delivery_info, _metadata, response|
           routing_key = delivery_info[:routing_key]
           logger.info "Polypress: invoked Initial1095aNoticeRequestedSubscriber with delivery_info:
                         #{delivery_info} routing_key: #{routing_key}"
