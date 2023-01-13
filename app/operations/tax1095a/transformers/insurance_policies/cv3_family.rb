@@ -21,6 +21,8 @@ module Tax1095a
           irs_group = yield fetch_irs_group(irs_group_id)
           insurance_agreements = yield fetch_insurance_agreements(irs_group)
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
+          valid_cv3_payload = yield validate_payload(cv3_payload)
+          entity_cv3_payload = yield initialize_entity(valid_cv3_payload)
           result = yield publish_payload(tax_year, tax_form_type, cv3_payload)
 
           Success(result)
@@ -36,6 +38,24 @@ module Tax1095a
           Failure("tax_year is not present") unless tax_year.present?
           Failure("irs_group_id is not present") unless irs_group_id.present?
           Success([tax_year, tax_form_type, irs_group_id])
+        end
+
+        def validate_payload(cv3_payload)
+          result = AcaEntities::Contracts::Families::FamilyContract.new.call(cv3_payload)
+          if result.success?
+            Success(result)
+          else
+            Failure("Payload is invalid due to #{result.errors.to_h}")
+          end
+        end
+
+        def initialize_entity(_cv3_payload)
+          result = AcaEntities::Families::Family.new(value.to_h)
+          if result.success?
+            Success(result)
+          else
+            Failure("Unable to build entity: #{result.errors.to_h}")
+          end
         end
 
         def fetch_irs_group(irs_group_id)
@@ -55,7 +75,7 @@ module Tax1095a
           contract_holder = insurance_agreements.first.contract_holder
           result = {
             family_members: construct_family_members(contract_holder, irs_group.aca_individual_insurance_policies),
-            households: construct_households(insurance_agreements, tax_form_type)
+            households: construct_households(irs_group, insurance_agreements, tax_form_type)
           }
 
           Success(result)
@@ -73,9 +93,11 @@ module Tax1095a
           end
         end
 
-        def construct_households(irs_group, tax_form_type)
+        def construct_households(irs_group, insurance_agreements, tax_form_type)
           [
-            insurance_agreements: construct_insurance_agreements(irs_group, tax_form_type)
+            start_date: irs_group.start_on,
+            is_active: true,
+            insurance_agreements: construct_insurance_agreements(insurance_agreements, tax_form_type)
           ]
         end
 
@@ -191,6 +213,7 @@ module Tax1095a
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           enrollments.collect do |enr|
             {
+              start_on: enr.start_on,
               subscriber: construct_subscriber(enr.subscriber),
               dependents: construct_dependents(enr.dependents),
               total_premium: enr.total_premium_amount&.to_hash,
@@ -358,8 +381,9 @@ module Tax1095a
         def fetch_tax_filer_status(tax_household, enrollee)
           thh_member = tax_household.tax_household_members.detect do |member|
             member.person_id == enrollee.person_id
-            thh_member&.tax_filer_status || "non_filer"
           end
+
+          thh_member&.tax_filer_status || "non_filer"
         end
 
         def publish_payload(_tax_year, _tax_form_type, _cv3_payload)
