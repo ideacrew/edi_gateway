@@ -22,7 +22,7 @@ module Tax1095a
           insurance_agreements = yield fetch_insurance_agreements(irs_group)
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           result = yield publish_payload(tax_year, tax_form_type, cv3_payload)
-          binding.pry
+
           Success(result)
         end
 
@@ -188,7 +188,7 @@ module Tax1095a
         end
 
         def construct_enrollments(insurance_policy)
-          enrollments = insurance_policy.enrollments.select { |enr| enr.aasm_state != "coverage_canceled" }
+          enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           enrollments.collect do |enr|
             {
               subscriber: construct_subscriber(enr.subscriber),
