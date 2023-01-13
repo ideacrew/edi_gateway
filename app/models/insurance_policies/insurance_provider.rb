@@ -27,7 +27,8 @@ module InsurancePolicies
       carrier_names = {
         "311705652" => "ANTHEM HEALTH PLANS OF MAINE",
         "042452600" => "HARVARD PILGRIM HEALTH CARE INC",
-        "453416923" => "MAINE COMMUNITY HEALTH OPTIONS"
+        "453416923" => "MAINE COMMUNITY HEALTH OPTIONS",
+        "010286541" => "Northeast Delta Dental"
       }
       carrier_names[self.fein]
     end

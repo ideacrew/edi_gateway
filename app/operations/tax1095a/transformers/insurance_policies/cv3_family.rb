@@ -23,7 +23,7 @@ module Tax1095a
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           valid_cv3_payload = yield validate_payload(cv3_payload)
           entity_cv3_payload = yield initialize_entity(valid_cv3_payload)
-          result = yield publish_payload(tax_year, tax_form_type, cv3_payload)
+          result = yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
 
           Success(result)
         end
@@ -49,12 +49,13 @@ module Tax1095a
           end
         end
 
-        def initialize_entity(_cv3_payload)
-          result = AcaEntities::Families::Family.new(value.to_h)
-          if result.success?
-            Success(result)
-          else
-            Failure("Unable to build entity: #{result.errors.to_h}")
+        def initialize_entity(cv3_payload)
+          result = Try do
+            AcaEntities::Families::Family.new(cv3_payload.to_h)
+          end
+
+          result.or do |e|
+            Failure(e)
           end
         end
 
@@ -74,6 +75,7 @@ module Tax1095a
         def construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           contract_holder = insurance_agreements.first.contract_holder
           result = {
+            hbx_id: irs_group.irs_group_id,
             family_members: construct_family_members(contract_holder, irs_group.aca_individual_insurance_policies),
             households: construct_households(irs_group, insurance_agreements, tax_form_type)
           }
@@ -97,13 +99,26 @@ module Tax1095a
           [
             start_date: irs_group.start_on,
             is_active: true,
+            coverage_households: construct_coverage_households,
             insurance_agreements: construct_insurance_agreements(insurance_agreements, tax_form_type)
           ]
         end
 
+        def construct_coverage_households
+          [{
+            is_immediate_family: true,
+            coverage_household_members: []
+          }]
+        end
+
         def construct_insurance_agreements(insurance_agreements, tax_form_type)
           insurance_agreements = insurance_agreements.uniq(&:id)
-          insurance_agreements.collect do |insurance_agreement|
+
+          # rejecting dental agreements
+          agreement = insurance_agreements.reject do |agreement|
+            agreement if %w(010286541).include?(agreement.insurance_provider.fein)
+          end
+          agreement.collect do |insurance_agreement|
             {
               plan_year: insurance_agreement.plan_year,
               contract_holder: construct_contract_holder(insurance_agreement.contract_holder),
@@ -114,14 +129,14 @@ module Tax1095a
           end
         end
 
-        def construct_person_hash(insurance_person, _glue_person)
-          # authority_member = glue_person.authority_member
+        def construct_person_hash(insurance_person, glue_person)
+          authority_member = glue_person.authority_member
           {
-            # hbx_id: glue_person.authority_member_id,
-            # person_name: { first_name: glue_person.name_first, last_name: glue_person.name_last },
-            # person_demographics: { gender: authority_member.gender,
-            #                        ssn: authority_member.ssn,
-            #                        dob: authority_member.dob },
+            hbx_id: glue_person.authority_member_id,
+            person_name: { first_name: glue_person.name_first, last_name: glue_person.name_last },
+            person_demographics: { gender: authority_member.gender,
+                                   encrypted_ssn: encrypt_ssn(authority_member.ssn),
+                                   dob: authority_member.dob },
             person_health: {},
             is_active: true,
             addresses: construct_addresses(insurance_person),
@@ -136,10 +151,10 @@ module Tax1095a
               address_1: address.address_1,
               address_2: address.address_2,
               address_3: address.address_3,
-              city_name: address.city_name,
+              city: address.city_name,
               county_name: address.county_name,
-              state_abbreviation: address.state_abbreviation,
-              zip_code: address.zip_code
+              state: address.state_abbreviation,
+              zip: address.zip_code
             }
           end
         end
@@ -204,9 +219,15 @@ module Tax1095a
               start_on: insurance_policy.start_on,
               end_on: insurance_policy.policy_end_on,
               enrollments: construct_enrollments(insurance_policy),
-              apt_csr_tax_households: construct_aptc_csr_tax_households(insurance_policy)
+              aptc_csr_tax_households: construct_aptc_csr_tax_households(insurance_policy)
             }
           end
+        end
+
+        def encrypt_ssn(ssn)
+          return unless ssn
+          result = AcaEntities::Operations::Encryption::Encrypt.new.call({ value: ssn })
+          result.success? ? result.value! : nil
         end
 
         def construct_enrollments(insurance_policy)
@@ -216,10 +237,9 @@ module Tax1095a
               start_on: enr.start_on,
               subscriber: construct_subscriber(enr.subscriber),
               dependents: construct_dependents(enr.dependents),
-              total_premium: enr.total_premium_amount&.to_hash,
+              total_premium_amount: enr.total_premium_amount&.to_hash,
               tax_households: construct_tax_households(enr),
-              total_premium_adjustments: enr.total_premium_adjustment_amount&.to_hash,
-              total_responsible_premium: enr.total_responsible_premium_amount&.to_hash
+              total_premium_adjustment_amount: enr.total_premium_adjustment_amount&.to_hash,
             }
           end
         end
@@ -251,6 +271,7 @@ module Tax1095a
           person = subscriber.person
           {
             member: { hbx_id: person.hbx_id,
+                      member_id: person.hbx_id,
                       person_name: { first_name: person.name.first_name,
                                      last_name: person.name.last_name,
                                      middle_name: person.name.middle_name } },
@@ -266,6 +287,7 @@ module Tax1095a
             person = dependent.person
             {
               member: { hbx_id: person.hbx_id,
+                        member_id: person.hbx_id,
                         person_name: { first_name: person.name.first_name,
                                        last_name: person.name.last_name,
                                        middle_name: person.name.middle_name } },
@@ -335,7 +357,7 @@ module Tax1095a
           end
 
           coverage_information.collect { |hash| hash.deep_transform_values!(&:to_hash) }
-          { coverage_information: result.deep_transform_values(&:to_hash) }
+          result.deep_transform_values(&:to_hash)
         end
 
         def construct_coverage_information(insurance_policy, tax_household)
