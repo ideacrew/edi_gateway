@@ -71,9 +71,7 @@ module InsurancePolicies
           [slcsp, pre_amt_tot_month]
         end
       end
-      # rubocop:enable Metrics/AbcSize
 
-      # rubocop:disable Metrics/AbcSize
       def pediatric_dental_premium(tax_household_members, calendar_month)
         thh_members = tax_household_members.reject { |member| member.is_medicaid_chip_eligible == true }
         return 0.0 if thh_members.empty?

@@ -14,13 +14,17 @@ module InsurancePolicies
       has_many :tax_household_groups, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup',
                                       dependent: :destroy
 
-
       field :irs_group_id, type: String
       field :start_on, type: Date
       field :end_on, type: Date
 
       # indexes
       index({ irs_group_id: 1 })
+
+      def insurance_agreements
+        ::InsurancePolicies::InsuranceAgreement
+          .where(:id.in => aca_individual_insurance_policies.map(&:insurance_agreement).map(&:_id))
+      end
 
       def active_tax_household_group(calendar_year)
         tax_household_groups.where(end_on: Date.new(calendar_year, 12, 31), assistance_year: calendar_year)&.first ||
