@@ -5,6 +5,8 @@ require 'dry/monads/do'
 require 'bigdecimal'
 require "aca_entities/functions/age_on"
 
+# rubocop:disable Metrics/AbcSize
+# rubocop:disable Metrics/ClassLength
 module Tax1095a
   module Transformers
     module InsurancePolicies
@@ -83,9 +85,14 @@ module Tax1095a
           Success(result)
         end
 
+        def fetch_all_members(contract_holder, policies)
+          all_enrolled_members = [policies.flat_map(&:enrollments).flat_map(&:subscriber) +
+            policies.flat_map(&:enrollments).flat_map(&:dependents)].flatten.uniq(&:person_id)
+          [[contract_holder] + all_enrolled_members.map(&:person)].flatten.uniq
+        end
+
         def construct_family_members(contract_holder, policies)
-          all_enrolled_members = [policies.flat_map(&:enrollments).flat_map(&:subscriber) + policies.flat_map(&:enrollments).flat_map(&:dependents)].flatten.uniq(&:person_id)
-          all_members = [[contract_holder] + all_enrolled_members.map(&:person)].flatten.uniq
+          all_members = fetch_all_members(contract_holder, policies)
           all_members.collect do |insurance_person|
             glue_person = fetch_person_from_glue(insurance_person)
             {
@@ -115,8 +122,8 @@ module Tax1095a
           insurance_agreements = insurance_agreements.uniq(&:id)
 
           # rejecting dental agreements
-          agreement = insurance_agreements.reject do |agreement|
-            agreement if %w(010286541).include?(agreement.insurance_provider.fein)
+          agreement = insurance_agreements.reject do |insurance_agreement|
+            insurance_agreement if %w(010286541).include?(insurance_agreement.insurance_provider.fein)
           end
           agreement.collect do |insurance_agreement|
             {
@@ -144,23 +151,27 @@ module Tax1095a
           }
         end
 
+        def address_result(result, address, is_contract_holder)
+          if is_contract_holder
+            result.merge!(state_abbreviation: address.state_abbreviation,
+                          zip_code: address.zip_code)
+          else
+            result.merge!(state: address.state_abbreviation,
+                          zip: address.zip_code)
+          end
+        end
+
         def construct_addresses(insurance_person, is_contract_holder: false)
           insurance_person.addresses.collect do |address|
-            address = {
+            result = {
               kind: address.kind,
               address_1: address.address_1,
               address_2: address.address_2,
               address_3: address.address_3,
               city: address.city_name,
-              county_name: address.county_name,
+              county_name: address.county_name
             }
-            if is_contract_holder
-              address.merge!(state_abbreviation: address.state_abbreviation,
-                             zip_code: address.zip_code)
-            else
-              address.merge!(state: address.state_abbreviation,
-                             zip: address.zip_code)
-            end
+            address_result(result, address, is_contract_holder)
           end
         end
 
@@ -187,7 +198,7 @@ module Tax1095a
             encrypted_ssn: encrypt_ssn(authority_member.ssn),
             dob: authority_member.dob,
             gender: authority_member.gender,
-            addresses: construct_addresses(contract_holder, true)
+            addresses: construct_addresses(contract_holder, is_contract_holder: true)
 
           }
         end
@@ -238,6 +249,7 @@ module Tax1095a
 
         def encrypt_ssn(ssn)
           return unless ssn
+
           result = AcaEntities::Operations::Encryption::Encrypt.new.call({ value: ssn })
           result.success? ? result.value! : nil
         end
@@ -251,7 +263,7 @@ module Tax1095a
               dependents: construct_dependents(enr.dependents),
               total_premium_amount: enr.total_premium_amount&.to_hash,
               tax_households: construct_tax_households(enr),
-              total_premium_adjustment_amount: enr.total_premium_adjustment_amount&.to_hash,
+              total_premium_adjustment_amount: enr.total_premium_adjustment_amount&.to_hash
             }
           end
         end
@@ -372,6 +384,7 @@ module Tax1095a
           result.deep_transform_values(&:to_hash)
         end
 
+        # rubocop:disable Metrics/MethodLength
         def construct_coverage_information(insurance_policy, tax_household)
           (1..12).collect do |month|
             enrollments_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
@@ -395,6 +408,7 @@ module Tax1095a
             }
           end
         end
+        # rubocop:enable Metrics/MethodLength
 
         def fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month, tax_household)
           enrolled_members = [enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)]
@@ -427,3 +441,5 @@ module Tax1095a
     end
   end
 end
+# rubocop:enable Metrics/AbcSize
+# rubocop:enable Metrics/ClassLength
