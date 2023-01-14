@@ -144,18 +144,23 @@ module Tax1095a
           }
         end
 
-        def construct_addresses(insurance_person)
+        def construct_addresses(insurance_person, is_contract_holder: false)
           insurance_person.addresses.collect do |address|
-            {
+            address = {
               kind: address.kind,
               address_1: address.address_1,
               address_2: address.address_2,
               address_3: address.address_3,
               city: address.city_name,
               county_name: address.county_name,
-              state: address.state_abbreviation,
-              zip: address.zip_code
             }
+            if is_contract_holder
+              address.merge!(state_abbreviation: address.state_abbreviation,
+                             zip_code: address.zip_code)
+            else
+              address.merge!(state: address.state_abbreviation,
+                             zip: address.zip_code)
+            end
           end
         end
 
@@ -173,10 +178,17 @@ module Tax1095a
         end
 
         def construct_contract_holder(contract_holder)
+          glue_person = fetch_person_from_glue(contract_holder)
+          authority_member = glue_person.authority_member
           {
             hbx_id: contract_holder.hbx_id,
             person_name: { first_name: contract_holder.name.first_name,
-                           last_name: contract_holder.name.last_name }
+                           last_name: contract_holder.name.last_name },
+            encrypted_ssn: encrypt_ssn(authority_member.ssn),
+            dob: authority_member.dob,
+            gender: authority_member.gender,
+            addresses: construct_addresses(contract_holder, true)
+
           }
         end
 
