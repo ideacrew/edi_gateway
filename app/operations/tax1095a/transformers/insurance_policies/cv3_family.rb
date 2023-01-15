@@ -5,8 +5,7 @@ require 'dry/monads/do'
 require 'bigdecimal'
 require "aca_entities/functions/age_on"
 
-# rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/ClassLength
+# rubocop:disable Metrics/AbcSize, Metrics/ClassLength
 module Tax1095a
   module Transformers
     module InsurancePolicies
@@ -17,6 +16,11 @@ module Tax1095a
 
         TAX_FORM_TYPES = %w[IVL_TAX Corrected_IVL_TAX IVL_VTA IVL_CAP].freeze
 
+        MAP_FORM_TYPE_TO_EVENT = { "IVL_TAX" => "initial_payload_generated",
+                                   "IVL_VTA" => "void_payload_generated",
+                                   "Corrected_IVL_TAX" => "corrected_payload_generated",
+                                   "IVL_CAP" => "catastrophic_payload_generated" }.freeze
+
         # params {tax_year: ,tax_form_type:, irs_group_id: }
         def call(params)
           tax_year, tax_form_type, irs_group_id = yield validate(params)
@@ -25,9 +29,9 @@ module Tax1095a
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           valid_cv3_payload = yield validate_payload(cv3_payload)
           entity_cv3_payload = yield initialize_entity(valid_cv3_payload)
-          result = yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
+          # yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
 
-          Success(result)
+          Success(cv3_payload)
         end
 
         private
@@ -36,9 +40,10 @@ module Tax1095a
           tax_form_type = params[:tax_form_type]
           tax_year = params[:tax_year]
           irs_group_id = params[:irs_group_id]
-          Failure("Valid tax form type is not present") unless TAX_FORM_TYPES.include?(tax_form_type)
-          Failure("tax_year is not present") unless tax_year.present?
-          Failure("irs_group_id is not present") unless irs_group_id.present?
+          return Failure("Valid tax form type is not present") unless TAX_FORM_TYPES.include?(tax_form_type)
+          return Failure("tax_year is not present") unless tax_year.present?
+          return Failure("irs_group_id is not present") unless irs_group_id.present?
+
           Success([tax_year, tax_form_type, irs_group_id])
         end
 
@@ -63,14 +68,16 @@ module Tax1095a
 
         def fetch_irs_group(irs_group_id)
           result = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(:irs_group_id => irs_group_id)
-          Failure("Unable to fetch IRS group for irs_group_id: #{irs_group_id}") unless result.present?
+          return Failure("Unable to fetch IRS group for irs_group_id: #{irs_group_id}") unless result.present?
+
           Success(result.first)
         end
 
         def fetch_insurance_agreements(irs_group)
           result = irs_group.insurance_agreements
 
-          Failure("Unable to fetch insurance_agreements for irs_group_id: #{irs_group.id}") unless result.present?
+          return Failure("Unable to fetch insurance_agreements for irs_group_id: #{irs_group.id}") unless result.present?
+
           Success(result)
         end
 
@@ -93,7 +100,7 @@ module Tax1095a
 
         def construct_family_members(contract_holder, policies)
           all_members = fetch_all_members(contract_holder, policies)
-          all_members.collect do |insurance_person|
+          all_members.compact.collect do |insurance_person|
             glue_person = fetch_person_from_glue(insurance_person)
             {
               is_primary_applicant: contract_holder == insurance_person,
@@ -374,13 +381,13 @@ module Tax1095a
         end
 
         def construct_annual_premiums(months_of_year)
-          coverage_information = months_of_year.collect { |m| m[:coverage_information] }
+          all_coverage_information = months_of_year.collect { |m| m[:coverage_information] }
 
           result = [:tax_credit, :total_premium, :slcsp_benchmark_premium].each_with_object({}) do |k, output|
-            output[k] = coverage_information.sum { |hash| hash[k] }
+            output[k] = all_coverage_information.sum { |hash| hash[k] }
           end
 
-          coverage_information.collect { |hash| hash.deep_transform_values!(&:to_hash) }
+          all_coverage_information.collect { |hash| hash.deep_transform_values!(&:to_hash) }
           result.deep_transform_values(&:to_hash)
         end
 
@@ -434,12 +441,23 @@ module Tax1095a
           thh_member&.tax_filer_status || "non_filer"
         end
 
-        def publish_payload(_tax_year, _tax_form_type, _cv3_payload)
+        def publish_payload(tax_year, tax_form_type, entity_cv3_payload)
+          cv3_payload = JSON.parse(entity_cv3_payload.to_hash.to_json)
+          event_name = MAP_FORM_TYPE_TO_EVENT[tax_form_type]
+          event_key = "families.tax_form1095a.#{event_name}"
+
+          params = { payload: { tax_year: tax_year, tax_form_type: tax_form_type, cv3_payload: cv3_payload },
+                     event_name: event_key }
+          result = ::Tax1095a::PublishRequest.new.call(params)
+
+          if result.failure?
+            return Failure("Failed to publish for event #{event_key}, with params: #{params}, failure: #{result.failure}")
+          end
+
           Success(true)
         end
       end
     end
   end
 end
-# rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/ClassLength
+# rubocop:enable Metrics/AbcSize, Metrics/ClassLength

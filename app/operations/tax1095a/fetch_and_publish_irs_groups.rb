@@ -17,10 +17,10 @@ module Tax1095a
     # params {tax_year: ,tax_form_type: }
     def call(params)
       tax_year, tax_form_type = yield validate(params)
-      irs_group_ids = fetch_irs_groups(tax_year, tax_form_type)
-      result = publish(irs_group_ids, tax_year, tax_form_type)
+      irs_group_ids = yield fetch_irs_groups(tax_year, tax_form_type)
+      # yield publish(irs_group_ids, tax_year, tax_form_type)
 
-      Success(result)
+      Success(true)
     end
 
     private
@@ -28,8 +28,9 @@ module Tax1095a
     def validate(params)
       tax_form_type = params[:tax_form_type]
       tax_year = params[:tax_year]
-      Failure("Valid tax form type is not present") unless TAX_FORM_TYPES.include?(tax_form_type)
-      Failure("tax_year is not present") unless tax_year.present?
+      return Failure("Valid tax form type is not present") unless TAX_FORM_TYPES.include?(tax_form_type)
+      return Failure("tax_year is not present") unless tax_year.present?
+
       Success([tax_year, tax_form_type])
     end
 
@@ -38,7 +39,8 @@ module Tax1095a
       policies = InsurancePolicies::AcaIndividuals::InsurancePolicy.where(query)
 
       irs_group_ids = policies&.pluck(:irs_group_id)
-      Failure("No irs_groups are not found for the given tax_year: #{tax_year}") unless irs_group_ids.present?
+      return Failure("No irs_groups are not found for the given tax_year: #{tax_year}") unless irs_group_ids.present?
+
       Success(irs_group_ids)
     end
 
@@ -58,12 +60,18 @@ module Tax1095a
     end
 
     def publish(irs_group_ids, tax_year, tax_form_type)
-      # Seperate operation for common publisher
+      event_key = "insurance_policies.tax1095a_payload.requested"
       irs_group_ids.each do |irs_group_id|
-        event = event("events.insurance_policies.tax1095a_payload.requested",
-                      attributes: { tax_year: tax_year, tax_form_type: tax_form_type, irs_group_id: irs_group_id })
-        event.success.publish
+        params = { payload: { tax_year: tax_year, tax_form_type: tax_form_type, irs_group_id: irs_group_id },
+                   event_name: event_key }
+
+        result = ::Tax1095a::PublishRequest.new.call(params)
+        if result.failure?
+          return Failure("Failed to publish for event #{event_key}, with params: #{params}, failure: #{result.failure}")
+        end
       end
+
+      Success(true)
     end
   end
 end

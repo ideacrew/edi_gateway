@@ -14,10 +14,10 @@ FactoryBot.define do
     end
 
     after(:create) do |p, evaluator|
-      create_list(:member,  2, person: p, dob: evaluator.dob, hbx_member_id: evaluator.hbx_member_id)
-      create_list(:address, 2, person: p)
-      create_list(:phone,   2, person: p)
-      create_list(:email,   2, person: p)
+      create_list(:member,  1, person: p, dob: evaluator.dob, hbx_member_id: evaluator.hbx_member_id)
+      create_list(:address, 1, person: p)
+      create_list(:phone,   1, person: p)
+      create_list(:email,   1, person: p)
       p.authority_member_id = p.members.first.hbx_member_id
     end
   end
