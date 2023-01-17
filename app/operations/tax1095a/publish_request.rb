@@ -4,8 +4,7 @@ require 'dry/monads'
 require 'dry/monads/do'
 
 module Tax1095a
-  # Fetch and publish IRS Groups
-  # Publish class will build event and publish the renewal payload
+  # Publish class will build event and publish the payload
   class PublishRequest
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
@@ -49,7 +48,6 @@ module Tax1095a
     end
 
     def publish(event)
-      binding.pry
       event.publish
 
       Success("Successfully published the payload for event: #{@event_name}")
