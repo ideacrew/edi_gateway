@@ -24,7 +24,7 @@ RSpec.shared_context 'one_enrolled_member' do
       people_person
     end
   end
-  let!(:start_on) { hbx_enrollment[:effective_on] }
+  let!(:start_on) { Date.new(2023, 1, 1) }
 
   let!(:subscriber_person) { People::Person.all.first }
   let!(:enrollment) { FactoryBot.create(:enrollment, hbx_id: hbx_enrollment[:hbx_id]) }

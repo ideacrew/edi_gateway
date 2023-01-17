@@ -12,7 +12,7 @@
                 "person_demographics": {
                     "gender": "female",
                     "encrypted_ssn": "s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
-                    "dob": "1988-01-15"
+                    "dob": "2010-01-01"
                 },
                 "person_health": {},
                 "is_active": true,
@@ -57,7 +57,7 @@
                             "last_name": "last name"
                         },
                         "encrypted_ssn": "s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
-                        "dob": "1988-01-15",
+                        "dob": "2010-01-01",
                         "gender": "female",
                         "addresses": [
                             {
@@ -103,7 +103,7 @@
                             "hbx_enrollment_ids": [
                                 "1000"
                             ],
-                            "start_on": "2023-01-15",
+                            "start_on": "2023-01-01",
                             "end_on": "2023-12-31",
                             "enrollments": [
                                 {
@@ -180,7 +180,7 @@
                                                 "person_demographics": {
                                                     "gender": "female",
                                                     "encrypted_ssn": "s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
-                                                    "dob": "1988-01-15"
+                                                    "dob": "2010-01-01"
                                                 },
                                                 "person_health": {},
                                                 "is_active": true,

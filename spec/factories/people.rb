@@ -6,7 +6,7 @@ FactoryBot.define do
     sequence(:name_last) { |n| "Smith\##{n}" }
 
     transient do
-      dob { Date.today - 35.years }
+      dob { Date.new(2010, 1, 1) }
     end
 
     transient do
