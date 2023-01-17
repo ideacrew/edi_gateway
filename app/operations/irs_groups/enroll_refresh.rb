@@ -34,7 +34,7 @@ module IrsGroups
 
     def fetch_insurance_policies(policies)
       glue_policy_ids = policies.pluck(:eg_id)
-      InsurancePolicies::AcaIndividuals::InsurancePolicy.where(:policy_id.in => glue_policy_ids)
+      Success(InsurancePolicies::AcaIndividuals::InsurancePolicy.where(:policy_id.in => glue_policy_ids))
     end
 
     def fetch_contract_holders(insurance_policies)
