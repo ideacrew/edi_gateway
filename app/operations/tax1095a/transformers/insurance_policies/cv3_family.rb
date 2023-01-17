@@ -29,7 +29,7 @@ module Tax1095a
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           valid_cv3_payload = yield validate_payload(cv3_payload)
           entity_cv3_payload = yield initialize_entity(valid_cv3_payload)
-          # yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
+          yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
 
           Success(cv3_payload)
         end

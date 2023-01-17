@@ -18,7 +18,7 @@ module Tax1095a
     def call(params)
       tax_year, tax_form_type = yield validate(params)
       irs_group_ids = yield fetch_irs_groups(tax_year, tax_form_type)
-      # yield publish(irs_group_ids, tax_year, tax_form_type)
+      yield publish(irs_group_ids, tax_year, tax_form_type)
 
       Success(true)
     end
