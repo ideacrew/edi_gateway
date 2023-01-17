@@ -11,7 +11,9 @@ RSpec.shared_context 'one_enrolled_member' do
     hbx_enrollment_members.collect do |member|
       hbx_id = member[:family_member_reference][:family_member_hbx_id]
       glue_person = FactoryBot.create(:person, hbx_member_id: hbx_id,
-                                               authority_member_id: hbx_id, name_first: person_name[:first_name], name_last: person_name[:last_name])
+                                               authority_member_id: hbx_id,
+                                               name_first: person_name[:first_name],
+                                               name_last: person_name[:last_name])
 
       glue_person.members.first.update_attributes(ssn: "123456789")
       glue_person.addresses.first.update_attributes(address_1: addresses.first[:address_1])

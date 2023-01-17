@@ -3,6 +3,7 @@
 require 'dry/monads'
 require 'dry/monads/do'
 
+# rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
 module Tax1095a
   # Publish class will build event and publish the payload
   class PublishRequest
@@ -54,3 +55,4 @@ module Tax1095a
     end
   end
 end
+# rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity

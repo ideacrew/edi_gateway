@@ -381,7 +381,7 @@ module Tax1095a
         end
 
         def construct_annual_premiums(months_of_year)
-          all_coverage_information = months_of_year.collect { |m| m[:coverage_information] }
+          all_coverage_information = months_of_year.compact.collect { |m| m[:coverage_information] }
 
           result = [:tax_credit, :total_premium, :slcsp_benchmark_premium].each_with_object({}) do |k, output|
             output[k] = all_coverage_information.sum { |hash| hash[k] }
@@ -426,7 +426,8 @@ module Tax1095a
         end
 
         def fetch_enrolled_thh_members(enrollments, tax_household)
-          all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)].flatten
+          all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)]
+                                 .flatten.uniq(&:person_id)
           thh_members = tax_household.tax_household_members
           all_enrolled_members.select do |member|
             thh_members.map(&:person_id).include?(member.person_id)

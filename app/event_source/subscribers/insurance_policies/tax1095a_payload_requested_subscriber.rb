@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Subscribers
-  module IndurancePolicies
+  module InsurancePolicies
     # Subscriber will receive catastrophic1095a_notice event from enroll to generate 1095a tax_payload
     class Tax1095aPayloadRequestedSubscriber
       include EventSource::Command
