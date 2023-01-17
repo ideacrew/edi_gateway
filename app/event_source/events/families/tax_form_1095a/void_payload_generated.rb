@@ -11,4 +11,3 @@ module Events
   end
 end
 
-# Events::Families::Notices::IvlTax::VoidNoticeGeneration
