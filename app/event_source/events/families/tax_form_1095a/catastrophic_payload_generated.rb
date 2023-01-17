@@ -10,5 +10,3 @@ module Events
     end
   end
 end
-
-# Events::Families::Notices::IvlTax::CatastrophicNoticeGeneration
