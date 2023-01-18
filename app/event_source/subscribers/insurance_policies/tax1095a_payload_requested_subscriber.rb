@@ -2,7 +2,7 @@
 
 module Subscribers
   module InsurancePolicies
-    # Subscriber will receive catastrophic1095a_notice event from enroll to generate 1095a tax_payload
+    # Subscriber will receive tax1095a_payload.requested event from EDI gateway to generate 1095a tax_payload
     class Tax1095aPayloadRequestedSubscriber
       include EventSource::Command
       include EventSource::Logging
@@ -13,8 +13,10 @@ module Subscribers
         logger.info "Polypress: invoked Tax1095aPayloadRequestedSubscriber with delivery_info:
                               #{delivery_info} routing_key: #{routing_key}"
         payload = JSON.parse(response, symbolize_names: true)
-        result = ::Tax1095a::FetchAndPublishIrsGroups.new.call({ tax_year: payload[:tax_year],
-                                                                 tax_form_type: payload[:tax_form_type] })
+
+        result = ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call({ tax_year: payload[:tax_year],
+                                                                                   tax_form_type: payload[:tax_form_type],
+                                                                                   irs_group_id: payload[:irs_group_id] })
 
         if result.success?
           logger.info "Polypress: Tax1095aPayloadRequestedSubscriber; acked for #{routing_key}"
