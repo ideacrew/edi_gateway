@@ -22,6 +22,9 @@ module InsurancePolicies
                inverse_of: :enrollments_tax_households,
                dependent: :destroy
 
+      field :household_benchmark_ehb_premium, type: Money
+      field :household_health_benchmark_ehb_premium, type: Money
+      field :household_dental_benchmark_ehb_premium, type: Money
       field :applied_aptc, type: Money
       field :available_max_aptc, type: Money
 
@@ -29,6 +32,9 @@ module InsurancePolicies
       index({ applied_aptc: 1 })
       index({ available_max_aptc: 1 })
       index({ tax_household_id: 1, enrollment_id: 1 })
+      index({ household_benchmark_ehb_premium: 1 })
+      index({ household_health_benchmark_ehb_premium: 1 })
+      index({ household_dental_benchmark_ehb_premium: 1 })
     end
   end
 end
