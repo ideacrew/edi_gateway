@@ -90,7 +90,7 @@ module InsurancePolicies
       end
 
       def fetch_slcsp_premium(enrs_for_month, calendar_month, tax_household = nil)
-        return 0.0 if term_for_np && policy_end_on.month == calendar_month
+        return format('%.2f', (0.0)) if term_for_np && policy_end_on.month == calendar_month
 
         enr_thhs = fetch_enrollments_tax_households(enrs_for_month)
         slcsp_premium = enr_thhs.map(&:household_benchmark_ehb_premium).compact.sum
