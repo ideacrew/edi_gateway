@@ -40,8 +40,10 @@ module IrsGroups
       agreements&.flat_map(&:insurance_policies)&.pluck(:irs_group_id)&.compact&.first
     end
 
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/MethodLength
     def build_tax_household_and_members(tax_household)
-      {
+      result = {
         hbx_id: tax_household.hbx_id,
         allocated_aptc: { cents: tax_household.allocated_aptc&.cents,
                           currency_iso: tax_household.allocated_aptc&.currency_iso },
@@ -50,11 +52,19 @@ module IrsGroups
         start_date: tax_household.start_date,
         end_date: tax_household.end_date,
         is_eligibility_determined: tax_household.is_eligibility_determined,
-        yearly_expected_contribution: { cents: tax_household.yearly_expected_contribution&.cents,
-                                        currency_iso: tax_household.yearly_expected_contribution&.currency_iso },
         tax_household_members: build_tax_household_members(tax_household)
       }
+
+      if tax_household.yearly_expected_contribution.present?
+        result.merge!(yearly_expected_contribution: {
+                        cents: tax_household.yearly_expected_contribution&.cents,
+                        currency_iso: tax_household.yearly_expected_contribution&.currency_iso
+                      })
+      end
+      result
     end
+    # rubocop:enable Metrics/CyclomaticComplexity
+    # rubocop:enable Metrics/MethodLength
 
     def build_tax_household_members(tax_household)
       tax_household.tax_household_members.collect do |thh_member|
