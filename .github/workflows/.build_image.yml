@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "create_persistence_model_183967412"
+      - "pivotal_184157128"
   pull_request:
     branches:
-      - "create_persistence_model_183967412"
+      - "pivotal_184157128"
 
 concurrency:
   group: docker-${{ github.ref }}
