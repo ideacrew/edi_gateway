@@ -38,7 +38,7 @@ module Tax1095a
       query = query_criteria(tax_year, instance_eval(PRODUCT_CRITERIA[tax_form_type]))
       policies = InsurancePolicies::AcaIndividuals::InsurancePolicy.where(query)
 
-      irs_group_ids = policies&.pluck(:irs_group_id)
+      irs_group_ids = policies&.pluck(:irs_group_id)&.uniq
       return Failure("No irs_groups are not found for the given tax_year: #{tax_year}") unless irs_group_ids.present?
 
       Success(irs_group_ids)
@@ -59,7 +59,9 @@ module Tax1095a
       InsurancePolicies::InsuranceProduct.where(:coverage_type => 'health', :metal_level => "catastrophic").pluck(:_id).flatten
     end
 
-    def publish(irs_group_ids, tax_year, tax_form_type)
+    def publish(irs_group_bson_ids, tax_year, tax_form_type)
+      irs_group_ids = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(:_id.in => irs_group_bson_ids).pluck(:irs_group_id).uniq
+
       event_key = "insurance_policies.tax1095a_payload.requested"
       irs_group_ids.each do |irs_group_id|
         params = { payload: { tax_year: tax_year, tax_form_type: tax_form_type, irs_group_id: irs_group_id },

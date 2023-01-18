@@ -446,7 +446,6 @@ module Tax1095a
           cv3_payload = JSON.parse(entity_cv3_payload.to_hash.to_json)
           event_name = MAP_FORM_TYPE_TO_EVENT[tax_form_type]
           event_key = "families.tax_form1095a.#{event_name}"
-
           params = { payload: { tax_year: tax_year, tax_form_type: tax_form_type, cv3_payload: cv3_payload },
                      event_name: event_key }
           result = ::Tax1095a::PublishRequest.new.call(params)
