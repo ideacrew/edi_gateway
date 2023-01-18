@@ -322,8 +322,8 @@ module Tax1095a
                         person_name: { first_name: person.name.first_name,
                                        last_name: person.name.last_name,
                                        middle_name: person.name.middle_name } },
-              dob: subscriber.dob,
-              gender: subscriber.gender,
+              dob: dependent.dob,
+              gender: dependent.gender,
               addresses: construct_addresses(person),
               emails: construct_emails(person)
             }
