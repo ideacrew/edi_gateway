@@ -187,8 +187,9 @@ module Generators
 
       def serialize_associated_policy(hh_xml, tax_household, calendar_month, enrollment)
         enrolled_thh_members = enrollment.enrolled_members_from_tax_household(tax_household)
-        slcsp, pre_amt_tot = enrollment.fetch_npt_h36_prems(enrolled_thh_members, calendar_month)
+        pre_amt_tot = enrollment.pre_amt_tot_values(enrolled_thh_members, calendar_month)
         aptc_tax_credit = enrollment.insurance_policy.fetch_aptc_tax_credit([enrollment], tax_household)
+        slcsp = enrollment.insurance_policy.fetch_slcsp_premium([enrollment], calendar_month, tax_household)
         pediatric_dental_pre = enrollment.pediatric_dental_premium(tax_household.tax_household_members, calendar_month)
         total_premium = pre_amt_tot.to_f + pediatric_dental_pre
         hh_xml.AssociatedPolicy do |xml|
@@ -234,8 +235,9 @@ module Generators
           insured_pol_xml.InsuranceCoverage do |insured_cov_xml|
             enrolled_members_for_month = [[sorted_enrollments.map(&:subscriber)] +
               sorted_enrollments.map(&:dependents)].flatten.uniq(&:person_id)
-            slcsp, pre_amt_tot = sorted_enrollments.first.fetch_npt_h36_prems(enrolled_members_for_month, calendar_month)
+            pre_amt_tot = sorted_enrollments.first.pre_amt_tot_values(enrolled_members_for_month, calendar_month)
             aptc_tax_credit = policy.fetch_aptc_tax_credit(sorted_enrollments)
+            slcsp = sorted_enrollments.first.insurance_policy.fetch_slcsp_premium(sorted_enrollments, calendar_month)
             pediatric_dental_pre = sorted_enrollments.first.pediatric_dental_premium(thh_members,
                                                                                      calendar_month)
             total_premium = pre_amt_tot.to_f + pediatric_dental_pre

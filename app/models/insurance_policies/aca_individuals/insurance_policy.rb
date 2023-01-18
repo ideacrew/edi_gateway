@@ -59,6 +59,11 @@ module InsurancePolicies
         (start_date.month..coverage_end_month).include?(month)
       end
 
+      def enrollments_tax_households(enrs_for_month)
+        ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+          .where(:enrollment_id.in => enrs_for_month.pluck(:id))
+      end
+
       def fetch_aptc_tax_credit(enrs_for_month, tax_household = nil)
         applied_aptc = enrs_for_month.map(&:total_premium_adjustment_amount).max
         return format('%.2f', (applied_aptc || 0.0)) if tax_household.blank?
@@ -69,8 +74,7 @@ module InsurancePolicies
 
       def fetch_aptc_from_tax_household(tax_household, enrs_for_month, applied_aptc)
         tax_filer = tax_household.primary
-        enr_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
-                   .where(:enrollment_id.in => enrs_for_month.pluck(:id))
+        enr_thhs = enrollments_tax_households(enrs_for_month)
         enr_thh_for_month = enr_thhs.detect do |enr_thh|
           enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
         end
@@ -78,6 +82,33 @@ module InsurancePolicies
         return applied_aptc || 0.0 if enr_thh_for_month.blank?
 
         enr_thh_for_month.applied_aptc.to_f
+      end
+
+      def fetch_enrollments_tax_households(enrs_for_month)
+        ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+          .where(:enrollment_id.in => enrs_for_month.pluck(:id))
+      end
+
+      def fetch_slcsp_premium(enrs_for_month, calendar_month, tax_household = nil)
+        return 0.0 if term_for_np && policy_end_on.month == calendar_month
+
+        enr_thhs = fetch_enrollments_tax_households(enrs_for_month)
+        slcsp_premium = enr_thhs.map(&:household_benchmark_ehb_premium).compact.sum
+        return format('%.2f', (slcsp_premium || 0.0)) if tax_household.blank?
+
+        slcsp = fetch_slcsp_from_tax_household(tax_household, enr_thhs)
+        format('%.2f', slcsp)
+      end
+
+      def fetch_slcsp_from_tax_household(tax_household, enr_thhs)
+        tax_filer = tax_household.primary
+        enr_thh_for_month = enr_thhs.detect do |enr_thh|
+          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
+        end
+
+        return 0.0 if enr_thh_for_month.blank?
+
+        enr_thh_for_month.household_benchmark_ehb_premium.to_f
       end
 
       # rubocop:disable Metrics/AbcSize

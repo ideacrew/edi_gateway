@@ -69,6 +69,12 @@ module IrsGroups
         household_benchmark_ehb_premium: { cents: enr_thh_reference.household_benchmark_ehb_premium&.cents,
                                            currency_iso: enr_thh_reference.household_benchmark_ehb_premium
                                              &.currency_iso },
+        household_health_benchmark_ehb_premium: { cents: enr_thh_reference.household_health_benchmark_ehb_premium&.cents,
+                                                  currency_iso: enr_thh_reference.household_health_benchmark_ehb_premium
+                                                           &.currency_iso },
+        household_dental_benchmark_ehb_premium: { cents: enr_thh_reference.household_dental_benchmark_ehb_premium&.cents,
+                                                  currency_iso: enr_thh_reference.household_dental_benchmark_ehb_premium
+                                                           &.currency_iso },
         applied_aptc: { cents: enr_thh_reference.applied_aptc&.cents,
                         currency_iso: enr_thh_reference.applied_aptc&.currency_iso },
         available_max_aptc: { cents: enr_thh_reference.available_max_aptc&.cents,

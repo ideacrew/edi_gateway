@@ -23,12 +23,21 @@ module InsurancePolicies
                                                                                                         :enrollment))
         end
 
+        def create_params_hash(params, enrollment_hash, tax_household_hash)
+          {
+            applied_aptc: params[:applied_aptc],
+            available_max_aptc: params[:available_max_aptc],
+            household_benchmark_ehb_premium: params[:household_benchmark_ehb_premium],
+            household_health_benchmark_ehb_premium: params[:household_health_benchmark_ehb_premium],
+            household_dental_benchmark_ehb_premium: params[:household_dental_benchmark_ehb_premium],
+            enrollment_id: enrollment_hash[:id],
+            tax_household_id: tax_household_hash[:id]
+          }
+        end
+
         def create(params, tax_household_hash, enrollment_hash)
           enrollment_thh = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
-                           .create!(applied_aptc: params[:applied_aptc],
-                                    available_max_aptc: params[:available_max_aptc],
-                                    enrollment_id: enrollment_hash[:id],
-                                    tax_household_id: tax_household_hash[:id])
+                           .create!(create_params_hash(params, enrollment_hash, tax_household_hash))
 
           if enrollment_thh.present?
             thh_group_hash = enrollment_thh.as_json(include: [:enrolled_members_tax_household_members]).deep_symbolize_keys
