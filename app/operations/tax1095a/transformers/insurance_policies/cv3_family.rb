@@ -430,7 +430,7 @@ module Tax1095a
           enrolled_members.select { |enr_member| tax_household_members.map(&:person_id).include?(enr_member.person_id) }
         end
 
-
+        # rubocop:disable Metrics/CyclomaticComplexity
         def fetch_tax_household_members(enrollments)
           enrs_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(:enrollment_id.in =>
                                                                                             enrollments.map(&:id))
@@ -438,6 +438,7 @@ module Tax1095a
 
           thhs&.map(&:tax_household_members)&.flatten&.uniq(&:person_id)
         end
+        # rubocop:enable Metrics/CyclomaticComplexity
 
         def fetch_enrolled_thh_members(enrollments, tax_household)
           all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)]
