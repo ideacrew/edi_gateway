@@ -82,7 +82,8 @@ RSpec.shared_context 'one_enrolled_member' do
   end
 
   let!(:enr_thh) do
-    FactoryBot.create(:enrollments_tax_households, enrollment: enrollment, tax_household: tax_household, applied_aptc: 50.0)
+    FactoryBot.create(:enrollments_tax_households, enrollment: enrollment, tax_household: tax_household, applied_aptc: 50.0,
+                      household_benchmark_ehb_premium: 500.0)
   end
   let!(:enr_members_thhm) { FactoryBot.create(:enrolled_members_tax_household_members, enrollments_tax_households: enr_thh) }
   let!(:thh_hash) { tax_households.first }
