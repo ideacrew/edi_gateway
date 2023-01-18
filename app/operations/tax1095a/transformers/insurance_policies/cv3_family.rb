@@ -400,16 +400,21 @@ module Tax1095a
 
             enrolled_members_in_month = fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month,
                                                                                             tax_household)
-            slcsp, pre_amt_tot = enrollments_for_month.first&.fetch_npt_h36_prems(enrolled_members_in_month, month)
+            thh_members = fetch_tax_household_members(enrollments_for_month)
+            pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members,
+                                                                                         month)
+            pre_amt_tot = enrollments_for_month.first&.pre_amt_tot_values(enrolled_members_in_month, month)
             aptc_tax_credit = if tax_household.is_aqhp == true
                                 insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
                               else
                                 insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
                               end
+            slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
+            total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
             {
               month: Date::MONTHNAMES[month],
               coverage_information: { tax_credit: Money.new((BigDecimal(aptc_tax_credit) * 100).round, "USD"),
-                                      total_premium: Money.new((BigDecimal(pre_amt_tot) * 100).round, "USD"),
+                                      total_premium: Money.new((BigDecimal(total_premium) * 100).round, "USD"),
                                       slcsp_benchmark_premium: Money.new((BigDecimal(slcsp) * 100).round, "USD") }
 
             }
@@ -423,6 +428,15 @@ module Tax1095a
           tax_household_members = tax_household.tax_household_members
 
           enrolled_members.select { |enr_member| tax_household_members.map(&:person_id).include?(enr_member.person_id) }
+        end
+
+
+        def fetch_tax_household_members(enrollments)
+          enrs_thhs = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(:enrollment_id.in =>
+                                                                                            enrollments.map(&:id))
+          thhs = ::InsurancePolicies::AcaIndividuals::TaxHousehold.where(:id.in => enrs_thhs.map(&:tax_household_id))
+
+          thhs&.map(&:tax_household_members)&.flatten&.uniq(&:person_id)
         end
 
         def fetch_enrolled_thh_members(enrollments, tax_household)
