@@ -440,10 +440,27 @@ module Tax1095a
         end
         # rubocop:enable Metrics/CyclomaticComplexity
 
+        def fetch_enrollments_tax_households(enrollments)
+          ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
+            .where(:enrollment_id.in => enrollments.pluck(:id))
+        end
+
+        def fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
+          return tax_household.tax_household_members unless tax_household.is_aqhp
+
+          tax_filer = tax_household.primary
+          enr_thh_for_month = enr_thhs.detect do |enr_thh|
+            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
+          end
+          enr_thh_for_month&.tax_household&.tax_household_members || tax_household.tax_household_members
+        end
+
         def fetch_enrolled_thh_members(enrollments, tax_household)
+          enr_thhs = fetch_enrollments_tax_households(enrollments)
           all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)]
                                  .flatten.uniq(&:person_id)
-          thh_members = tax_household.tax_household_members
+
+          thh_members = fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
           all_enrolled_members.select do |member|
             thh_members.map(&:person_id).include?(member.person_id)
           end

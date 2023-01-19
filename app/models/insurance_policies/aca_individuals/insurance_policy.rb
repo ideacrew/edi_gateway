@@ -72,8 +72,14 @@ module InsurancePolicies
         format('%.2f', tax_credit)
       end
 
+      def fetch_tax_filer(tax_household)
+        return tax_household.primary if tax_household.is_aqhp
+
+        tax_household.tax_household_members.detect(&:is_subscriber)
+      end
+
       def fetch_aptc_from_tax_household(tax_household, enrs_for_month, applied_aptc)
-        tax_filer = tax_household.primary
+        tax_filer = fetch_tax_filer(tax_household)
         enr_thhs = enrollments_tax_households(enrs_for_month)
         enr_thh_for_month = enr_thhs.detect do |enr_thh|
           enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
@@ -101,7 +107,9 @@ module InsurancePolicies
       end
 
       def fetch_slcsp_from_tax_household(tax_household, enr_thhs)
-        tax_filer = tax_household.primary
+        return 0.0 unless tax_household.is_aqhp
+
+        tax_filer = fetch_tax_filer(tax_household)
         enr_thh_for_month = enr_thhs.detect do |enr_thh|
           enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
         end

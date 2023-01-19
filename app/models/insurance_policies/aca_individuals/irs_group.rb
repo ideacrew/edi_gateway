@@ -36,15 +36,18 @@ module InsurancePolicies
         end
       end
 
+      def uqhp_tax_households(calendar_year)
+        uqhp_thh_group = tax_household_groups.where(is_aqhp: false)
+        return [tax_household_groups&.all&.last&.tax_households].flatten if uqhp_thh_group.blank?
+
+        [tax_household_groups.where(is_aqhp: false, assistance_year: calendar_year).first.tax_households.last]
+      end
+
       def active_tax_households(calendar_year)
         result = active_thhs_with_tax_filer(calendar_year)
-        if result.present?
-          result.to_a
-        elsif tax_household_groups.where(is_aqhp: false).present?
-          [tax_household_groups.where(is_aqhp: false, assistance_year: calendar_year).first.tax_households.last]
-        else
-          [tax_household_groups.all.last.tax_households].flatten
-        end
+        return result.to_a if result.present?
+
+        uqhp_tax_households(calendar_year)
       end
 
       # rubocop:disable Metrics/AbcSize
