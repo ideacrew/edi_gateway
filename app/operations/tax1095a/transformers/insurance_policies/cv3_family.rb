@@ -29,7 +29,7 @@ module Tax1095a
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           valid_cv3_payload = yield validate_payload(cv3_payload)
           entity_cv3_payload = yield initialize_entity(valid_cv3_payload)
-          yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
+          _result = yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
 
           Success(cv3_payload)
         end
@@ -148,14 +148,21 @@ module Tax1095a
           {
             hbx_id: glue_person.authority_member_id,
             person_name: { first_name: glue_person.name_first, last_name: glue_person.name_last },
-            person_demographics: { gender: authority_member.gender,
-                                   encrypted_ssn: encrypt_ssn(authority_member.ssn),
-                                   dob: authority_member.dob },
+            person_demographics: person_demographics_hash(authority_member),
             person_health: {},
             is_active: true,
             addresses: construct_addresses(insurance_person),
             emails: construct_emails(insurance_person)
           }
+        end
+
+        def person_demographics_hash(authority_member)
+          result =  {
+            gender: authority_member.gender,
+            dob: authority_member.dob
+          }
+          result.merge!(encrypted_ssn: encrypt_ssn(authority_member.ssn)) if authority_member.ssn.present?
+          result
         end
 
         def address_result(result, address, is_contract_holder)
@@ -198,16 +205,17 @@ module Tax1095a
         def construct_contract_holder(contract_holder)
           glue_person = fetch_person_from_glue(contract_holder)
           authority_member = glue_person.authority_member
-          {
+          result =  {
             hbx_id: contract_holder.hbx_id,
             person_name: { first_name: contract_holder.name.first_name,
                            last_name: contract_holder.name.last_name },
-            encrypted_ssn: encrypt_ssn(authority_member.ssn),
             dob: authority_member.dob,
             gender: authority_member.gender,
             addresses: construct_addresses(contract_holder, is_contract_holder: true)
 
           }
+          result.merge!(encrypted_ssn: encrypt_ssn(authority_member.ssn)) if authority_member.ssn.present?
+          result
         end
 
         def construct_insurance_provider(insurance_provider)
@@ -255,10 +263,8 @@ module Tax1095a
         end
 
         def encrypt_ssn(ssn)
-          return unless ssn
-
           result = AcaEntities::Operations::Encryption::Encrypt.new.call({ value: ssn })
-          result.success? ? result.value! : nil
+          result.success? ? result.value! : ""
         end
 
         def construct_enrollments(insurance_policy)
@@ -292,8 +298,8 @@ module Tax1095a
             {
               family_member_reference: { family_member_hbx_id: enrolled_thh_member.person.hbx_id,
                                          relation_with_primary: enrolled_thh_member.relation_with_primary },
-              tax_filer_status: thh_member.tax_filer_status,
-              is_subscriber: thh_member.is_subscriber
+              tax_filer_status: thh_member&.tax_filer_status,
+              is_subscriber: thh_member&.is_subscriber
             }
           end
         end
