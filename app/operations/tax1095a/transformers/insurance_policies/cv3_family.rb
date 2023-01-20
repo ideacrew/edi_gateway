@@ -355,12 +355,14 @@ module Tax1095a
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           tax_households = insurance_policy.irs_group.active_tax_households(insurance_policy.start_on.year)
+          return [] if tax_households.compact.blank?
+
           tax_households.collect do |tax_household|
             months_of_year = construct_coverage_information(insurance_policy, tax_household)
 
             {
               covered_individuals: construct_covered_individuals(enrollments, tax_household),
-              months_of_year: months_of_year,
+              months_of_year: months_of_year.compact,
               annual_premiums: construct_annual_premiums(months_of_year)
             }
           end
@@ -368,6 +370,8 @@ module Tax1095a
 
         def construct_covered_individuals(enrollments, tax_household)
           covered_individuals = fetch_enrolled_thh_members(enrollments, tax_household)
+          return [] if covered_individuals.compact.blank?
+
           covered_individuals.collect do |enrolled_member|
             glue_person = fetch_person_from_glue(enrolled_member.person)
             {
@@ -423,11 +427,12 @@ module Tax1095a
         # rubocop:enable Metrics/MethodLength
 
         def fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month, tax_household)
+          enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
           enrolled_members = [enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)]
                              .flatten.uniq(&:person_id)
-          tax_household_members = tax_household.tax_household_members
+          thh_members = fetch_thh_members_from_enr_thhs(enrs_thhs, tax_household)
 
-          enrolled_members.select { |enr_member| tax_household_members.map(&:person_id).include?(enr_member.person_id) }
+          enrolled_members.select { |enr_member| thh_members.map(&:person_id).include?(enr_member.person_id) }
         end
 
         # rubocop:disable Metrics/CyclomaticComplexity
@@ -445,15 +450,23 @@ module Tax1095a
             .where(:enrollment_id.in => enrollments.pluck(:id))
         end
 
+        # rubocop:disable Metrics/CyclomaticComplexity
+        # rubocop:disable Metrics/PerceivedComplexity
         def fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
+          thh_members_from_enr_thhs = enr_thhs.flat_map(&:tax_household)
+                                              .flat_map(&:tax_household_members).uniq(&:person_id)
+          return thh_members_from_enr_thhs if enr_thhs.present? && !tax_household.is_aqhp
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
           tax_filer = tax_household.primary
           enr_thh_for_month = enr_thhs.detect do |enr_thh|
-            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer.person_id)
+            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
           end
-          enr_thh_for_month&.tax_household&.tax_household_members || tax_household.tax_household_members
+          enr_thh_for_month&.tax_household&.tax_household_members ||
+            thh_members_from_enr_thhs
         end
+        # rubocop:enable Metrics/CyclomaticComplexity
+        # rubocop:enable Metrics/PerceivedComplexity
 
         def fetch_enrolled_thh_members(enrollments, tax_household)
           enr_thhs = fetch_enrollments_tax_households(enrollments)
