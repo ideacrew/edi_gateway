@@ -27,6 +27,7 @@ module InsurancePolicies
       field :ssn, type: String
       field :dob, type: Date, as: :date_of_birth
       field :gender, type: String
+      field :tobacco_use, type: String, default: 'NA'
 
       # VLP, American Indian
       # embeds_many :aca_individuals_eligibilities

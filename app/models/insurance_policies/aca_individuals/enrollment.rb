@@ -81,6 +81,12 @@ module InsurancePolicies
                                                                           month: calendar_month }).value!.to_f
       end
       # rubocop:enable Metrics/AbcSize
+
+      def enrolled_member_by_hbx_id(hbx_id)
+        [[subscriber] + dependents].flatten.detect do |enrollee|
+          enrollee.person.hbx_id == hbx_id
+        end
+      end
     end
   end
 end

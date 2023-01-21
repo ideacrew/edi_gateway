@@ -68,12 +68,19 @@ module IrsGroups
         is_subscriber: enr_member.is_subscriber,
         coverage_start_on: enr_member.coverage_start_on,
         coverage_end_on: enr_member.coverage_end_on,
-        eligibility_date: enr_member.eligibility_date
+        eligibility_date: enr_member.eligibility_date,
+        tobacco_use: enr_member.tobacco_use
       }
       if enr_member.slcsp_member_premium.present?
         result.merge!(slcsp_member_premium: { cents: enr_member.slcsp_member_premium&.cents,
                                               currency_iso: enr_member.slcsp_member_premium&.currency_iso })
       end
+
+      if enr_member.tobacco_use == "Y"
+        result.merge!(non_tobacco_use_premium: { cents: enr_member.non_tobacco_use_premium&.cents,
+                                                 currency_iso: enr_member.non_tobacco_use_premium&.currency_iso })
+      end
+
       result
     end
 
@@ -133,6 +140,18 @@ module IrsGroups
                                    effectuated_on: ea_enrollment.effective_on,
                                    end_on: ea_enrollment.terminated_on,
                                    aasm_state: ea_enrollment.aasm_state)
+
+      ea_enrollment.hbx_enrollment_members.each do |enrollment_member|
+        next unless enrollment_member.tobacco_use = "Y"
+        hbx_id = enrollment_member.family_member_reference.family_member_hbx_id
+        if enrolled_member = insurance_enrollment.enrolled_member_by_hbx_id(hbx_id)
+          enrolled_member.tobacco_use = "Y"
+          enrolled_member.premium_schedule.non_tobacco_use_premium = { cents: enrollment_member.non_tobacco_use_premium&.cents,
+                                                                       currency_iso: enrollment_member.non_tobacco_use_premium&.currency_iso }
+          enrolled_member.save
+        end
+      end
+      insurance_enrollment.save
       Success(insurance_enrollment.to_hash)
     end
 

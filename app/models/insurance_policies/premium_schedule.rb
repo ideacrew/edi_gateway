@@ -12,6 +12,7 @@ module InsurancePolicies
     field :premium_amount, type: Money
     field :benchmark_ehb_premium_amount, type: Money
     field :next_due_on, type: Date
+    field :non_tobacco_use_premium, type: Money
 
     # embeds_many :premium_adjustments, class_name: 'InsurancePolicies::PremiumAdjustment'
   end

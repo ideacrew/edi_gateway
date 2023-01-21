@@ -28,7 +28,7 @@ module InsurancePolicies
           ::InsurancePolicies::AcaIndividuals::Enrollment.where(hbx_id: enrollment_hash[:hbx_id]).first
         end
 
-        def initialize_enrolled_member(glue_enrollee, person_id, slcsp_member_premium)
+        def initialize_enrolled_member(glue_enrollee, person_id, slcsp_member_premium, non_tobacco_use_premium = nil)
           ::InsurancePolicies::AcaIndividuals::EnrolledMember
             .new(ssn: glue_enrollee.person.authority_member.ssn,
                  dob: glue_enrollee.person.authority_member.dob,
@@ -36,19 +36,24 @@ module InsurancePolicies
                  relation_with_primary: glue_enrollee.rel_code,
                  person_id: person_id,
                  premium_schedule: { premium_amount: glue_enrollee.pre_amt,
-                                     benchmark_ehb_premium_amount: slcsp_member_premium })
+                                     benchmark_ehb_premium_amount: slcsp_member_premium,
+                                     non_tobacco_use_premium: non_tobacco_use_premium })
         end
 
         def store_enrolled_member(enrollment, glue_enrollee, person_hash, validated_params)
+          enrolled_member = initialize_enrolled_member(
+                                                        glue_enrollee,
+                                                        person_hash[:id],
+                                                        validated_params[:slcsp_member_premium],
+                                                        validated_params[:non_tobacco_use_premium]
+                                                      )
+
           case @type
           when "subscriber"
-            initialize_enrolled_member(glue_enrollee, person_hash[:id], validated_params[:slcsp_member_premium])
-            enrollment.subscriber = initialize_enrolled_member(glue_enrollee, person_hash[:id],
-                                                               validated_params[:slcsp_member_premium])
+            enrollment.subscriber = enrolled_member
             enrollment.save!
           when "dependent"
-            enrollment.dependents << initialize_enrolled_member(glue_enrollee, person_hash[:id],
-                                                                validated_params[:slcsp_member_premium])
+            enrollment.dependents << enrolled_member
           end
           enrollment
         end
