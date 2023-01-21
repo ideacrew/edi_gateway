@@ -31,8 +31,9 @@ module InsurancePolicies
       end
 
       def active_thhs_with_tax_filer(calendar_year)
-        active_tax_household_group(calendar_year)&.tax_households&.select do |thh|
-          thh if thh.tax_household_members.where(tax_filer_status: "tax_filer").present?
+        irs_group.active_tax_household_group(calendar_year)&.tax_households&.select do |thh|
+          thh if thh.tax_household_members.where(tax_filer_status: "tax_filer").present? ||
+                 thh.tax_household_members.where(is_medicaid_chip_eligible: true).present?
         end
       end
 

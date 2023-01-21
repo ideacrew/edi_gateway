@@ -299,7 +299,7 @@ module Tax1095a
               family_member_reference: { family_member_hbx_id: enrolled_thh_member.person.hbx_id,
                                          relation_with_primary: enrolled_thh_member.relation_with_primary },
               tax_filer_status: thh_member&.tax_filer_status,
-              is_subscriber: thh_member&.is_subscriber
+              is_subscriber: thh_member&.is_subscriber || false
             }
           end
         end
