@@ -358,12 +358,21 @@ module Tax1095a
           false
         end
 
+        def any_thh_members_enrolled?(tax_household, enrs)
+          all_enrolled_members = enrs.flat_map(&:subscriber) + enrs.flat_map(&:dependents)
+          tax_household.tax_household_members.any? do |member|
+            all_enrolled_members.map(&:person_id).uniq.include?(member.person_id)
+          end
+        end
+
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           tax_households = insurance_policy.irs_group.active_tax_households(insurance_policy.start_on.year)
           return [] if tax_households.compact.blank?
 
           tax_households.collect do |tax_household|
+            next unless any_thh_members_enrolled?(tax_household, enrollments)
+
             months_of_year = construct_coverage_information(insurance_policy, tax_household)
 
             {
