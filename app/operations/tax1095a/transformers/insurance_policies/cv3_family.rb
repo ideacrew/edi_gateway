@@ -374,13 +374,12 @@ module Tax1095a
             next unless any_thh_members_enrolled?(tax_household, enrollments)
 
             months_of_year = construct_coverage_information(insurance_policy, tax_household)
-
             {
               covered_individuals: construct_covered_individuals(enrollments, tax_household),
               months_of_year: months_of_year.compact,
               annual_premiums: construct_annual_premiums(months_of_year)
             }
-          end
+          end.compact
         end
 
         def construct_covered_individuals(enrollments, tax_household)
