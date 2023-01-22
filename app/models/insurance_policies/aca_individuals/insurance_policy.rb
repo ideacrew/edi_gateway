@@ -107,7 +107,7 @@ module InsurancePolicies
       end
 
       def fetch_slcsp_from_tax_household(tax_household, enr_thhs)
-        return 0.0 unless tax_household.is_aqhp
+        return 0.0 unless enr_thhs.any? { |enr_thh| enr_thh.tax_household.is_aqhp == true }
 
         tax_filer = fetch_tax_filer(tax_household)
         enr_thh_for_month = enr_thhs.detect do |enr_thh|
