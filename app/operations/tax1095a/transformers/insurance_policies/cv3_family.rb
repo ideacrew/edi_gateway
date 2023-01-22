@@ -421,12 +421,10 @@ module Tax1095a
             thh_members = fetch_tax_household_members(enrollments_for_month)
             pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members,
                                                                                          month)
-            pre_amt_tot = enrollments_for_month.first&.pre_amt_tot_values(enrolled_members_in_month, month)
-            aptc_tax_credit = if tax_household.is_aqhp == true
-                                insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
-                              else
-                                insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
-                              end
+
+            pre_amt_tot = calcuate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
+            aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month)
+
             slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
             total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
             {
@@ -438,7 +436,43 @@ module Tax1095a
             }
           end
         end
+
         # rubocop:enable Metrics/MethodLength
+        def calcuate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, calender_month)
+          return format('%.2f', 0.0) if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
+
+          calender_month_begin = Date.new(insurance_policy.start_on.year, calender_month, 1)
+          calender_month_end = calender_month_begin.end_of_month
+          end_of_year = insurance_policy.start_on.end_of_year
+          calender_month_days = (calender_month_begin..calender_month_end).count
+          enrolled_members_in_month = get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
+
+          premium_amount = enrolled_members_in_month.sum do |enrolled_member|
+            enrollment = enrolled_member.aca_individuals_enrollment
+            premium_schedule = enrolled_member.premium_schedule
+
+            member_start_on = [enrollment.start_on, calender_month_begin].max
+            member_end_on   = [enrollment.end_on || end_of_year, calender_month_end].min
+            coverage_days   = (member_start_on..member_end_on).count
+            premium_rate    = enrolled_member.tobacco_use == 'Y' ? premium_schedule.non_tobacco_use_premium : premium_schedule.premium_amount
+
+            if calender_month_days == coverage_days
+              premium_rate
+            else
+              (premium_rate.to_f / calender_month_days) * coverage_days
+            end
+          end.round(2)
+
+          format('%.2f', (premium_amount * insurance_policy.insurance_product.ehb))
+        end
+
+        def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
+          enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
+          enrolled_members = [enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)]
+                             .flatten
+          thh_members = fetch_thh_members_from_enr_thhs(enrs_thhs, tax_household)
+          enrolled_members.select { |enr_member| thh_members.map(&:person_id).include?(enr_member.person_id) }
+        end
 
         def fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)

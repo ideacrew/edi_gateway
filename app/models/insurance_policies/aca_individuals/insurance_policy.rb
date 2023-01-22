@@ -64,6 +64,33 @@ module InsurancePolicies
           .where(:enrollment_id.in => enrs_for_month.pluck(:id))
       end
 
+      def applied_aptc_amount_for(enrollments_for_month, calender_month)
+        en_tax_households = enrollments_tax_households(enrollments_for_month)
+        return format('%.2f', 0.0) if en_tax_households.none?{|en_tax_household| en_tax_household.tax_household.is_aqhp == true}
+
+        calender_month_begin = Date.new(start_on.year, calender_month, 1)
+        calender_month_end = calender_month_begin.end_of_month
+        end_of_year = start_on.end_of_year
+        calender_month_days = (calender_month_begin..calender_month_end).count
+
+
+        total_aptc_amount = en_tax_households.sum do |en_tax_household|
+          enrollment = en_tax_household.enrollment
+
+          en_month_start_on = [enrollment.start_on, calender_month_begin].max
+          en_month_end_on   = [enrollment.end_on || end_of_year, calender_month_end].min
+          en_coverage_days  = (en_month_start_on..en_month_end_on).count
+
+          if calender_month_days == en_coverage_days
+            en_tax_household.applied_aptc
+          else
+            (en_tax_household.applied_aptc.to_f / calender_month_days) * en_coverage_days
+          end
+        end
+
+        format('%.2f', total_aptc_amount)
+      end
+
       def fetch_aptc_tax_credit(enrs_for_month, tax_household = nil)
         applied_aptc = enrs_for_month.map(&:total_premium_adjustment_amount).max
         return format('%.2f', (applied_aptc || 0.0)) if tax_household.blank?
