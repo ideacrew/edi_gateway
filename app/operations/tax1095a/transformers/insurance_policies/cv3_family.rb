@@ -422,7 +422,7 @@ module Tax1095a
             pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members,
                                                                                          month)
 
-            pre_amt_tot = calcuate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
+            pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
             aptc_tax_credit = if tax_household.is_aqhp == true
                                 insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
                               else
@@ -445,10 +445,10 @@ module Tax1095a
 
         # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/PerceivedComplexity
-        def calcuate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, calender_month)
+        def calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, calendar_month)
           return format('%.2f', 0.0) if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
 
-          calender_month_begin = Date.new(insurance_policy.start_on.year, calender_month, 1)
+          calender_month_begin = Date.new(insurance_policy.start_on.year, calendar_month, 1)
           calender_month_end = calender_month_begin.end_of_month
           end_of_year = insurance_policy.start_on.end_of_year
           calender_month_days = (calender_month_begin..calender_month_end).count
