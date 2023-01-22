@@ -59,6 +59,7 @@ module IrsGroups
       end
     end
 
+    # rubocop:disable Metrics/MethodLength
     def enr_member_hash(enr_member)
       result = {
         family_member_reference: {
@@ -84,7 +85,6 @@ module IrsGroups
       result
     end
 
-    # rubocop:disable Metrics/MethodLength
     def build_product_reference(product_reference)
       result = {
         hios_id: product_reference.hios_id,
@@ -132,6 +132,7 @@ module IrsGroups
                                 primary_enrollee_many_dependent: family_rated_premiums.primary_enrollee_many_dependent)
     end
 
+    # rubocop:disable Metrics/MethodLength
     def update_enrollment(ea_enrollment)
       insurance_enrollment = ::InsurancePolicies::AcaIndividuals::Enrollment
                              .where(hbx_id: ea_enrollment.hbx_id).first
@@ -142,20 +143,23 @@ module IrsGroups
                                    aasm_state: ea_enrollment.aasm_state)
 
       ea_enrollment.hbx_enrollment_members.each do |enrollment_member|
-        next unless enrollment_member.tobacco_use = "Y"
+        next unless enrollment_member.tobacco_use == "Y"
+
         hbx_id = enrollment_member.family_member_reference.family_member_hbx_id
-        if enrolled_member = insurance_enrollment.enrolled_member_by_hbx_id(hbx_id)
-          enrolled_member.tobacco_use = "Y"
-          enrolled_member.premium_schedule.non_tobacco_use_premium = { cents: enrollment_member.non_tobacco_use_premium&.cents,
-                                                                       currency_iso: enrollment_member.non_tobacco_use_premium&.currency_iso }
-          enrolled_member.save
-        end
+        enrolled_member = insurance_enrollment.enrolled_member_by_hbx_id(hbx_id)
+        next unless enrolled_member.present?
+
+        enrolled_member.tobacco_use = "Y"
+        enrolled_member.premium_schedule.non_tobacco_use_premium = {
+          cents: enrollment_member.non_tobacco_use_premium&.cents,
+          currency_iso: enrollment_member.non_tobacco_use_premium&.currency_iso
+        }
+        enrolled_member.save
       end
       insurance_enrollment.save
       Success(insurance_enrollment.to_hash)
     end
 
-    # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
     def persist_enrollments

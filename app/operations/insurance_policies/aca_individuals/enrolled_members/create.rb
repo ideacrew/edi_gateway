@@ -42,11 +42,11 @@ module InsurancePolicies
 
         def store_enrolled_member(enrollment, glue_enrollee, person_hash, validated_params)
           enrolled_member = initialize_enrolled_member(
-                                                        glue_enrollee,
-                                                        person_hash[:id],
-                                                        validated_params[:slcsp_member_premium],
-                                                        validated_params[:non_tobacco_use_premium]
-                                                      )
+            glue_enrollee,
+            person_hash[:id],
+            validated_params[:slcsp_member_premium],
+            validated_params[:non_tobacco_use_premium]
+          )
 
           case @type
           when "subscriber"
