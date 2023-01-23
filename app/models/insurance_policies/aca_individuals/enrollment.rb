@@ -67,18 +67,19 @@ module InsurancePolicies
       end
 
       def fetch_eligible_enrollees(tax_household_members)
-        thh_members = tax_household_members.reject { |member| member.is_medicaid_chip_eligible == true }
-        thh_mem_person_hbx_ids = thh_members.map(&:person).map(&:hbx_id)
+        thh_mem_person_hbx_ids = tax_household_members.map(&:person).map(&:hbx_id)
         [[subscriber] + dependents].flatten.select do |enrollee|
           thh_mem_person_hbx_ids.include?(enrollee.person.hbx_id)
         end
       end
 
       def pediatric_dental_premium(tax_household_members, calendar_month)
-        return 0.0 if thh_members.empty?
         return 0.0 if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
 
-        eligible_enrollees = fetch_eligible_enrollees(tax_household_members)
+        thh_members = tax_household_members.reject { |member| member.is_medicaid_chip_eligible == true }
+        return 0.0 if thh_members.empty?
+
+        eligible_enrollees = fetch_eligible_enrollees(thh_members)
         return 0.0 if eligible_enrollees.empty?
 
         ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ enrollment: self,
