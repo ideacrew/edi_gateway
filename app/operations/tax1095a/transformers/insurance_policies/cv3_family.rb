@@ -220,7 +220,7 @@ module Tax1095a
 
         def construct_insurance_provider(insurance_provider)
           {
-            title: insurance_provider.issuer_me_name,
+            title: insurance_provider.title,
             hios_id: insurance_provider.hios_id,
             fein: insurance_provider.fein,
             insurance_products: construct_insurance_products(insurance_provider.insurance_products)
