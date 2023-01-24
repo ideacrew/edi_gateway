@@ -21,10 +21,8 @@ module Tax1095a
       values = yield validate(params)
       irs_groups = yield fetch_irs_groups(values)
       irs_group_exclusion_set = yield build_irs_groups_to_exclude(values)
-
-      yield publish(irs_groups, values, irs_group_exclusion_set)
-
-      Success(true)
+      result = yield process(irs_groups, values, irs_group_exclusion_set)
+      Success(result)
     end
 
     private
@@ -40,7 +38,7 @@ module Tax1095a
     end
 
     def fetch_irs_groups(values)
-      query = query_criteria(tax_year, instance_eval(PRODUCT_CRITERIA[values[:tax_form_type]]))
+      query = query_criteria(values[:tax_year], instance_eval(PRODUCT_CRITERIA[values[:tax_form_type]]))
       policies = InsurancePolicies::AcaIndividuals::InsurancePolicy.where(query)
       irs_groups = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(:_id.in => policies&.pluck(:irs_group_id)&.uniq)
 
@@ -66,7 +64,7 @@ module Tax1095a
     def build_irs_groups_to_exclude(values)
       ids = People::Person.where(:hbx_id.in => values[:exclusion_list]).pluck(:_id)
       insurance_policies = InsurancePolicies::InsuranceAgreement.where(:contract_holder_id.in => ids).flat_map(&:insurance_policies)
-      
+
       irs_group_exclusion_set = insurance_policies.inject({}) do |irs_group_exclusion_set, insurance_policy|
         irs_group_exclusion_set[insurance_policy.irs_group.irs_group_id] = insurance_policy.policy_id
         irs_group_exclusion_set
@@ -103,7 +101,7 @@ module Tax1095a
         p "Processed #{query_offset} irs_groups."
       end
 
-      Success(response)
+      Success(true)
     end
   end
 end

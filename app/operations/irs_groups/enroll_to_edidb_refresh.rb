@@ -98,7 +98,7 @@ module IrsGroups
         p "Processed #{query_offset} people."
       end
 
-      Success(response)
+      Success(true)
     end
   end
 end

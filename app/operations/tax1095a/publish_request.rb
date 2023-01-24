@@ -10,19 +10,16 @@ module Tax1095a
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
 
-    IVL_TAX Corrected_IVL_TAX IVL_VTA IVL_CAP
-
     REGISTERED_EVENTS = {
-      'IVL_TAX' => 'insurance_policies.tax1095a_payload.requested'
-                  #  families.tax_form1095a.initial_payload_generated
-      'IVL_VTA' => 'families.tax_form1095a.void_payload_generated'
-      'Corrected_IVL_TAX' => 'families.tax_form1095a.corrected_payload_generated'
+      'IVL_TAX' => 'insurance_policies.tax1095a_payload.requested',
+      'IVL_VTA' => 'families.tax_form1095a.void_payload_generated',
+      'Corrected_IVL_TAX' => 'families.tax_form1095a.corrected_payload_generated',
       'IVL_CAP' => 'families.tax_form1095a.catastrophic_payload_generated'
-    }
+    }.freeze
 
     def call(params)
       values = yield validate(params)
-      event  = yield build_event(payload)
+      event  = yield build_event(values)
       result = yield publish(event)
 
       Success(result)
@@ -34,18 +31,18 @@ module Tax1095a
       errors = []
       errors << "tax_year required" unless params[:tax_year]
       errors << "tax_form_type required" unless params[:tax_form_type]
-      errors << "irs_group_id required" unless params[:irs_group_id]
+      errors << "cv3_payload required" unless params[:cv3_payload]
 
       errors.empty? ? Success(params) : Failure(errors)
     end
 
     def build_event(values)
-      event_name = REGISTERED_EVENTS[values[:tax_form_type]]
-      event("events.#{@event_name}", attributes: { 
-                                                   tax_year: values[:tax_year],
-                                                   tax_form_type: values[:tax_form_type],
-                                                   irs_group_id: values[:irs_group_id]
-                                                 })
+      @event_name = REGISTERED_EVENTS[values[:tax_form_type]]
+      event("events.#{@event_name}", attributes: {
+              tax_year: values[:tax_year],
+              tax_form_type: values[:tax_form_type],
+              cv3_payload: values[:cv3_payload]
+            })
     end
 
     def publish(event)

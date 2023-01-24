@@ -66,7 +66,7 @@ module IrsGroups
         p "Processed #{query_offset} policies."
       end
 
-      Success(response)
+      Success(true)
     end
   end
 end

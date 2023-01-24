@@ -15,7 +15,7 @@ module Subscribers
                         #{delivery_info} routing_key: #{routing_key}"
           payload = JSON.parse(response, symbolize_names: true)
           result = ::Tax1095a::FetchAndPublishIrsGroups.new.call({ tax_year: payload[:tax_year],
-                                                                   tax_form_type: payload[:tax_form_type]
+                                                                   tax_form_type: payload[:tax_form_type],
                                                                    exclusion_list: payload[:exclusion_list] || [] })
 
           if result.success?

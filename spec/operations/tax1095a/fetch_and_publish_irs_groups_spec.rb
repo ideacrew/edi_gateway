@@ -8,7 +8,7 @@ RSpec.describe ::Tax1095a::FetchAndPublishIrsGroups do
 
   describe 'with valid params' do
     before :each do
-      @valid_result = subject.call({ tax_year: start_on.year, tax_form_type: "IVL_TAX" })
+      @valid_result = subject.call({ tax_year: start_on.year, tax_form_type: "IVL_TAX", exclusion_list: [] })
     end
 
     it 'should publish the event' do
@@ -18,7 +18,7 @@ RSpec.describe ::Tax1095a::FetchAndPublishIrsGroups do
 
   describe 'with invalid params' do
     before :each do
-      @invalid_result = subject.call({ tax_year: start_on.year, tax_form_type: "" })
+      @invalid_result = subject.call({ tax_year: start_on.year, tax_form_type: "", exclusion_list: [] })
     end
 
     it 'should return failure' do
