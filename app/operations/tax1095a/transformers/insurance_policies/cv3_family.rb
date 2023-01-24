@@ -423,13 +423,13 @@ module Tax1095a
                                                                                          month)
 
             pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
-            aptc_tax_credit = if tax_household.is_aqhp == true
-                                insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
-                              else
-                                insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
-                              end
+            # aptc_tax_credit = if tax_household.is_aqhp == true
+            #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
+            #                   else
+            #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
+            #                   end
 
-            # aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month)
+            aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month)
 
             slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
             total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
@@ -552,8 +552,7 @@ module Tax1095a
           cv3_payload = JSON.parse(entity_cv3_payload.to_hash.to_json)
           event_name = MAP_FORM_TYPE_TO_EVENT[tax_form_type]
           event_key = "families.tax_form1095a.#{event_name}"
-          params = { payload: { tax_year: tax_year, tax_form_type: tax_form_type, cv3_payload: cv3_payload },
-                     event_name: event_key }
+          params = { tax_year: tax_year, tax_form_type: tax_form_type, cv3_payload: cv3_payload }
           result = ::Tax1095a::PublishRequest.new.call(params)
 
           if result.failure?
