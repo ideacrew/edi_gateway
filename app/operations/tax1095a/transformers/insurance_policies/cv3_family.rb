@@ -423,13 +423,13 @@ module Tax1095a
                                                                                          month)
 
             pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
-            aptc_tax_credit = if tax_household.is_aqhp == true
-                                insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
-                              else
-                                insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
-                              end
+            # aptc_tax_credit = if tax_household.is_aqhp == true
+            #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
+            #                   else
+            #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
+            #                   end
 
-            # aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month)
+            aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month)
 
             slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
             total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
