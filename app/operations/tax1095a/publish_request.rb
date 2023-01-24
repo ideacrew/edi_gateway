@@ -37,8 +37,8 @@ module Tax1095a
     end
 
     def build_event(values)
-      @event_name = REGISTERED_EVENTS[values[:tax_form_type]]
-      event("events.#{@event_name}", attributes: {
+      event_name = REGISTERED_EVENTS[values[:tax_form_type]]
+      event("events.#{event_name}", attributes: {
               tax_year: values[:tax_year],
               tax_form_type: values[:tax_form_type],
               cv3_payload: values[:cv3_payload]
@@ -48,7 +48,7 @@ module Tax1095a
     def publish(event)
       event.publish
 
-      Success("Successfully published the payload for event: #{@event_name}")
+      Success("Successfully published the payload for event: #{event.name}")
     end
   end
 end
