@@ -52,6 +52,8 @@ module IrsGroups
 
     def no_eligible_enrolled_members_on_dental_policy(dental_policy, enrolled_people, month)
       dental_enrollment = dental_enrollment_for(dental_policy, month)
+      return true if dental_enrollment.blank?
+
       enrolled_people_hbx_ids = enrolled_people.flat_map(&:person).flat_map(&:hbx_id).uniq
       [[dental_enrollment.subscriber] + dental_enrollment.dependents].flatten.none? do |enrollee|
         enrolled_people_hbx_ids.include?(enrollee.person.hbx_id)
