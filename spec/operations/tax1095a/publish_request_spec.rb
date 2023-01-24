@@ -5,7 +5,7 @@ RSpec.describe ::Tax1095a::PublishRequest do
 
   context 'with valid params' do
     before :each do
-      @valid_result = subject.call({ tax_year: 2023, tax_form_type: "IVL_TAX", irs_group_id: "123456" })
+      @valid_result = subject.call({ tax_year: 2023, tax_form_type: "IVL_TAX", cv3_payload: "123456" })
     end
 
     it 'should publish the event' do
@@ -15,7 +15,7 @@ RSpec.describe ::Tax1095a::PublishRequest do
 
   context 'with invalid params' do
     before :each do
-      @invalid_result = subject.call({ tax_year: 2023, tax_form_type: "IVL_TEXT", irs_group_id: "123456" })
+      @invalid_result = subject.call({ tax_year: 2023, tax_form_type: "IVL_TEXT", cv3_payload: "123456" })
     end
 
     it 'should return failure' do
