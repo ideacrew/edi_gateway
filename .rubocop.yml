@@ -21,6 +21,9 @@ Metrics/BlockLength:
 Metrics/MethodLength:
   Max: 15
 
+Metrics/ClassLength:
+  Max: 300
+
 Naming/PredicateName:
   Enabled: false
 

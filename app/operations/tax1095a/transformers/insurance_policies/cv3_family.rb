@@ -220,7 +220,7 @@ module Tax1095a
 
         def construct_insurance_provider(insurance_provider)
           {
-            title: insurance_provider.issuer_me_name,
+            title: insurance_provider.title,
             hios_id: insurance_provider.hios_id,
             fein: insurance_provider.fein,
             insurance_products: construct_insurance_products(insurance_provider.insurance_products)
@@ -416,13 +416,13 @@ module Tax1095a
                                     .enrollments_for_month(month, insurance_policy.start_on.year, [insurance_policy])
             next if enrollments_for_month.blank?
 
-            enrolled_members_in_month = fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month,
-                                                                                            tax_household)
+            _enrolled_members_in_month = fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month,
+                                                                                             tax_household)
             thh_members = fetch_tax_household_members(enrollments_for_month)
             pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members,
                                                                                          month)
 
-            pre_amt_tot = calcuate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
+            pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
             aptc_tax_credit = if tax_household.is_aqhp == true
                                 insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
                               else
@@ -443,11 +443,12 @@ module Tax1095a
           end
         end
 
-        # rubocop:enable Metrics/MethodLength
-        def calcuate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, calender_month)
+        # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Metrics/PerceivedComplexity
+        def calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, calendar_month)
           return format('%.2f', 0.0) if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
 
-          calender_month_begin = Date.new(insurance_policy.start_on.year, calender_month, 1)
+          calender_month_begin = Date.new(insurance_policy.start_on.year, calendar_month, 1)
           calender_month_end = calender_month_begin.end_of_month
           end_of_year = insurance_policy.start_on.end_of_year
           calender_month_days = (calender_month_begin..calender_month_end).count
@@ -460,7 +461,11 @@ module Tax1095a
             member_start_on = [enrollment.start_on, calender_month_begin].max
             member_end_on   = [enrollment.end_on || end_of_year, calender_month_end].min
             coverage_days   = (member_start_on..member_end_on).count
-            premium_rate    = enrolled_member.tobacco_use == 'Y' ? premium_schedule.non_tobacco_use_premium : premium_schedule.premium_amount
+            premium_rate    = if enrolled_member.tobacco_use == 'Y'
+                                premium_schedule.non_tobacco_use_premium
+                              else
+                                premium_schedule.premium_amount
+                              end
 
             if calender_month_days == coverage_days
               premium_rate
@@ -471,6 +476,8 @@ module Tax1095a
 
           format('%.2f', (premium_amount * insurance_policy.insurance_product.ehb))
         end
+        # rubocop:enable Metrics/MethodLength
+        # rubocop:enable Metrics/PerceivedComplexity
 
         def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)

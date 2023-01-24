@@ -73,7 +73,7 @@
                         ]
                     },
                     "insurance_provider": {
-                        "title": "ANTHEM HEALTH PLANS OF MAINE",
+                        "title": "ABC carrier",
                         "hios_id": "123456",
                         "fein": "311705652",
                         "insurance_products": [

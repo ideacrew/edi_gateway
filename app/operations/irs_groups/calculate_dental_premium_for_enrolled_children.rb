@@ -30,6 +30,9 @@ module IrsGroups
       @enrollment = validated_params[:enrollment]
       dental_policy = fetch_dental_policy
       return Success(0.0) if dental_policy.blank?
+      return Success(0.0) if no_eligible_enrolled_members_on_dental_policy(dental_policy,
+                                                                           validated_params[:enrolled_people],
+                                                                           validated_params[:month])
 
       @child_members = fetch_children_from_dental_enrollment(dental_policy, validated_params[:month])
       return Success(0.0) if @child_members.blank?
@@ -44,6 +47,16 @@ module IrsGroups
       else
         # 'Family-Tier Rates'
         family_tier_total_premium(dental_product)
+      end
+    end
+
+    def no_eligible_enrolled_members_on_dental_policy(dental_policy, enrolled_people, month)
+      dental_enrollment = dental_enrollment_for(dental_policy, month)
+      return true if dental_enrollment.blank?
+
+      enrolled_people_hbx_ids = enrolled_people.flat_map(&:person).flat_map(&:hbx_id).uniq
+      [[dental_enrollment.subscriber] + dental_enrollment.dependents].flatten.none? do |enrollee|
+        enrolled_people_hbx_ids.include?(enrollee.person.hbx_id)
       end
     end
 
