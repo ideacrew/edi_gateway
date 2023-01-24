@@ -7,11 +7,9 @@ module IrsGroups
     include EventSource::Command
 
     def call(params)
-      validated_params = yield validate(params)
-      policies = yield fetch_glue_policies_for_year(validated_params)
-      insurance_policies = yield fetch_insurance_policies(policies)
-      contract_holder_ids = yield fetch_contract_holders(insurance_policies)
-      result = yield fetch_cv3_family(contract_holder_ids, params)
+      values = yield validate(params)
+      result = yield publish_families_refresh(values)
+
       Success(result)
     end
 
@@ -19,64 +17,30 @@ module IrsGroups
 
     def validate(params)
       errors = []
-      errors << "start_date #{params[:start_date]} is not a valid Date" unless params[:start_date].is_a?(Date)
-      errors << "end_date #{params[:end_date]} is not a valid Date" unless params[:end_date].is_a?(Date)
+      errors << "calendar_year required" unless params[:calendar_year]
+      errors << "people required and must be an array" unless params[:people].is_a?(Array)
+      errors << "people_to_exclude required and must be an hash" unless params[:people_to_exclude].is_a?(Hash)
 
       errors.empty? ? Success(params) : Failure(errors)
     end
 
-    def fetch_glue_policies_for_year(params)
-      Success(Policy.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => params[:start_date],
-                                                                                  :'$lt' => params[:end_date] } } }))
-    end
-
-    def fetch_insurance_policies(policies)
-      glue_policy_ids = policies.pluck(:eg_id)
-      Success(InsurancePolicies::AcaIndividuals::InsurancePolicy.where(:policy_id.in => glue_policy_ids))
-    end
-
-    def fetch_contract_holders(insurance_policies)
-      insurance_policy_ids = insurance_policies.pluck(:policy_id)
-      contract_holder_ids = contract_holder_ids_query(insurance_policy_ids)
-      Success(contract_holder_ids)
-    end
-
-    def contract_holder_ids_query(insurance_policy_ids)
-      InsurancePolicies::InsuranceAgreement.collection.aggregate([{ '$lookup' =>
-                                                      { from: 'insurance_policies_aca_individuals_insurance_policies',
-                                                        localField: '_id',
-                                                        foreignField: "insurance_agreement_id",
-                                                        as: 'insurance_policies' } },
-                                                                  { '$match' => {
-                                                                    'insurance_policies.policy_id' =>
-                                                                      { "$in" => insurance_policy_ids }
-                                                                  } },
-                                                                  { '$project' => {
-                                                                    contract_holder_id: 1
-                                                                  } }], { allowDiskUse: true }).map do |rec|
-        rec["contract_holder_id"]
-      end
-    end
-
     # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
-    def fetch_cv3_family(contract_holder_ids, params)
+    def publish_families_refresh(values)
       logger = Logger.new("#{Rails.root}/log/enroll_batch_refresh_director_#{Date.today.strftime('%Y_%m_%d')}.log")
-      total_people_count = contract_holder_ids.uniq.count
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
-      contract_holder_ids.uniq.each do |id|
-        person = People::Person.find(id)
-        EnrollFamilyRefreshDirector.new.call({primary_hbx_id: person.hbx_id,  calender_year: params[:start_date].year})
+      values[:people].each do |person_hbx_id|
+        if values[:people_to_exclude].has_key?(person_hbx_id)
+          logger.info("skipped #{person_hbx_id} since its in the exclusion list")
+          next
+        end
+        EnrollFamilyRefreshDirector.new.call({primary_hbx_id: person_hbx_id,  calendar_year: values[:calendar_year]})
         counter += 1
-        logger.info("published #{counter} out of #{total_people_count}") if (counter % 100).zero?
-      rescue StandardError => e
-        logger.info("unable to publish member with id #{id} due to #{e.inspect}")
+        logger.info("published #{counter} out of #{values[:people].count}") if (counter % 100).zero?
       end
       logger.info("Operation ended at #{DateTime.now} ")
-      Success("requested cv3 family for all people")
+      Success("published all people")
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
   end
 end
+
