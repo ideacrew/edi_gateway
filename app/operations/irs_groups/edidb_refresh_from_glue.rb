@@ -2,12 +2,12 @@
 
 module IrsGroups
   # Refresh EDI gateway database with policy information
-  class GlueRefresh
+  class EdidbRefreshFromGlue
     include Dry::Monads[:result, :do, :try]
     PROCESSING_BATCH_SIZE = 5000
 
     def call(params)
-      values = yield validate(params)
+      values   = yield validate(params)
       policies = yield fetch_glue_policies_for_year(values)
       exclusion_policies_hash = yield construct_exclusion_policies(values)
       result = yield process(policies, exclusion_policies_hash)
@@ -25,14 +25,14 @@ module IrsGroups
       errors.empty? ? Success(params) : Failure(errors)
     end
 
-    def fetch_glue_policies_for_year(params)
-      Success(Policy.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => params[:start_date],
-                                                                                  :'$lt' => params[:end_date] } } }))
+    def fetch_glue_policies_for_year(values, collection = Policy)
+      Success(collection.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => values[:start_date],
+                                                                                  :'$lt' => values[:end_date] } } }))
     end
 
     def construct_exclusion_policies(values)
       exclusion_policies_hash = values[:exclusion_list].inject({}) do |exclusion_policies, primary_hbx_id|
-        policies = policies_by_primary(primary_hbx_id)
+        policies = policies_by_primary(primary_hbx_id, values)
         policies.each do |policy|
           exclusion_policies[policy.eg_id] = primary_hbx_id
         end
@@ -42,11 +42,11 @@ module IrsGroups
       Success(exclusion_policies_hash)
     end
 
-    def policies_by_primary(primary_hbx_id)
+    def policies_by_primary(primary_hbx_id, values)
       primary_person = Person.find_for_member_id(primary_hbx_id)
       return [] if primary_person.blank?
 
-      primary_person.policies
+      fetch_glue_policies_for_year(values, primary_person.policies).success
     end
 
     def processing_batch_size
