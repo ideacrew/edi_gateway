@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Tax1095a
+  # Process Irs Groups and publish cv3family to polypress
   class IrsYearlyBatchProcessDirector
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
@@ -25,6 +26,7 @@ module Tax1095a
     end
 
     # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/MethodLength
     def publish_families_refresh(values)
       logger = Logger.new("#{Rails.root}/log/irs_yearly_batch_process_director_#{Date.today.strftime('%Y_%m_%d')}.log")
       counter = 0
@@ -44,5 +46,7 @@ module Tax1095a
       logger.info("Operation ended at #{DateTime.now} ")
       Success("published all irs_groups")
     end
+    # rubocop:enable Metrics/AbcSize
+    # rubocop:enable Metrics/MethodLength
   end
 end

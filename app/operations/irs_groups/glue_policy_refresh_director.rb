@@ -22,6 +22,7 @@ module IrsGroups
       errors.empty? ? Success(params) : Failure(errors)
     end
 
+    # rubocop:disable Metrics/AbcSize
     def refresh_policy(values)
       logger = Logger.new("#{Rails.root}/log/glue_policy_refresh_director_#{Date.today.strftime('%Y_%m_%d')}.log")
       event = event("events.edi_database.irs_groups.policy_and_insurance_agreement_created",
@@ -34,5 +35,6 @@ module IrsGroups
       logger.info("unable to publish policy with policy_id #{values[:policy_id]} due to #{e.inspect}")
       Failure("unable to publish policy with policy_id #{values[:policy_id]} due to #{e.inspect}")
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end

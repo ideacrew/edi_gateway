@@ -66,12 +66,12 @@ module IrsGroups
     end
 
     def build_people_to_exclude(values)
-      people_exclusion_set = values[:exclusion_list].each_with_object({}) do |primary_hbx_id, people_exclusion_set|
+      people_exclusion_set_hash = values[:exclusion_list].each_with_object({}) do |primary_hbx_id, people_exclusion_set|
         policies = policies_by_primary(primary_hbx_id, values)
         people_exclusion_set[primary_hbx_id] = policies.pluck(:eg_id)
       end
 
-      Success(people_exclusion_set)
+      Success(people_exclusion_set_hash)
     end
 
     def policies_by_primary(primary_hbx_id, values)

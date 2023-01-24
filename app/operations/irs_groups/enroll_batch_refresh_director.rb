@@ -41,5 +41,6 @@ module IrsGroups
       logger.info("Operation ended at #{DateTime.now} ")
       Success("published all people")
     end
+    # rubocop:enable Metrics/AbcSize
   end
 end

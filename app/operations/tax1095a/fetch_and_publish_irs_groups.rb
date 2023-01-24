@@ -64,13 +64,14 @@ module Tax1095a
 
     def build_irs_groups_to_exclude(values)
       ids = People::Person.where(:hbx_id.in => values[:exclusion_list]).pluck(:_id)
-      insurance_policies = InsurancePolicies::InsuranceAgreement.where(:contract_holder_id.in => ids).flat_map(&:insurance_policies)
+      insurance_policies = InsurancePolicies::InsuranceAgreement.where(:contract_holder_id.in => ids)
+                                                                .flat_map(&:insurance_policies)
 
-      irs_group_exclusion_set = insurance_policies.each_with_object({}) do |insurance_policy, irs_group_exclusion_set|
+      irs_group_exclusion_set_hash = insurance_policies.each_with_object({}) do |insurance_policy, irs_group_exclusion_set|
         irs_group_exclusion_set[insurance_policy.irs_group.irs_group_id] = insurance_policy.policy_id
       end
 
-      Success(irs_group_exclusion_set)
+      Success(irs_group_exclusion_set_hash)
     end
 
     def policies_by_primary(primary_hbx_id, values)
