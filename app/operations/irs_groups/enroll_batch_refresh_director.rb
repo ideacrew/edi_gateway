@@ -30,11 +30,11 @@ module IrsGroups
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
       values[:people].each do |person_hbx_id|
-        if values[:people_to_exclude].has_key?(person_hbx_id)
+        if values[:people_to_exclude].key?(person_hbx_id)
           logger.info("skipped #{person_hbx_id} since its in the exclusion list")
           next
         end
-        EnrollFamilyRefreshDirector.new.call({primary_hbx_id: person_hbx_id,  calendar_year: values[:calendar_year]})
+        EnrollFamilyRefreshDirector.new.call({ primary_hbx_id: person_hbx_id, calendar_year: values[:calendar_year] })
         counter += 1
         logger.info("published #{counter} out of #{values[:people].count}") if (counter % 100).zero?
       end
@@ -43,4 +43,3 @@ module IrsGroups
     end
   end
 end
-

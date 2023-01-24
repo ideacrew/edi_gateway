@@ -43,6 +43,7 @@ module Tax1095a
       irs_groups = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(:_id.in => policies&.pluck(:irs_group_id)&.uniq)
 
       return Failure("No irs_groups are not found for the given tax_year: #{values[:tax_year]}") unless irs_groups.present?
+
       Success(irs_groups)
     end
 
@@ -65,9 +66,8 @@ module Tax1095a
       ids = People::Person.where(:hbx_id.in => values[:exclusion_list]).pluck(:_id)
       insurance_policies = InsurancePolicies::InsuranceAgreement.where(:contract_holder_id.in => ids).flat_map(&:insurance_policies)
 
-      irs_group_exclusion_set = insurance_policies.inject({}) do |irs_group_exclusion_set, insurance_policy|
+      irs_group_exclusion_set = insurance_policies.each_with_object({}) do |insurance_policy, irs_group_exclusion_set|
         irs_group_exclusion_set[insurance_policy.irs_group.irs_group_id] = insurance_policy.policy_id
-        irs_group_exclusion_set
       end
 
       Success(irs_group_exclusion_set)

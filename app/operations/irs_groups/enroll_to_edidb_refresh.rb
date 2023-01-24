@@ -32,7 +32,7 @@ module IrsGroups
 
     def fetch_glue_policies_for_year(params, collection = Policy)
       Success(collection.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => params[:start_date],
-                                                                                  :'$lt' => params[:end_date] } } }))
+                                                                                      :'$lt' => params[:end_date] } } }))
     end
 
     def fetch_insurance_policies(policies)
@@ -66,10 +66,9 @@ module IrsGroups
     end
 
     def build_people_to_exclude(values)
-      people_exclusion_set = values[:exclusion_list].inject({}) do |people_exclusion_set, primary_hbx_id|
+      people_exclusion_set = values[:exclusion_list].each_with_object({}) do |primary_hbx_id, people_exclusion_set|
         policies = policies_by_primary(primary_hbx_id, values)
         people_exclusion_set[primary_hbx_id] = policies.pluck(:eg_id)
-        people_exclusion_set
       end
 
       Success(people_exclusion_set)

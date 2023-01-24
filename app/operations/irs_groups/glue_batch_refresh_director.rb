@@ -28,7 +28,7 @@ module IrsGroups
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
       values[:policies].each do |policy_id|
-        if values[:policies_to_exclude].has_key?(policy_id)
+        if values[:policies_to_exclude].key?(policy_id)
           logger.info("skipped #{policy_id} since its in the exclusion list")
           next
         end
@@ -42,4 +42,3 @@ module IrsGroups
     # rubocop:enable Metrics/AbcSize
   end
 end
-

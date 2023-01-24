@@ -30,14 +30,14 @@ module Tax1095a
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
       values[:irs_groups].each do |irs_group_id|
-        if values[:irs_groups_to_exclude].has_key?(irs_group_id)
+        if values[:irs_groups_to_exclude].key?(irs_group_id)
           logger.info("skipped #{irs_group_id} since its in the exclusion list")
           next
         end
 
-        ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call({tax_year: values[:tax_year],
-                                                                         tax_form_type: values[:tax_form_type],
-                                                                         irs_group_id: irs_group_id  } )
+        ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call({ tax_year: values[:tax_year],
+                                                                          tax_form_type: values[:tax_form_type],
+                                                                          irs_group_id: irs_group_id })
         counter += 1
         logger.info("published #{counter} out of #{values[:irs_groups].count}") if (counter % 100).zero?
       end
@@ -46,5 +46,3 @@ module Tax1095a
     end
   end
 end
-
-  

@@ -23,12 +23,12 @@ module IrsGroups
     end
 
     def refresh_policy(values)
-      logger = Logger.new("#{Rails.root}/log/glue_policy_refresh_director_#{Date.today.strftime('%Y_%m_%d')}.log")        
+      logger = Logger.new("#{Rails.root}/log/glue_policy_refresh_director_#{Date.today.strftime('%Y_%m_%d')}.log")
       event = event("events.edi_database.irs_groups.policy_and_insurance_agreement_created",
-                      attributes: { policy_id: values[:policy_id] })
+                    attributes: { policy_id: values[:policy_id] })
       event.success.publish
       logger.info("published policy refresh event for #{values[:policy_id]} at #{DateTime.now}")
-      
+
       Success("published policy refresh event for #{values[:policy_id]} at #{DateTime.now}")
     rescue StandardError => e
       logger.info("unable to publish policy with policy_id #{values[:policy_id]} due to #{e.inspect}")

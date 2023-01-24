@@ -66,13 +66,14 @@ module InsurancePolicies
 
       def applied_aptc_amount_for(enrollments_for_month, calender_month)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
-        return format('%.2f', 0.0) if en_tax_households.none?{|en_tax_household| en_tax_household.tax_household.is_aqhp == true}
+        return format('%.2f', 0.0) if en_tax_households.none? do |en_tax_household|
+                                        en_tax_household.tax_household.is_aqhp == true
+                                      end
 
         calender_month_begin = Date.new(start_on.year, calender_month, 1)
         calender_month_end = calender_month_begin.end_of_month
         end_of_year = start_on.end_of_year
         calender_month_days = (calender_month_begin..calender_month_end).count
-
 
         total_aptc_amount = en_tax_households.sum do |en_tax_household|
           enrollment = en_tax_household.enrollment
