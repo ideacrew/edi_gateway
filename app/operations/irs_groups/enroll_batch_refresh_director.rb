@@ -2,11 +2,9 @@
 
 module IrsGroups
   # Refresh EDI gateway database with cv3 family information
-  class EnrollRefresh
+  class EnrollBatchRefreshDirector
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
-    require 'dry/monads'
-    require 'dry/monads/do'
 
     def call(params)
       validated_params = yield validate(params)
@@ -63,15 +61,13 @@ module IrsGroups
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
     def fetch_cv3_family(contract_holder_ids, params)
-      logger = Logger.new("#{Rails.root}/log/enroll_refresh_#{Date.today.strftime('%Y_%m_%d')}.log")
+      logger = Logger.new("#{Rails.root}/log/enroll_batch_refresh_director_#{Date.today.strftime('%Y_%m_%d')}.log")
       total_people_count = contract_holder_ids.uniq.count
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
       contract_holder_ids.uniq.each do |id|
         person = People::Person.find(id)
-        event = event("events.families.cv3_family.requested", attributes: { person_hbx_id: person.hbx_id,
-                                                                            year: params[:start_date].year })
-        event.success.publish
+        EnrollFamilyRefreshDirector.new.call({primary_hbx_id: person.hbx_id,  calender_year: params[:start_date].year})
         counter += 1
         logger.info("published #{counter} out of #{total_people_count}") if (counter % 100).zero?
       rescue StandardError => e

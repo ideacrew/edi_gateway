@@ -4,14 +4,13 @@ module IrsGroups
   # Refresh EDI gateway database with policy information
   class GlueRefresh
     include Dry::Monads[:result, :do, :try]
-    include EventSource::Command
-    require 'dry/monads'
-    require 'dry/monads/do'
+    PROCESSING_BATCH_SIZE = 5000
 
     def call(params)
-      validated_params = yield validate(params)
-      policies = yield fetch_glue_policies_for_year(validated_params)
-      result = yield persist(policies)
+      values = yield validate(params)
+      policies = yield fetch_glue_policies_for_year(values)
+      exclusion_policies = yield construct_exclusion_policies(values)
+      result = yield process(policies, exclusion_policies)
       Success(result)
     end
 
@@ -21,6 +20,7 @@ module IrsGroups
       errors = []
       errors << "start_date #{params[:start_date]} is not a valid Date" unless params[:start_date].is_a?(Date)
       errors << "end_date #{params[:end_date]} is not a valid Date" unless params[:end_date].is_a?(Date)
+      errors << "exclusion_list required" unless params[:exclusion_list] # array of primary hbx  ids
 
       errors.empty? ? Success(params) : Failure(errors)
     end
@@ -30,25 +30,35 @@ module IrsGroups
                                                                                   :'$lt' => params[:end_date] } } }))
     end
 
-    # rubocop:disable Metrics/AbcSize
-    def persist(policies)
-      logger = Logger.new("#{Rails.root}/log/glue_refresh_#{Date.today.strftime('%Y_%m_%d')}.log")
-      total_policies_count = policies.count
-      counter = 0
-
-      logger.info("Operation started at #{DateTime.now} ")
-      policies.no_timeout.each do |policy|
-        event = event("events.edi_database.irs_groups.policy_and_insurance_agreement_created",
-                      attributes: { policy_id: policy.id })
-        event.success.publish
-        counter += 1
-        logger.info("published #{counter} out of #{total_policies_count}") if (counter % 100).zero?
-      rescue StandardError => e
-        logger.info("unable to publish policy with policy_id #{policy.id} due to #{e.inspect}")
+    def construct_exclusion_policies(values)
+      exclusion_policies = values[:exclusion_list].inject({}) do |exclusion_policies, primary_hbx_id|
+        policies = policies_by_primary(primary_hbx_id)
+        policies.each do |policy|
+          exclusion_policies[policy.eg_id] = primary_hbx_id
+        end
+        exclusion_policies
       end
-      logger.info("Operation ended at #{DateTime.now} ")
-      Success("published all policies")
+
+      Success(exclusion_policies)
     end
-    # rubocop:enable Metrics/AbcSize
+
+    def processing_batch_size
+      @batch_size || PROCESSING_BATCH_SIZE
+    end
+
+    def process(polices, policies_to_exclude)
+      query_offset = 0
+
+      while policies.count > query_offset
+        batched_policies = policies.skip(query_offset).limit(processing_batch_size)
+        GlueBatchRefreshDirector.new.call(policies: batched_policies.pluck(:eg_id), policies_to_exclude: exclusion_policies)
+        query_offset += processing_batch_size
+        p "Processed #{query_offset} policies."
+      end
+
+      Success(response)
+    end
   end
 end
+
+  
