@@ -33,10 +33,10 @@ module IrsGroups
     end
 
     def fetch_policy_from_glue(policy_id)
-      policy = Policy.find(policy_id)
+      policy = Policy.where(eg_id: policy_id).first
       Success(policy)
     rescue Mongoid::Errors::DocumentNotFound
-      Failure("Unable to find Policy with ID #{policy_id}.")
+      Failure("Unable to find Policy with EG ID #{policy_id}.")
     end
 
     def build_insurance_product_hash(glue_policy)
