@@ -25,12 +25,13 @@ module IrsGroups
       errors << "start_date #{params[:start_date]} is not a valid Date" unless params[:start_date].is_a?(Date)
       errors << "end_date #{params[:end_date]} is not a valid Date" unless params[:end_date].is_a?(Date)
       errors << "exclusion_list required" unless params[:exclusion_list] # array of primary hbx  ids
+      @batch_size = params[:batch_size] if params[:batch_size]
 
       errors.empty? ? Success(params) : Failure(errors)
     end
 
-    def fetch_glue_policies_for_year(params)
-      Success(Policy.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => params[:start_date],
+    def fetch_glue_policies_for_year(params, collection = Policy)
+      Success(collection.where(:enrollees => { '$elemMatch' => { :coverage_start => { :'$gte' => params[:start_date],
                                                                                   :'$lt' => params[:end_date] } } }))
     end
 

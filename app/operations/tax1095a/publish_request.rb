@@ -10,15 +10,19 @@ module Tax1095a
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
 
-    REGISTERED_EVENTS = %w[insurance_policies.tax1095a_payload.requested
-                           families.tax_form1095a.initial_payload_generated
-                           families.tax_form1095a.void_payload_generated
-                           families.tax_form1095a.corrected_payload_generated
-                           families.tax_form1095a.catastrophic_payload_generated].freeze
+    IVL_TAX Corrected_IVL_TAX IVL_VTA IVL_CAP
+
+    REGISTERED_EVENTS = {
+      'IVL_TAX' => 'insurance_policies.tax1095a_payload.requested'
+                  #  families.tax_form1095a.initial_payload_generated
+      'IVL_VTA' => 'families.tax_form1095a.void_payload_generated'
+      'Corrected_IVL_TAX' => 'families.tax_form1095a.corrected_payload_generated'
+      'IVL_CAP' => 'families.tax_form1095a.catastrophic_payload_generated'
+    }
 
     def call(params)
-      payload = yield validate_input_params(params)
-      event = yield build_event(payload)
+      values = yield validate(params)
+      event  = yield build_event(payload)
       result = yield publish(event)
 
       Success(result)
@@ -26,26 +30,22 @@ module Tax1095a
 
     private
 
-    def validate_input_params(params)
-      return Failure('Missing payload key') unless params.key?(:payload)
-      return Failure('Missing event_name key') unless params.key?(:event_name)
-      if params[:payload].nil? || !params[:payload].is_a?(Hash)
-        return Failure("Invalid value: #{params[:payload]} for key payload, must be a Hash object")
-      end
-      if params[:event_name].nil? || !params[:event_name].is_a?(String)
-        return Failure("Invalid value: #{params[:event_name]} for key event_name, must be an String")
-      end
-      if REGISTERED_EVENTS.exclude?(params[:event_name])
-        return Failure("Invalid event_name: #{params[:event_name]} for key event_name, must be one of #{REGISTERED_EVENTS}")
-      end
+    def validate(params)
+      errors = []
+      errors << "tax_year required" unless params[:tax_year]
+      errors << "tax_form_type required" unless params[:tax_form_type]
+      errors << "irs_group_id required" unless params[:irs_group_id]
 
-      @event_name = params[:event_name]
-
-      Success(params[:payload])
+      errors.empty? ? Success(params) : Failure(errors)
     end
 
-    def build_event(payload)
-      event("events.#{@event_name}", attributes: payload)
+    def build_event(values)
+      event_name = REGISTERED_EVENTS[values[:tax_form_type]]
+      event("events.#{@event_name}", attributes: { 
+                                                   tax_year: values[:tax_year],
+                                                   tax_form_type: values[:tax_form_type],
+                                                   irs_group_id: values[:irs_group_id]
+                                                 })
     end
 
     def publish(event)

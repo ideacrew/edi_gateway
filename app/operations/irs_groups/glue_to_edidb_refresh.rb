@@ -22,6 +22,7 @@ module IrsGroups
       errors << "start_date #{params[:start_date]} is not a valid Date" unless params[:start_date].is_a?(Date)
       errors << "end_date #{params[:end_date]} is not a valid Date" unless params[:end_date].is_a?(Date)
       errors << "exclusion_list required" unless params[:exclusion_list] # array of primary hbx ids
+      @batch_size = params[:batch_size] if params[:batch_size]
 
       errors.empty? ? Success(params) : Failure(errors)
     end

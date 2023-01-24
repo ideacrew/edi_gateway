@@ -9,6 +9,8 @@ module Tax1095a
     include EventSource::Command
     include Dry::Monads[:result, :do]
 
+    PROCESSING_BATCH_SIZE = 1000
+
     TAX_FORM_TYPES = %w[IVL_TAX Corrected_IVL_TAX IVL_VTA IVL_CAP].freeze
 
     PRODUCT_CRITERIA = { "IVL_TAX" => "non_catastrophic_product_ids",
@@ -16,9 +18,11 @@ module Tax1095a
 
     # params {tax_year: ,tax_form_type: }
     def call(params)
-      tax_year, tax_form_type = yield validate(params)
-      irs_group_ids = yield fetch_irs_groups(tax_year, tax_form_type)
-      yield publish(irs_group_ids, tax_year, tax_form_type)
+      values = yield validate(params)
+      irs_groups = yield fetch_irs_groups(values)
+      irs_group_exclusion_set = yield build_irs_groups_to_exclude(values)
+
+      yield publish(irs_groups, values, irs_group_exclusion_set)
 
       Success(true)
     end
@@ -26,22 +30,22 @@ module Tax1095a
     private
 
     def validate(params)
-      tax_form_type = params[:tax_form_type]
-      tax_year = params[:tax_year]
-      return Failure("Valid tax form type is not present") unless TAX_FORM_TYPES.include?(tax_form_type)
-      return Failure("tax_year is not present") unless tax_year.present?
+      @batch_size = params[:batch_size] if params[:batch_size]
 
-      Success([tax_year, tax_form_type])
+      return Failure("valid tax form type is not present") unless TAX_FORM_TYPES.include?(params[:tax_form_type])
+      return Failure("tax_year is not present") unless params[:tax_year].present?
+      return Failure("exclusion_list required") unless params[:exclusion_list] # array of primary hbx ids
+
+      Success(params)
     end
 
-    def fetch_irs_groups(tax_year, tax_form_type)
-      query = query_criteria(tax_year, instance_eval(PRODUCT_CRITERIA[tax_form_type]))
+    def fetch_irs_groups(values)
+      query = query_criteria(tax_year, instance_eval(PRODUCT_CRITERIA[values[:tax_form_type]]))
       policies = InsurancePolicies::AcaIndividuals::InsurancePolicy.where(query)
+      irs_groups = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(:_id.in => policies&.pluck(:irs_group_id)&.uniq)
 
-      irs_group_ids = policies&.pluck(:irs_group_id)&.uniq
-      return Failure("No irs_groups are not found for the given tax_year: #{tax_year}") unless irs_group_ids.present?
-
-      Success(irs_group_ids)
+      return Failure("No irs_groups are not found for the given tax_year: #{values[:tax_year]}") unless irs_groups.present?
+      Success(irs_groups)
     end
 
     def query_criteria(tax_year, eligible_product_ids)
@@ -59,21 +63,47 @@ module Tax1095a
       InsurancePolicies::InsuranceProduct.where(:coverage_type => 'health', :metal_level => "catastrophic").pluck(:_id).flatten
     end
 
-    def publish(irs_group_bson_ids, tax_year, tax_form_type)
-      irs_group_ids = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(:_id.in => irs_group_bson_ids).pluck(:irs_group_id).uniq
-
-      event_key = "insurance_policies.tax1095a_payload.requested"
-      irs_group_ids.each do |irs_group_id|
-        params = { payload: { tax_year: tax_year, tax_form_type: tax_form_type, irs_group_id: irs_group_id },
-                   event_name: event_key }
-
-        result = ::Tax1095a::PublishRequest.new.call(params)
-        if result.failure?
-          return Failure("Failed to publish for event #{event_key}, with params: #{params}, failure: #{result.failure}")
-        end
+    def build_irs_groups_to_exclude(values)
+      ids = People::Person.where(:hbx_id.in => values[:exclusion_list]).pluck(:_id)
+      insurance_policies = InsurancePolicies::InsuranceAgreement.where(:contract_holder_id.in => ids).flat_map(&:insurance_policies)
+      
+      irs_group_exclusion_set = insurance_policies.inject({}) do |irs_group_exclusion_set, insurance_policy|
+        irs_group_exclusion_set[insurance_policy.irs_group.irs_group_id] = insurance_policy.policy_id
+        irs_group_exclusion_set
       end
 
-      Success(true)
+      Success(irs_group_exclusion_set)
+    end
+
+    def policies_by_primary(primary_hbx_id, values)
+      primary_person = Person.find_for_member_id(primary_hbx_id)
+      return [] if primary_person.blank?
+
+      fetch_glue_policies_for_year(values, primary_person.policies).success
+    end
+
+    def processing_batch_size
+      @batch_size || PROCESSING_BATCH_SIZE
+    end
+
+    def process(irs_groups, values, irs_group_exclusion_set)
+      query_offset = 0
+
+      while irs_groups.count > query_offset
+        batched_irs_groups = irs_groups.skip(query_offset).limit(processing_batch_size)
+
+        IrsYearlyBatchProcessDirector.new.call(
+          irs_groups: batched_irs_groups.pluck(:irs_group_id),
+          irs_groups_to_exclude: irs_group_exclusion_set,
+          tax_year: values[:tax_year],
+          tax_form_type: values[:tax_form_type]
+        )
+
+        query_offset += processing_batch_size
+        p "Processed #{query_offset} irs_groups."
+      end
+
+      Success(response)
     end
   end
 end
