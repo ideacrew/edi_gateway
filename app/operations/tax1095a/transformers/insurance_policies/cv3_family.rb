@@ -16,11 +16,6 @@ module Tax1095a
 
         TAX_FORM_TYPES = %w[IVL_TAX Corrected_IVL_TAX IVL_VTA IVL_CAP].freeze
 
-        MAP_FORM_TYPE_TO_EVENT = { "IVL_TAX" => "initial_payload_generated",
-                                   "IVL_VTA" => "void_payload_generated",
-                                   "Corrected_IVL_TAX" => "corrected_payload_generated",
-                                   "IVL_CAP" => "catastrophic_payload_generated" }.freeze
-
         # params {tax_year: ,tax_form_type:, irs_group_id: }
         def call(params)
           tax_year, tax_form_type, irs_group_id = yield validate(params)
@@ -550,10 +545,13 @@ module Tax1095a
 
         def publish_payload(tax_year, tax_form_type, entity_cv3_payload)
           cv3_payload = JSON.parse(entity_cv3_payload.to_hash.to_json)
-          event_name = MAP_FORM_TYPE_TO_EVENT[tax_form_type]
-          event_key = "families.tax_form1095a.#{event_name}"
-          params = { tax_year: tax_year, tax_form_type: tax_form_type, cv3_payload: cv3_payload }
-          result = ::Tax1095a::PublishRequest.new.call(params)
+
+          params = {
+                     tax_year: tax_year,
+                     tax_form_type: tax_form_type,
+                     cv3_payload: cv3_payload,
+                   }
+          result = ::Tax1095a::PublishFamilyPayload.new.call(params)
 
           if result.failure?
             return Failure("Failed to publish for event #{event_key}, with params: #{params}, failure: #{result.failure}")

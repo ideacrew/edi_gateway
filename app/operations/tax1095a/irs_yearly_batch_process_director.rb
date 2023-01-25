@@ -37,9 +37,12 @@ module Tax1095a
           next
         end
 
-        ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call({ tax_year: values[:tax_year],
-                                                                          tax_form_type: values[:tax_form_type],
-                                                                          irs_group_id: irs_group_id })
+        ::Tax1095a::PublishRequest.new.call(
+          tax_year: values[:tax_year],
+          tax_form_type: values[:tax_form_type],
+          irs_group_id: irs_group_id
+        )
+
         counter += 1
         logger.info("published #{counter} out of #{values[:irs_groups].count}") if (counter % 100).zero?
       end
