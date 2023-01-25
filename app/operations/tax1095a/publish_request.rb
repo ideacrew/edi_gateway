@@ -3,7 +3,6 @@
 require 'dry/monads'
 require 'dry/monads/do'
 
-# rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
 module Tax1095a
   # Publish class will build event and publish the payload
   class PublishRequest
@@ -12,7 +11,7 @@ module Tax1095a
 
     def call(params)
       values = yield validate(params)
-      event  = yield build_event(payload)
+      event  = yield build_event(values)
       result = yield publish(event)
 
       Success(result)
@@ -31,10 +30,10 @@ module Tax1095a
 
     def build_event(values)
       event("events.insurance_policies.tax1095a_payload.requested", attributes: {
-                                                                                  tax_year: values[:tax_year],
-                                                                                  tax_form_type: values[:tax_form_type],
-                                                                                  irs_group_id: values[:irs_group_id]
-                                                                                })
+              tax_year: values[:tax_year],
+              tax_form_type: values[:tax_form_type],
+              irs_group_id: values[:irs_group_id]
+            })
     end
 
     def publish(event)
@@ -44,4 +43,3 @@ module Tax1095a
     end
   end
 end
-# rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity

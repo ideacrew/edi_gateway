@@ -3,7 +3,6 @@
 require 'dry/monads'
 require 'dry/monads/do'
 
-# rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
 module Tax1095a
   # Publish class will build event and publish the payload
   class PublishFamilyPayload
@@ -11,10 +10,10 @@ module Tax1095a
     include EventSource::Command
 
     MAP_FORM_TYPE_TO_EVENT = {
-        "IVL_TAX" => "initial_payload_generated",
-        "IVL_VTA" => "void_payload_generated",
-        "Corrected_IVL_TAX" => "corrected_payload_generated",
-        "IVL_CAP" => "catastrophic_payload_generated"
+      "IVL_TAX" => "initial_payload_generated",
+      "IVL_VTA" => "void_payload_generated",
+      "Corrected_IVL_TAX" => "corrected_payload_generated",
+      "IVL_CAP" => "catastrophic_payload_generated"
     }.freeze
 
     def call(params)
@@ -52,4 +51,3 @@ module Tax1095a
     end
   end
 end
-# rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity

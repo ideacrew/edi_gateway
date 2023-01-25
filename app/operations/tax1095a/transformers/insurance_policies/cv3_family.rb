@@ -438,7 +438,6 @@ module Tax1095a
           end
         end
 
-        # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/PerceivedComplexity
         def calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, calendar_month)
           return format('%.2f', 0.0) if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
@@ -547,10 +546,10 @@ module Tax1095a
           cv3_payload = JSON.parse(entity_cv3_payload.to_hash.to_json)
 
           params = {
-                     tax_year: tax_year,
-                     tax_form_type: tax_form_type,
-                     cv3_payload: cv3_payload,
-                   }
+            tax_year: tax_year,
+            tax_form_type: tax_form_type,
+            cv3_payload: cv3_payload
+          }
           result = ::Tax1095a::PublishFamilyPayload.new.call(params)
 
           if result.failure?
