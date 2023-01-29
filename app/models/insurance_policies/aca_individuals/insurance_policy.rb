@@ -66,6 +66,7 @@ module InsurancePolicies
 
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/MethodLength
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def applied_aptc_amount_for(enrollments_for_month, calender_month, tax_household)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
         primary_person_id = tax_household.primary&.person_id
@@ -73,9 +74,9 @@ module InsurancePolicies
           enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id)
         end
 
-        return format('%.2f', 0.0) if enr_thhs_for_month.none? do |en_tax_household|
-                                        en_tax_household.tax_household.is_aqhp == true
-                                      end
+        return format('%<val>.2f', val: 0.0) if enr_thhs_for_month.none? do |en_tax_household|
+                                                  en_tax_household.tax_household.is_aqhp == true
+                                                end
 
         calender_month_begin = Date.new(start_on.year, calender_month, 1)
         calender_month_end = calender_month_begin.end_of_month
@@ -100,6 +101,7 @@ module InsurancePolicies
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       def fetch_aptc_tax_credit(enrs_for_month, tax_household = nil)
         applied_aptc = enrs_for_month.map(&:total_premium_adjustment_amount).max
