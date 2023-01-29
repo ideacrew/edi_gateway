@@ -3,7 +3,6 @@
 module InsurancePolicies
   module AcaIndividuals
     # An instance of continuous coverage under a single insurance product
-    # rubocop:disable Metrics/ClassLength
     class InsurancePolicy
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -67,18 +66,24 @@ module InsurancePolicies
 
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/MethodLength
-      def applied_aptc_amount_for(enrollments_for_month, calender_month)
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      def applied_aptc_amount_for(enrollments_for_month, calender_month, tax_household)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
-        return format('%.2f', 0.0) if en_tax_households.none? do |en_tax_household|
-                                        en_tax_household.tax_household.is_aqhp == true
-                                      end
+        primary_person_id = tax_household.primary&.person_id
+        enr_thhs_for_month = en_tax_households.select do |enr_thh|
+          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id)
+        end
+
+        return format('%<val>.2f', val: 0.0) if enr_thhs_for_month.none? do |en_tax_household|
+                                                  en_tax_household.tax_household.is_aqhp == true
+                                                end
 
         calender_month_begin = Date.new(start_on.year, calender_month, 1)
         calender_month_end = calender_month_begin.end_of_month
         end_of_year = start_on.end_of_year
         calender_month_days = (calender_month_begin..calender_month_end).count
 
-        total_aptc_amount = en_tax_households.sum do |en_tax_household|
+        total_aptc_amount = enr_thhs_for_month.sum do |en_tax_household|
           enrollment = en_tax_household.enrollment
 
           en_month_start_on = [enrollment.start_on, calender_month_begin].max
@@ -96,6 +101,7 @@ module InsurancePolicies
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/MethodLength
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       def fetch_aptc_tax_credit(enrs_for_month, tax_household = nil)
         applied_aptc = enrs_for_month.map(&:total_premium_adjustment_amount).max
@@ -169,6 +175,5 @@ module InsurancePolicies
       end
       # rubocop:enable Metrics/AbcSize
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end
