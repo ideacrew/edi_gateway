@@ -3,7 +3,6 @@
 module InsurancePolicies
   module AcaIndividuals
     # An instance of continuous coverage under a single insurance product
-    # rubocop:disable Metrics/ClassLength
     class InsurancePolicy
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -174,6 +173,5 @@ module InsurancePolicies
       end
       # rubocop:enable Metrics/AbcSize
     end
-    # rubocop:enable Metrics/ClassLength
   end
 end
