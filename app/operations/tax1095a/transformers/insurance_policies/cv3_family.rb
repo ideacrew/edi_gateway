@@ -424,7 +424,7 @@ module Tax1095a
             #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
             #                   end
 
-            aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month)
+            aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 
             slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
             total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))

@@ -67,9 +67,14 @@ module InsurancePolicies
 
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/MethodLength
-      def applied_aptc_amount_for(enrollments_for_month, calender_month)
+      def applied_aptc_amount_for(enrollments_for_month, calender_month, tax_household)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
-        return format('%.2f', 0.0) if en_tax_households.none? do |en_tax_household|
+        primary_person_id = tax_household.primary&.person_id
+        enr_thhs_for_month = en_tax_households.select do |enr_thh|
+          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id)
+        end
+
+        return format('%.2f', 0.0) if enr_thhs_for_month.none? do |en_tax_household|
                                         en_tax_household.tax_household.is_aqhp == true
                                       end
 
@@ -78,7 +83,7 @@ module InsurancePolicies
         end_of_year = start_on.end_of_year
         calender_month_days = (calender_month_begin..calender_month_end).count
 
-        total_aptc_amount = en_tax_households.sum do |en_tax_household|
+        total_aptc_amount = enr_thhs_for_month.sum do |en_tax_household|
           enrollment = en_tax_household.enrollment
 
           en_month_start_on = [enrollment.start_on, calender_month_begin].max
