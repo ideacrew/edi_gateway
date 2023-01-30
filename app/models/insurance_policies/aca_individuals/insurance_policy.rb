@@ -158,6 +158,18 @@ module InsurancePolicies
         enr_thh_for_month.household_benchmark_ehb_premium.to_f
       end
 
+      def effectuated_enrollments
+        enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
+      end
+
+      def fetch_enrolled_member_end_date(enrolled_member)
+        enrolled_member_enrollments = effectuated_enrollments.select do |enrollment|
+          members = [enrollment.subscriber] + enrollment.dependents
+          members.map(&:person_id).include?(enrolled_member.person_id)
+        end
+        enrolled_member_enrollments.map(&:enrollment_end_on).max
+      end
+
       # rubocop:disable Metrics/AbcSize
       def self.enrollments_for_month(month, year, policies)
         policies.flat_map(&:enrollments).select do |enrollment|
