@@ -382,10 +382,12 @@ module Tax1095a
           return [] if covered_individuals.compact.blank?
 
           covered_individuals.collect do |enrolled_member|
+            insurance_policy = enrolled_member.aca_individuals_enrollment.insurance_policy
             glue_person = fetch_person_from_glue(enrolled_member.person)
+            enrolled_member_end_date = insurance_policy.fetch_enrolled_member_end_date(enrolled_member)
             {
               coverage_start_on: enrolled_member.aca_individuals_enrollment.start_on,
-              coverage_end_on: enrolled_member.aca_individuals_enrollment.insurance_policy.policy_end_on,
+              coverage_end_on: enrolled_member_end_date,
               person: construct_person_hash(enrolled_member.person, glue_person),
               relation_with_primary: enrolled_member.relation_with_primary,
               filer_status: fetch_tax_filer_status(tax_household, enrolled_member)
@@ -410,6 +412,7 @@ module Tax1095a
             enrollments_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
                                     .enrollments_for_month(month, insurance_policy.start_on.year, [insurance_policy])
             next if enrollments_for_month.blank?
+            next unless any_thh_members_enrolled?(tax_household, enrollments_for_month)
 
             _enrolled_members_in_month = fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month,
                                                                                              tax_household)

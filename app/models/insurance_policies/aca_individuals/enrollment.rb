@@ -55,6 +55,10 @@ module InsurancePolicies
         insurance_policy.end_on.present? ? insurance_policy.end_on : insurance_policy.start_on.end_of_year
       end
 
+      def enrollment_end_on
+        end_on.present? ? end_on : insurance_policy.start_on.end_of_year
+      end
+
       # rubocop:disable Metrics/AbcSize
       def pre_amt_tot_values(enrolled_thh_people, calendar_month)
         if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
