@@ -24,9 +24,8 @@ module Tax1095a
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)
           valid_cv3_payload = yield validate_payload(cv3_payload)
           entity_cv3_payload = yield initialize_entity(valid_cv3_payload)
-          _result = yield publish_payload(tax_year, tax_form_type, entity_cv3_payload)
 
-          Success(cv3_payload)
+          Success(entity_cv3_payload)
         end
 
         private
@@ -53,7 +52,8 @@ module Tax1095a
 
         def initialize_entity(cv3_payload)
           result = Try do
-            AcaEntities::Families::Family.new(cv3_payload.to_h)
+            entity_cv3_payload = AcaEntities::Families::Family.new(cv3_payload.to_h)
+            JSON.parse(entity_cv3_payload.to_hash.to_json)
           end
 
           result.or do |e|
@@ -544,23 +544,6 @@ module Tax1095a
           end
 
           thh_member&.tax_filer_status || "non_filer"
-        end
-
-        def publish_payload(tax_year, tax_form_type, entity_cv3_payload)
-          cv3_payload = JSON.parse(entity_cv3_payload.to_hash.to_json)
-
-          params = {
-            tax_year: tax_year,
-            tax_form_type: tax_form_type,
-            cv3_payload: cv3_payload
-          }
-          result = ::Tax1095a::PublishFamilyPayload.new.call(params)
-
-          if result.failure?
-            return Failure("Failed to publish for event #{event_key}, with params: #{params}, failure: #{result.failure}")
-          end
-
-          Success(true)
         end
       end
     end

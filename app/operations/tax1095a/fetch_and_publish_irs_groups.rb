@@ -33,6 +33,7 @@ module Tax1095a
       return Failure("valid tax form type is not present") unless TAX_FORM_TYPES.include?(params[:tax_form_type])
       return Failure("tax_year is not present") unless params[:tax_year].present?
       return Failure("exclusion_list required") unless params[:exclusion_list] # array of primary hbx ids
+      return Failure("transmission_kind required") unless params[:transmission_kind]
 
       Success(params)
     end
@@ -95,7 +96,8 @@ module Tax1095a
           irs_groups: batched_irs_groups.pluck(:irs_group_id),
           irs_groups_to_exclude: irs_group_exclusion_set,
           tax_year: values[:tax_year],
-          tax_form_type: values[:tax_form_type]
+          tax_form_type: values[:tax_form_type],
+          transmission_kind: values[:transmission_kind]
         )
 
         query_offset += processing_batch_size

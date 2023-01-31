@@ -16,6 +16,7 @@ module Subscribers
           payload = JSON.parse(response, symbolize_names: true)
           result = ::Tax1095a::FetchAndPublishIrsGroups.new.call({ tax_year: payload[:tax_year],
                                                                    tax_form_type: payload[:tax_form_type],
+                                                                   transmission_kind: payload[:transmission_kind] || '1095a',
                                                                    exclusion_list: payload[:exclusion_list] || [] })
 
           if result.success?
