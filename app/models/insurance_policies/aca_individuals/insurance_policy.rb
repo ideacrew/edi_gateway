@@ -64,6 +64,44 @@ module InsurancePolicies
           .where(:enrollment_id.in => enrs_for_month.pluck(:id))
       end
 
+      # Effectuated Aptc Tax Households with Unique member composition
+      # Policy:
+      #   HbxEnrollment1:
+      #     A, B
+      #     both are on same THH1
+      #   HbxEnrollment2:
+      #     A, B
+      #     both are on different THH2,THH3
+      #   HbxEnrollment3:
+      #     A, B
+      #     both are on same THH4
+      # Result:
+      #   [THH1, THH2, THH3]
+
+      # rubocop:disable Metrics/AbcSize
+      def effectuated_aptc_tax_households_with_unique_composition
+        enrollments_tax_households = enrollments_tax_households(effectuated_enrollments)
+        aqhp_enr_thhs = fetch_aqhp_enrollments_tax_households(enrollments_tax_households)
+        return irs_group.uqhp_tax_households(start_on.year) if aqhp_enr_thhs.blank?
+
+        tax_households = aqhp_enr_thhs.flat_map(&:tax_household)
+        thh_with_members_info = fetch_aqhp_thh_member_info(tax_households)
+        thh_with_members_info.uniq(&:last).to_h.keys.presence || irs_group.uqhp_tax_households(start_on.year)
+      end
+      # rubocop:enable Metrics/AbcSize
+
+      def fetch_aqhp_thh_member_info(tax_households)
+        tax_households.each_with_object([]) do |thh, thh_info|
+          thh_info << [thh, thh.tax_household_members.map(&:person).map(&:hbx_id)]
+        end
+      end
+
+      def fetch_aqhp_enrollments_tax_households(enrollments_tax_households)
+        enrollments_tax_households.select do |enr_thh|
+          enr_thh.tax_household.is_aqhp
+        end
+      end
+
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
@@ -159,7 +197,7 @@ module InsurancePolicies
       end
 
       def effectuated_enrollments
-        enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
+        @effectuated_enrollments ||= enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
       end
 
       def fetch_enrolled_member_end_date(enrolled_member)
