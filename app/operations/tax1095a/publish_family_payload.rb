@@ -36,12 +36,17 @@ module Tax1095a
     end
 
     def build_event(values)
-      event_name = MAP_FORM_TYPE_TO_EVENT[values[:tax_form_type]]
-      event("events.families.tax_form1095a.#{event_name}", attributes: {
+      event("events.h41.report_items.created", attributes: {
               tax_year: values[:tax_year],
               tax_form_type: values[:tax_form_type],
-              cv3_payload: values[:cv3_payload]
+              cv3_family: values[:cv3_payload]
             })
+    #   event_name = MAP_FORM_TYPE_TO_EVENT[values[:tax_form_type]]
+    #   event("events.families.tax_form1095a.#{event_name}", attributes: {
+    #           tax_year: values[:tax_year],
+    #           tax_form_type: values[:tax_form_type],
+    #           cv3_payload: values[:cv3_payload]
+    #         })
     end
 
     def publish(event)
