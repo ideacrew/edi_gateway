@@ -370,6 +370,7 @@ module Tax1095a
 
             months_of_year = construct_coverage_information(insurance_policy, tax_household)
             {
+              hbx_assigned_id: tax_household.hbx_id,
               covered_individuals: construct_covered_individuals(enrollments, tax_household),
               months_of_year: months_of_year.compact,
               annual_premiums: construct_annual_premiums(months_of_year)

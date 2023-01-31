@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'securerandom'
 
 # rubocop:disable Metrics/AbcSize
 # rubocop:disable Metrics/ClassLength
@@ -241,20 +242,20 @@ module IrsGroups
                      .create!({ start_on: enrollment.effective_on,
                                 end_on: end_on,
                                 is_aqhp: false,
-                                hbx_id: 9.times.map { rand(9) }.join,
+                                hbx_id: SecureRandom.uuid,
                                 assistance_year: @year,
                                 irs_group_id: insurance_policy.irs_group.id })
 
       tax_household = ::InsurancePolicies::AcaIndividuals::TaxHousehold
                       .create!({ is_aqhp: false,
-                                 hbx_id: 9.times.map { rand(9) }.join,
+                                 hbx_id: SecureRandom.uuid,
                                  start_on: enrollment.effective_on,
                                  tax_household_group_id: tax_hh_group&.id })
 
       enrollment.hbx_enrollment_members.each do |member|
         person = find_or_create_person(member)
         ::InsurancePolicies::AcaIndividuals::TaxHouseholdMember
-          .create!({ hbx_id: 9.times.map { rand(9) }.join,
+          .create!({ hbx_id: SecureRandom.uuid,
                      is_subscriber: member.is_subscriber,
                      relation_with_primary: find_relation_with_primary(member),
                      is_uqhp_eligible: true,
