@@ -21,7 +21,7 @@ module Tax1095a
     def call(params)
       values = yield validate(params)
       events = yield build_events(values)
-      result = yield publish(event)
+      result = yield publish(events)
 
       Success(result)
     end
