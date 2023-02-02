@@ -397,15 +397,21 @@ module Tax1095a
           end
         end
 
+        def valid_enrollment_tax_household?(enr_thh, tax_household)
+          tax_filer_id = tax_household.primary&.person_id ||
+                         tax_household.tax_household_members.first.person_id
+
+          enr_thh_tax_filer_id = enr_thh.tax_household.primary&.person_id ||
+                                 enr_thh.tax_household.tax_household_members.first.person_id
+
+          enr_thh_tax_filer_id == tax_filer_id
+        end
+
         def fetch_start_on_by_tax_household_and_policy(policy, tax_household)
           enrollments = policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           enrollments_thhs = fetch_enrollments_tax_households(enrollments)
-          tax_filer_person_id = tax_household.primary&.person_id ||
-                                tax_household.tax_household_members.first.person_id
           valid_enr_thhs = enrollments_thhs.select do |enr_thh|
-            primary_person_id = enr_thh.tax_household.primary&.person_id ||
-                                enr_thh.tax_household.tax_household_members.first.person_id
-            primary_person_id == tax_filer_person_id
+            valid_enrollment_tax_household?(enr_thh, tax_household)
           end
           valid_enr_thhs.flat_map(&:enrollment).pluck(:start_on).min
         end
@@ -419,12 +425,8 @@ module Tax1095a
 
         def update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          tax_filer_person_id = tax_household.primary&.person_id ||
-                                tax_household.tax_household_members.first.person_id
           valid_enr_thh = enrollments_thhs.detect do |enr_thh|
-            primary_person_id = enr_thh.tax_household.primary&.person_id ||
-                                enr_thh.tax_household.tax_household_members.first.person_id
-            primary_person_id == tax_filer_person_id
+            valid_enrollment_tax_household?(enr_thh, tax_household)
           end
           enrollment = valid_enr_thh.enrollment
           valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals, valid_enr_thh.tax_household)
@@ -441,12 +443,8 @@ module Tax1095a
           return false unless tax_household.is_aqhp
 
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          tax_filer_person_id = tax_household.primary&.person_id ||
-                                tax_household.tax_household_members.first.person_id
           enrollments_thhs.detect do |enr_thh|
-            primary_person_id = enr_thh.tax_household.primary&.person_id ||
-                                enr_thh.tax_household.tax_household_members.first.person_id
-            primary_person_id == tax_filer_person_id
+            valid_enrollment_tax_household?(enr_thh, tax_household)
           end.blank?
         end
 
@@ -532,9 +530,8 @@ module Tax1095a
 
         def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          tax_filer = tax_household.primary.person_id || tax_household.is_ia_eligible_person.person_id
           valid_enr_thh = enrs_thhs.select do |enr_thh|
-            enr_thh.tax_household.primary.person_id == tax_filer
+            valid_enrollment_tax_household?(enr_thh, tax_household)
           end
           enrolled_members = [enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)]
                              .flatten
@@ -574,7 +571,7 @@ module Tax1095a
           return thh_members_from_enr_thhs if enr_thhs.present? && !tax_household.is_aqhp
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
-          tax_filer = tax_household.primary
+          tax_filer = tax_household.primary || tax_household.tax_household_members.first
           enr_thh_for_month = enr_thhs.detect do |enr_thh|
             if enr_thh.tax_household.id == tax_household.id
               tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
