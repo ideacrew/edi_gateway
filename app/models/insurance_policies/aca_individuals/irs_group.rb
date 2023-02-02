@@ -18,6 +18,7 @@ module InsurancePolicies
       field :start_on, type: Date
       field :end_on, type: Date
 
+      validates :irs_group_id, uniqueness: true
       # indexes
       index({ irs_group_id: 1 })
 

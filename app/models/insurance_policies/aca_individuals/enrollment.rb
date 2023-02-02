@@ -28,6 +28,7 @@ module InsurancePolicies
       field :start_on, type: Date
       field :end_on, type: Date
 
+      validates :hbx_id, uniqueness: true
       # indexes
       index({ "hbx_id" => 1 })
       index({ "aasm_state" => 1 })
