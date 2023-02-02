@@ -110,7 +110,7 @@ module InsurancePolicies
       # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def applied_aptc_amount_for(enrollments_for_month, calender_month, tax_household)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
-        primary_person_id = tax_household.primary&.person_id
+        primary_person_id = tax_household.primary&.person_id || tax_household.tax_household_members.first.person_id
         enr_thhs_for_month = en_tax_households.select do |enr_thh|
           enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id)
         end
