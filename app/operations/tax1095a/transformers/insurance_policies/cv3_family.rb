@@ -400,10 +400,12 @@ module Tax1095a
         def fetch_start_on_by_tax_household_and_policy(policy, tax_household)
           enrollments = policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           enrollments_thhs = fetch_enrollments_tax_households(enrollments)
-          tax_filer_person_id = tax_household.primary.person_id ||
+          tax_filer_person_id = tax_household.primary&.person_id ||
                                 tax_household.tax_household_members.first.person_id
           valid_enr_thhs = enrollments_thhs.select do |enr_thh|
-            enr_thh.tax_household.primary.person_id == tax_filer_person_id
+            primary_person_id = enr_thh.tax_household.primary&.person_id ||
+                                enr_thh.tax_household.tax_household_members.first.person_id
+            primary_person_id == tax_filer_person_id
           end
           valid_enr_thhs.flat_map(&:enrollment).pluck(:start_on).min
         end
@@ -417,10 +419,12 @@ module Tax1095a
 
         def update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          tax_filer_person_id = tax_household.primary.person_id ||
+          tax_filer_person_id = tax_household.primary&.person_id ||
                                 tax_household.tax_household_members.first.person_id
           valid_enr_thh = enrollments_thhs.detect do |enr_thh|
-            enr_thh.tax_household.primary.person_id == tax_filer_person_id
+            primary_person_id = enr_thh.tax_household.primary&.person_id ||
+                                enr_thh.tax_household.tax_household_members.first.person_id
+            primary_person_id == tax_filer_person_id
           end
           enrollment = valid_enr_thh.enrollment
           valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals, valid_enr_thh.tax_household)
@@ -440,7 +444,9 @@ module Tax1095a
           tax_filer_person_id = tax_household.primary&.person_id ||
                                 tax_household.tax_household_members.first.person_id
           enrollments_thhs.detect do |enr_thh|
-            enr_thh.tax_household.primary.person_id == tax_filer_person_id
+            primary_person_id = enr_thh.tax_household.primary&.person_id ||
+                                enr_thh.tax_household.tax_household_members.first.person_id
+            primary_person_id == tax_filer_person_id
           end.blank?
         end
 
