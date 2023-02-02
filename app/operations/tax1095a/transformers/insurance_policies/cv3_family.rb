@@ -401,7 +401,7 @@ module Tax1095a
           enrollments = policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           enrollments_thhs = fetch_enrollments_tax_households(enrollments)
           tax_filer_person_id = tax_household.primary.person_id ||
-                                tax_household.tax_household_members.first.person.person_id
+                                tax_household.tax_household_members.first.person_id
           valid_enr_thhs = enrollments_thhs.select do |enr_thh|
             enr_thh.tax_household.primary.person_id == tax_filer_person_id
           end
@@ -418,7 +418,7 @@ module Tax1095a
         def update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
           tax_filer_person_id = tax_household.primary.person_id ||
-                                tax_household.tax_household_members.first.person.person_id
+                                tax_household.tax_household_members.first.person_id
           valid_enr_thh = enrollments_thhs.detect do |enr_thh|
             enr_thh.tax_household.primary.person_id == tax_filer_person_id
           end
@@ -438,7 +438,7 @@ module Tax1095a
 
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
           tax_filer_person_id = tax_household.primary&.person_id ||
-                                tax_household.tax_household_members.first.person.person_id
+                                tax_household.tax_household_members.first.person_id
           enrollments_thhs.detect do |enr_thh|
             enr_thh.tax_household.primary.person_id == tax_filer_person_id
           end.blank?
