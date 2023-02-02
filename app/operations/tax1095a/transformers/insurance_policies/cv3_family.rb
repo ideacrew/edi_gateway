@@ -441,7 +441,7 @@ module Tax1095a
                                 tax_household.tax_household_members.first.person.person_id
           enrollments_thhs.detect do |enr_thh|
             enr_thh.tax_household.primary.person_id == tax_filer_person_id
-          end.present?
+          end.blank?
         end
 
         def construct_annual_premiums(months_of_year)

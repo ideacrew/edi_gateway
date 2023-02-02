@@ -167,6 +167,7 @@
                             ],
                             "aptc_csr_tax_households": [
                                 {
+                                    "hbx_assigned_id": "828762",
                                     "covered_individuals": [
                                         {
                                             "coverage_start_on": "2023-01-01",
