@@ -84,7 +84,10 @@ module InsurancePolicies
         aqhp_enr_thhs = fetch_aqhp_enrollments_tax_households(enrollments_tax_households)
         return irs_group.uqhp_tax_households(start_on.year) if aqhp_enr_thhs.blank?
 
-        tax_households = aqhp_enr_thhs.flat_map(&:tax_household)
+        tax_households = aqhp_enr_thhs.flat_map(&:tax_household).uniq do |tax_household|
+          tax_household.primary&.person_id
+        end
+
         thh_with_members_info = fetch_aqhp_thh_member_info(tax_households)
         thh_with_members_info.uniq(&:last).to_h.keys.presence || irs_group.uqhp_tax_households(start_on.year)
       end
