@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "pivotal_184157128"
+      - "edi_gw_new_refresh"
   pull_request:
     branches:
-      - "pivotal_184157128"
+      - "edi_gw_new_refresh"
 
 concurrency:
   group: docker-${{ github.ref }}

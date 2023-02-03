@@ -27,7 +27,7 @@ module IrsGroups
       logger = Logger.new("#{Rails.root}/log/glue_batch_refresh_director_#{Date.today.strftime('%Y_%m_%d')}.log")
       counter = 0
       logger.info("Operation started at #{DateTime.now} ")
-      values[:policies].each do |policy_id|
+      values[:policies].shuffle.each do |policy_id|
         if values[:policies_to_exclude].key?(policy_id)
           logger.info("skipped #{policy_id} since its in the exclusion list")
           next
