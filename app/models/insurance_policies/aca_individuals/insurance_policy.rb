@@ -33,8 +33,6 @@ module InsurancePolicies
       field :carrier_policy_id, type: String
       field :term_for_np, type: Boolean, default: false
 
-      validates :policy_id, uniqueness: true
-
       # indexes
       index({ "policy_id" => 1 })
       index({ "hbx_enrollment_ids" => 1 })

@@ -24,8 +24,6 @@ class Person
 
   embeds_many :phones, :inverse_of => :person
 
-  validates :hbx_id, uniqueness: true
-
   index({ name_last:  1 })
   index({ name_first: 1 })
   index({ name_last: 1, name_first: 1 })
