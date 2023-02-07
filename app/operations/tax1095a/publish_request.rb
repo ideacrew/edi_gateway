@@ -24,6 +24,7 @@ module Tax1095a
       errors << "tax_year required" unless params[:tax_year]
       errors << "tax_form_type required" unless params[:tax_form_type]
       errors << "irs_group_id required" unless params[:irs_group_id]
+      errors << "transmission_kind required" unless params[:transmission_kind]
 
       errors.empty? ? Success(params) : Failure(errors)
     end
@@ -32,7 +33,8 @@ module Tax1095a
       event("events.insurance_policies.tax1095a_payload.requested", attributes: {
               tax_year: values[:tax_year],
               tax_form_type: values[:tax_form_type],
-              irs_group_id: values[:irs_group_id]
+              irs_group_id: values[:irs_group_id],
+              transmission_kind: values[:transmission_kind]
             })
     end
 

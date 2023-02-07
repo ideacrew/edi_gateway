@@ -21,6 +21,7 @@ module Tax1095a
       errors << "tax_form_type required" unless params[:tax_form_type]
       errors << "irs_groups required and must be an array" unless params[:irs_groups].is_a?(Array)
       errors << "irs_groups_to_exclude required and must be an hash" unless params[:irs_groups_to_exclude].is_a?(Hash)
+      errors << "transmission_kind required" unless params[:transmission_kind]
 
       errors.empty? ? Success(params) : Failure(errors)
     end
@@ -40,6 +41,7 @@ module Tax1095a
         ::Tax1095a::PublishRequest.new.call(
           tax_year: values[:tax_year],
           tax_form_type: values[:tax_form_type],
+          transmission_kind: values[:transmission_kind],
           irs_group_id: irs_group_id
         )
 

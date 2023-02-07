@@ -18,7 +18,10 @@ RSpec.describe ::Tax1095a::Transformers::InsurancePolicies::Cv3Family do
 
     it 'should return payload' do
       example_output_hash = JSON.parse(File.read(Pathname.pwd.join("spec/test_payloads/sample_cv3_family_policies.json")))
-      expect(JSON.parse(@valid_result.value!.to_json)).to eq(example_output_hash)
+      contract = AcaEntities::Contracts::Families::FamilyContract.new.call(example_output_hash)
+      entity_cv3_payload = AcaEntities::Families::Family.new(contract.to_h)
+      result = JSON.parse(entity_cv3_payload.to_hash.to_json)
+      expect(JSON.parse(@valid_result.value!.to_json)).to eq(result)
     end
   end
 
