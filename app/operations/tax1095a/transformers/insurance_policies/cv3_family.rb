@@ -460,6 +460,7 @@ module Tax1095a
         end
 
         # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Metrics/CyclomaticComplexity
         def construct_coverage_information(insurance_policy, covered_individuals, tax_household)
           (1..12).collect do |month|
             enrollments_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
@@ -525,6 +526,7 @@ module Tax1095a
         end
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/PerceivedComplexity
+        # rubocop:enable Metrics/CyclomaticComplexity
 
         def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
