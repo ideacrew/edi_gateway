@@ -16,6 +16,20 @@ GIT
       rbnacl (~> 7.1)
 
 GIT
+  remote: https://github.com/ideacrew/aca_x12_entities.git
+  revision: 8ff3b0ec52f968d91d807052697dec48d102a723
+  branch: trunk
+  specs:
+    aca_x12_entities (0.1.0)
+      activesupport
+      dry-monads (~> 1.2)
+      dry-struct (~> 1.0)
+      dry-transformer (~> 0.1.1)
+      dry-types (~> 1.0)
+      dry-validation (~> 1.2)
+      nokogiri-happymapper
+
+GIT
   remote: https://github.com/ideacrew/event_source.git
   revision: 193d07ab0a60b82568f5983c7aee967a1234755c
   branch: trunk
@@ -542,6 +556,7 @@ PLATFORMS
 
 DEPENDENCIES
   aca_entities!
+  aca_x12_entities!
   bootsnap
   capybara
   carrierwave-mongoid
