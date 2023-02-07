@@ -18,7 +18,7 @@ module Tax1095a
 
         # params {tax_year: ,tax_form_type:, irs_group_id: }
         def call(params)
-          tax_year, tax_form_type, irs_group_id = yield validate(params)
+          _tax_year, tax_form_type, irs_group_id = yield validate(params)
           irs_group = yield fetch_irs_group(irs_group_id)
           insurance_agreements = yield fetch_insurance_agreements(irs_group)
           cv3_payload = yield construct_cv3_family(irs_group, insurance_agreements, tax_form_type)

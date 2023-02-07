@@ -3,7 +3,6 @@
 require 'securerandom'
 
 # rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/ClassLength
 # Module to create enrollments from cv3
 module IrsGroups
   # persist insurance agreements and nested models
@@ -236,7 +235,6 @@ module IrsGroups
     end
 
     # rubocop:disable Metrics/MethodLength
-    # rubocop:disable Metrics/CyclomaticComplexity
     def create_tax_hh_group_and_households(enrollment, insurance_policy)
       end_on = enrollment.aasm_state == "coverage_canceled" ? enrollment.effective_on : enrollment.terminated_on
       tax_hh_group = ::InsurancePolicies::AcaIndividuals::TaxHouseholdGroup
@@ -276,9 +274,8 @@ module IrsGroups
         "dependent"
       end
     end
-    # rubocop:enable Metrics/MethodLength
-    # rubocop:enable Metrics/CyclomaticComplexity
 
+    # rubocop:enable Metrics/MethodLength
     def create_enrollments_tax_households(enrollment, enrollment_hash, tax_household)
       enr_tax_household = ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds
                           .create!(tax_household_id: tax_household.id,
@@ -339,4 +336,3 @@ module IrsGroups
   end
 end
 # rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/ClassLength
