@@ -8,7 +8,7 @@ module Subscribers
 
       subscribe(:on_refresh_requested) do |delivery_info, _properties, response|
         logger.info "on_refresh_requested response: #{response}"
-        subscriber_logger = subscriber_logger_for(:on_refresh_requested)
+        subscriber_logger = subscriber_logger_for(:on_insurance_policies_refresh_requested)
         response = JSON.parse(response, symbolize_names: true)
         logger.info "on_refresh_requested response: #{response}"
         subscriber_logger.info "on_refresh_requested response: #{response}"
