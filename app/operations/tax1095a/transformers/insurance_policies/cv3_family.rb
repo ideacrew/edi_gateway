@@ -469,7 +469,7 @@ module Tax1095a
             next unless any_thh_members_enrolled?(tax_household, enrollments_for_month)
             next if enrollments_tax_household_for_month_empty?(enrollments_for_month, tax_household)
 
-            if tax_household.is_aqhp
+            if tax_household.is_aqhp && covered_individuals.present?
               update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
             end
 
