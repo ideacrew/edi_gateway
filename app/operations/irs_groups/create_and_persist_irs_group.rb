@@ -13,7 +13,7 @@ module IrsGroups
       @family_entity = validated_params[:family]
       @primary_person = yield fetch_primary_person(@family_entity)
       @policies = validated_params[:policies]
-      @irs_group = yield create_irs_group
+      @irs_group = yield create_or_update_irs_group
       result = yield create_insurance_agreement_and_nested_data
 
       Success(result)
@@ -28,16 +28,32 @@ module IrsGroups
       Success(params)
     end
 
-    def create_irs_group
+    def create_or_update_irs_group
+      existing_irs_group = fetch_irs_group
+      irs_group = if existing_irs_group.present?
+                    existing_irs_group.insurance_agreements = []
+                    existing_irs_group.save!
+                    existing_irs_group
+                  else
+                    create_new_irs_group
+                  end
+
+      Success(irs_group)
+    end
+
+    def create_new_irs_group
       year = Date.today.year
       hbx_id = @primary_person.hbx_id
       irs_group_id = construct_irs_group_id(year.to_s.last(2), hbx_id)
       policy_start_date = @policies.map(&:subscriber).min_by(&:coverage_start)&.coverage_start
       start_on = policy_start_date || Date.today.beginning_of_year
-      irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: start_on,
-                                                                  family_assigned_hbx_id: @family_entity.hbx_id)
+      irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.new(irs_group_id: irs_group_id, start_on: start_on)
       irs_group.save!
-      Success(irs_group)
+      irs_group
+    end
+
+    def fetch_irs_group
+      InsurancePolicies::AcaIndividuals::IrsGroup.where(family_assigned_hbx_id: @family_entity.hbx_id).first
     end
 
     def create_insurance_agreement_and_nested_data

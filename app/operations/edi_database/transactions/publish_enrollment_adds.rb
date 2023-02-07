@@ -43,6 +43,7 @@ module EdiDatabase
         customer_state = fetch_customer(customer_new_state) || {}
 
         return Success([detect_initial_enrollment(customer_state, customer_new_state)]) if customer_state.empty?
+
         policy_events = detect_new_policies(customer_state, customer_new_state)
         tax_household_events = detect_new_tax_households(customer_state, customer_new_state)
 
@@ -82,12 +83,12 @@ module EdiDatabase
         return if tax_hhs == new_tax_hhs
 
         new_tax_household_set =
-          new_tax_hhs.reduce([]) do |list, nthh|
+          new_tax_hhs.each_with_object([]) do |nthh, list|
             list << nthh if tax_hhs.none? { |tax_hh| tax_hh.exchange_assigned_id == nthh.fetch(:exchange_assigned_id) }
-            list
           end
 
         return nil if new_tax_household_set.empty?
+
         build_event('tax_households_added', new_tax_household_set, customer_state, customer_new_state) || []
       end
 
@@ -105,12 +106,12 @@ module EdiDatabase
         return if policies == new_policies
 
         new_policy_set =
-          new_policies.reduce([]) do |list, np|
+          new_policies.each_with_object([]) do |np, list|
             list << np if policies.none? { |policy| policy[:exchange_assigned_id] == np.fetch(:exchange_assigned_id) }
-            list
           end
 
         return nil if new_policy_set.empty?
+
         build_event('policies_added', new_policy_set, customer_state, customer_new_state) || []
       end
 

@@ -7,9 +7,9 @@ module Subscribers
       send(:include, Dry::Monads[:result, :do])
       send(:include, ::EventSource::Subscriber[amqp: 'edi_gateway.user_fees.enrollment_adds'])
 
-      subscribe(:on_policies_added) { |delivery_info, _metadata, response| ack(delivery_info.delivery_tag) }
+      subscribe(:on_policies_added) { |delivery_info, _metadata, _response| ack(delivery_info.delivery_tag) }
 
-      subscribe(:on_tax_households_added) { |delivery_info, _metadata, response| ack(delivery_info.delivery_tag) }
+      subscribe(:on_tax_households_added) { |delivery_info, _metadata, _response| ack(delivery_info.delivery_tag) }
 
       subscribe(:on_initial_enrollment_added) do |delivery_info, _metadata, response|
         subscriber_logger = subscriber_logger_for(:on_initial_enrollment_added)

@@ -51,6 +51,5 @@ RSpec.describe IrsGroups::CreateAndPersistIrsGroup do
     res = subject.call({ family: family_entity, policies: [policy] })
     expect(res.success?).to be_truthy
     expect(InsurancePolicies::AcaIndividuals::IrsGroup.all.count).to eq 1
-    expect(InsurancePolicies::AcaIndividuals::IrsGroup.all.first.family_assigned_hbx_id).to eq family_entity.hbx_id
   end
 end

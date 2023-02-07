@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ideacrew/aca_entities.git
-  revision: 63c341af12eb303f38e6ce944209d67294bc0dd4
+  revision: faddf28c3fafd3a36436714a59e8ac1353712e53
   branch: trunk
   specs:
     aca_entities (0.10.0)
@@ -307,9 +307,19 @@ GEM
       activemodel (>= 5.1, < 7.1, != 7.0.0)
       mongo (>= 2.10.5, < 3.0.0)
       ruby2_keywords (~> 0.0.5)
+    mongoid-compatibility (0.6.0)
+      activesupport
+      mongoid (>= 2.0)
     mongoid-grid_fs (2.4.0)
       mime-types (>= 1.0, < 4.0)
       mongoid (>= 3.0, < 8.0)
+    mongoid-rspec (4.1.0)
+      activesupport (>= 3.0.0)
+      mongoid (>= 3.1)
+      mongoid-compatibility (>= 0.5.1)
+      rspec-core (~> 3.3)
+      rspec-expectations (~> 3.3)
+      rspec-mocks (~> 3.3)
     mono_logger (1.1.1)
     msgpack (1.5.6)
     multi_json (1.15.0)
@@ -562,6 +572,7 @@ DEPENDENCIES
   keepr (~> 0.7.0)
   money-rails (~> 1.15)
   mongoid (~> 7.4)
+  mongoid-rspec
   nokogiri-happymapper
   pg
   prettier

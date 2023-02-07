@@ -8,11 +8,9 @@ class Address
   TYPES = %w(home work mailing).freeze
 
   field :address_type, type: String
-  # rubocop:disable Naming/VariableNumber
   field :address_1, type: String
   field :address_2, type: String, default: ""
   field :address_3, type: String, default: ""
-  # rubocop:enable Naming/VariableNumber
   field :city, type: String
   field :county, type: String
   field :state, type: String

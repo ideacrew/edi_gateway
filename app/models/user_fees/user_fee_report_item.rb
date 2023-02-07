@@ -38,14 +38,14 @@ module UserFees
 
     index({ hios_id: 1 })
     index({ policy_subscriber_hbx_id: 1 })
-    index(
-      { enrolled_member_hbx_id: 1, exchange_assigned_policy_id: 1, hbx_qhp_id: 1, marketplace_segment_id: 1 },
-      { unique: false }
-    )
-    index(
-      { enrolled_member_hbx_id: 1, exchange_assigned_policy_id: 1, hbx_qhp_id: 1, marketplace_segment_id: 1 },
-      { unique: true }
-    )
+    # index(
+    #   { enrolled_member_hbx_id: 1, exchange_assigned_policy_id: 1, hbx_qhp_id: 1, marketplace_segment_id: 1 },
+    #   { unique: false }
+    # )
+    # index(
+    #   { enrolled_member_hbx_id: 1, exchange_assigned_policy_id: 1, hbx_qhp_id: 1, marketplace_segment_id: 1 },
+    #   { unique: true }
+    # )
 
     def to_hash
       values = self.serializable_hash.deep_symbolize_keys.merge(id: id.to_s)

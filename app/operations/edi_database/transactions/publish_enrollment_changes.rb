@@ -79,12 +79,12 @@ module EdiDatabase
         return if tax_hhs == new_tax_hhs
 
         new_tax_household_set =
-          new_tax_hhs.reduce([]) do |list, nthh|
+          new_tax_hhs.each_with_object([]) do |nthh, list|
             list << nthh if tax_hhs.none? { |tax_hh| tax_hh.exchange_assigned_id == nthh.fetch(:exchange_assigned_id) }
-            list
           end
 
         return nil if new_tax_household_set.empty?
+
         build_event('tax_households_added', new_tax_household_set, customer_state, customer_new_state) || []
       end
 
@@ -104,9 +104,8 @@ module EdiDatabase
 
         # new_enrolled_member_set = new_enrolled_members - enrolled_members
         new_enrolled_member_set =
-          new_enrolled_members.reduce([]) do |list, nm|
+          new_enrolled_members.each_with_object([]) do |nm, list|
             list << nm if enrolled_members.none? { |em| em.dig(:member, :hbx_id) == nm.dig(:member, :hbx_id) }
-            list
           end
 
         # new_enrolled_member_set =
@@ -116,6 +115,7 @@ module EdiDatabase
         #   end
 
         return nil if new_enrolled_member_set.empty?
+
         build_event('enrolled_members_added', new_enrolled_member_set, customer_state, customer_new_state) || []
       end
 

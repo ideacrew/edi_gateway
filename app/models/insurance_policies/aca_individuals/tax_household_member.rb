@@ -2,32 +2,46 @@
 
 module InsurancePolicies
   module AcaIndividuals
+    # Every TaxHousehold will have one or more TaxHouseholdMembers
+    # This class constructs TaxHouseholdMember object
     class TaxHouseholdMember
       include Mongoid::Document
       include Mongoid::Timestamps
+      include DomainModels::Domainable
 
-      field :is_ia_eligible, type: Boolean, default: false
-      field :is_medicaid_chip_eligible, type: Boolean, default: false
-      field :is_totally_ineligible, type: Boolean, default: false
-      field :is_uqhp_eligible, type: Boolean, default: false
+      belongs_to :tax_household, class_name: 'InsurancePolicies::AcaIndividuals::TaxHousehold', index: true
+
+      belongs_to :person, class_name: 'People::Person', index: true
+      accepts_nested_attributes_for :person
+
+      field :hbx_id, type: String
       field :is_subscriber, type: Boolean, default: false
       field :is_tax_filer, type: Boolean
+      field :financial_assistance_applicant, type: Boolean
       field :reason, type: String
-      field :is_non_magi_medicaid_eligible, type: Boolean, default: false
-      field :magi_as_percentage_of_fpl, type: Float, default: 0.0
-      field :magi_medicaid_type, type: String
-      field :magi_medicaid_category, type: String
-      field :magi_medicaid_monthly_household_income, type: Money, default: 0.00
-      field :magi_medicaid_monthly_income_limit, type: Money, default: 0.00
-      field :medicaid_household_size, type: Integer
-      field :is_without_assistance, type: Boolean, default: false
-      field :csr, type: Integer, default: 0
-      field :person_hbx_id, type: String
-      field :tax_filer_status, type: String
-      field :slcsp_benchmark_premium, type: Money
-      field :relation_with_primary, type: String
+      field :is_ia_eligible, type: Boolean
+      field :is_medicaid_chip_eligible, type: Boolean
+      field :is_totally_ineligible, type: Boolean
+      field :is_uqhp_eligible, type: Boolean
+      field :is_non_magi_medicaid_eligible, type: Boolean
+      field :is_without_assistance, type: Boolean
 
-      embedded_in :tax_household, class_name: "::InsurancePolicies::AcaIndividuals::TaxHousehold"
+      field :relation_with_primary, type: String
+      field :tax_filer_status, type: String
+
+      # indexes
+      index({ hbx_id: 1 })
+      index({ tax_filer_status: 1 })
+      index({ is_subscriber: 1 })
+      index({ is_ia_eligible: 1 })
+      index({ relation_with_primary: 1 })
+      index({ relation_with_primary: 1 })
+      index({ person_id: 1, tax_household: 1 })
+
+
+      # TODO: rename slcsp_benchmark_premium to slcsp_benchmark_premium_amount and use
+      # in Enrollment model (THHs will not show up in UQHP CV3s)
+      # field :slcsp_benchmark_premium, type: Money
     end
   end
 end

@@ -25,6 +25,7 @@ module UserFees
 
       def validate(message)
         return Success(message) if message.is_an_instance_of Hash
+
         Failure('hash expected')
       end
 

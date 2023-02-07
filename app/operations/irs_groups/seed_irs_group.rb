@@ -11,9 +11,11 @@ module IrsGroups
     def call(params)
       validated_family_hash = yield validate_family_json_hash(params[:payload])
       family = yield build_family_entity(validated_family_hash)
-      policies = yield FetchPoliciesFromGlue.new.call({ family: family })
-      result = yield CreateAndPersistIrsGroup.new.call({ family: family, policies: policies })
-      Success(result)
+      _thh_groups = yield CreateOrUpdateTaxHouseholdsAndGroups.new.call({ family: family,
+                                                                          year: params[:year].to_i })
+      enr_policies_result = yield CreateOrUpdateEnrollmentsForPolicies.new.call({ family: family,
+                                                                                  year: params[:year].to_i })
+      Success(enr_policies_result)
     end
 
     private

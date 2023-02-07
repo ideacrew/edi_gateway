@@ -55,4 +55,8 @@ class Enrollee
   def member
     Queries::MemberByHbxIdQuery.new(m_id).execute
   end
+
+  def coverage_end_date
+    coverage_end.present? ? coverage_end : policy.policy_end_on
+  end
 end

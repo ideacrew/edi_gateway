@@ -23,6 +23,7 @@ module X12
         end.or(Failure(:parse_payload_failed))
         return result unless result.success?
         return Failure(:parse_payload_failed) if result.value!.blank?
+
         result
       end
 

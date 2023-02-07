@@ -40,14 +40,24 @@ module IrsGroups
 
       return Failure("Unable to find person in glue") if glue_person.blank?
 
-      # TODO: look for policies where this person is present as a responsible party or as a subscriber
-      active_policies = glue_person.policies.select do |policy|
-        policy.coverage_type == "health" && %w[submitted terminated].include?(policy.aasm_state)
+      policies = glue_person.policies.where(:kind.ne => "coverall").to_a
+      policies.reject! do |pol|
+        non_eligible_policy(pol)
       end
 
-      return Failure("No active policies") if active_policies.blank?
+      return Failure("No active policies") if policies.blank?
 
-      Success(active_policies)
+      Success(policies)
+    end
+
+    def non_eligible_policy(pol)
+      return true if pol.canceled?
+      return true if pol.kind == "coverall"
+      return true if pol.plan.coverage_type == "dental"
+      return true if pol.plan.metal_level == "catastrophic"
+      return true if pol.subscriber.cp_id.blank?
+
+      false
     end
   end
 end

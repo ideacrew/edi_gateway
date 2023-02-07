@@ -1,0 +1,439 @@
+{
+    "hbx_id": "2200000001000533",
+    "family_members": [
+        {
+            "is_primary_applicant": true,
+            "person": {
+                "hbx_id": "1000595",
+                "person_name": {
+                    "first_name": "first name",
+                    "last_name": "last name"
+                },
+                "person_demographics": {
+                    "gender": "female",
+                    "encrypted_ssn": "s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
+                    "dob": "2010-01-01"
+                },
+                "person_health": {},
+                "is_active": true,
+                "addresses": [
+                    {
+                        "kind": "home",
+                        "address_1": "S Street NW",
+                        "address_2": "",
+                        "address_3": "",
+                        "city": "Awesome city",
+                        "county_name": "Awesome county",
+                        "state": "DC",
+                        "zip": "20002"
+                    }
+                ],
+                "emails": [
+                    {
+                        "kind": "home",
+                        "address": "test@gmail.com"
+                    }
+                ]
+            }
+        }
+    ],
+    "households": [
+        {
+            "start_date": "1970-01-01",
+            "is_active": true,
+            "coverage_households": [
+                {
+                    "is_immediate_family": true,
+                    "coverage_household_members": []
+                }
+            ],
+            "insurance_agreements": [
+                {
+                    "plan_year": "2023",
+                    "contract_holder": {
+                        "hbx_id": "1000595",
+                        "person_name": {
+                            "first_name": "first name",
+                            "last_name": "last name"
+                        },
+                        "encrypted_ssn": "s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
+                        "dob": "2010-01-01",
+                        "gender": "female",
+                        "addresses": [
+                            {
+                                "kind": "home",
+                                "address_1": "S Street NW",
+                                "address_2": "",
+                                "address_3": "",
+                                "city": "Awesome city",
+                                "county_name": "Awesome county",
+                                "state_abbreviation": "DC",
+                                "zip_code": "20002"
+                            }
+                        ]
+                    },
+                    "insurance_provider": {
+                        "title": "ABC carrier",
+                        "hios_id": "123456",
+                        "fein": "311705652",
+                        "insurance_products": [
+                            {
+                                "name": "ABC plan",
+                                "hios_plan_id": "123456",
+                                "plan_year": 2023,
+                                "coverage_type": "health",
+                                "metal_level": "silver",
+                                "market_type": "individual",
+                                "ehb": "1.0"
+                            }
+                        ]
+                    },
+                    "insurance_policies": [
+                        {
+                            "policy_id": "1000",
+                            "insurance_product": {
+                                "name": "ABC plan",
+                                "hios_plan_id": "123456",
+                                "plan_year": 2023,
+                                "coverage_type": "health",
+                                "metal_level": "silver",
+                                "market_type": "individual",
+                                "ehb": "1.0"
+                            },
+                            "hbx_enrollment_ids": [
+                                "1000"
+                            ],
+                            "start_on": "2023-01-01",
+                            "end_on": "2023-12-31",
+                            "enrollments": [
+                                {
+                                    "start_on": "2023-01-01",
+                                    "subscriber": {
+                                        "member": {
+                                            "hbx_id": "1000595",
+                                            "member_id": "1000595",
+                                            "person_name": {
+                                                "first_name": "first name",
+                                                "last_name": "last name",
+                                                "middle_name": null
+                                            }
+                                        },
+                                        "dob": null,
+                                        "gender": "male",
+                                        "addresses": [
+                                            {
+                                                "kind": "home",
+                                                "address_1": "S Street NW",
+                                                "address_2": "",
+                                                "address_3": "",
+                                                "city": "Awesome city",
+                                                "county_name": "Awesome county",
+                                                "state": "DC",
+                                                "zip": "20002"
+                                            }
+                                        ],
+                                        "emails": [
+                                            {
+                                                "kind": "home",
+                                                "address": "test@gmail.com"
+                                            }
+                                        ]
+                                    },
+                                    "dependents": [],
+                                    "total_premium_amount": {
+                                        "cents": 50000,
+                                        "currency_iso": "USD"
+                                    },
+                                    "tax_households": [
+                                        {
+                                            "hbx_id": "828762",
+                                            "tax_household_members": [
+                                                {
+                                                    "family_member_reference": {
+                                                        "family_member_hbx_id": "1000595",
+                                                        "relation_with_primary": "self"
+                                                    },
+                                                    "tax_filer_status": "tax_filer",
+                                                    "is_subscriber": true
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "total_premium_adjustment_amount": {
+                                        "cents": 5000,
+                                        "currency_iso": "USD"
+                                    }
+                                }
+                            ],
+                            "aptc_csr_tax_households": [
+                                {
+                                    "hbx_assigned_id": "828762",
+                                    "covered_individuals": [
+                                        {
+                                            "coverage_start_on": "2023-01-01",
+                                            "coverage_end_on": "2023-12-31",
+                                            "person": {
+                                                "hbx_id": "1000595",
+                                                "person_name": {
+                                                    "first_name": "first name",
+                                                    "last_name": "last name"
+                                                },
+                                                "person_demographics": {
+                                                    "gender": "female",
+                                                    "encrypted_ssn": "s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
+                                                    "dob": "2010-01-01"
+                                                },
+                                                "person_health": {},
+                                                "is_active": true,
+                                                "addresses": [
+                                                    {
+                                                        "kind": "home",
+                                                        "address_1": "S Street NW",
+                                                        "address_2": "",
+                                                        "address_3": "",
+                                                        "city": "Awesome city",
+                                                        "county_name": "Awesome county",
+                                                        "state": "DC",
+                                                        "zip": "20002"
+                                                    }
+                                                ],
+                                                "emails": [
+                                                    {
+                                                        "kind": "home",
+                                                        "address": "test@gmail.com"
+                                                    }
+                                                ]
+                                            },
+                                            "relation_with_primary": "self",
+                                            "filer_status": "tax_filer"
+                                        }
+                                    ],
+                                    "months_of_year": [
+                                        {
+                                            "month": "January",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "February",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "March",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "April",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "May",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "June",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "July",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "August",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "September",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "October",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "November",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "month": "December",
+                                            "coverage_information": {
+                                                "tax_credit": {
+                                                    "cents": 5000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "total_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                },
+                                                "slcsp_benchmark_premium": {
+                                                    "cents": 50000,
+                                                    "currency_iso": "USD"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "annual_premiums": {
+                                        "tax_credit": {
+                                            "cents": 60000,
+                                            "currency_iso": "USD"
+                                        },
+                                        "total_premium": {
+                                            "cents": 600000,
+                                            "currency_iso": "USD"
+                                        },
+                                        "slcsp_benchmark_premium": {
+                                            "cents": 600000,
+                                            "currency_iso": "USD"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

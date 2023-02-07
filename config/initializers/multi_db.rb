@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Multi-db Configuration
 #
 # This file is used for configuration settings related to multiple databases.

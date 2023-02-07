@@ -66,7 +66,7 @@ RSpec.describe IrsGroups::FetchPoliciesFromGlue do
     plan = Plan.create!(:name => "test_plan", :hios_plan_id => "966667ME-01", carrier_id: carrier.id, :coverage_type => "health",
                         year: Date.today.year)
     enrollee = Enrollee.new(m_id: person.authority_member.hbx_member_id, rel_code: 'self',
-                            coverage_start: Date.new(Date.today.year, 1, 1))
+                            coverage_start: Date.new(Date.today.year, 1, 1), cp_id: "12345")
     policy = Policy.create!(id: 1, enrollment_group_id: "12345", plan: plan,
                             kind: 'individual',
                             aasm_state: "submitted",
