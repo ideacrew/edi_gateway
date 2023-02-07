@@ -29,7 +29,10 @@ RSpec.shared_context 'one_enrolled_member' do
   let!(:start_on) { Date.new(2023, 1, 1) }
 
   let!(:subscriber_person) { People::Person.all.first }
-  let!(:enrollment) { FactoryBot.create(:enrollment, hbx_id: hbx_enrollment[:hbx_id]) }
+  let!(:enrollment) do
+    FactoryBot.create(:enrollment, start_on: start_on, effectuated_on: start_on,
+                      hbx_id: hbx_enrollment[:hbx_id])
+  end
   let!(:irs_group) do
     irs_group = enrollment.insurance_policy.irs_group
     irs_group.start_on = start_on.year
