@@ -82,7 +82,9 @@ module InsurancePolicies
       def effectuated_aptc_tax_households_with_unique_composition
         enrollments_tax_households = enrollments_tax_households(effectuated_enrollments)
         aqhp_enr_thhs = fetch_aqhp_enrollments_tax_households(enrollments_tax_households)
-        return irs_group.uqhp_tax_households(start_on.year) if aqhp_enr_thhs.blank?
+        uqhp_enr_thhs = fetch_uqhp_enrollments_tax_households(enrollments_tax_households)
+
+        return [uqhp_enr_thhs&.last&.tax_household] || irs_group.uqhp_tax_households(start_on.year) if aqhp_enr_thhs.blank?
 
         tax_households = aqhp_enr_thhs.flat_map(&:tax_household).uniq do |tax_household|
           tax_household.primary&.person_id
@@ -101,6 +103,12 @@ module InsurancePolicies
 
       def fetch_aqhp_enrollments_tax_households(enrollments_tax_households)
         enrollments_tax_households.select do |enr_thh|
+          enr_thh.tax_household.is_aqhp
+        end
+      end
+
+      def fetch_uqhp_enrollments_tax_households(enrollments_tax_households)
+        enrollments_tax_households.reject do |enr_thh|
           enr_thh.tax_household.is_aqhp
         end
       end

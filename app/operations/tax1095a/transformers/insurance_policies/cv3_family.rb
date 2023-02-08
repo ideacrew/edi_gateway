@@ -572,12 +572,11 @@ module Tax1095a
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
           tax_filer = tax_household.primary || tax_household.tax_household_members.first
-          enr_thh_for_month = enr_thhs.detect do |enr_thh|
-            if enr_thh.tax_household.id == tax_household.id
-              tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
-            end
+          enr_thhs_for_month = enr_thhs.select do |_enr_thh|
+            tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
           end
-          enr_thh_for_month&.tax_household&.tax_household_members ||
+
+          enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
             thh_members_from_enr_thhs
         end
         # rubocop:enable Metrics/CyclomaticComplexity
