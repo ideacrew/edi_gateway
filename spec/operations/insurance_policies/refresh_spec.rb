@@ -12,7 +12,7 @@ RSpec.describe InsurancePolicies::Refresh, dbclean: :after_each do
       it 'returns a success with a message' do
         expect(
           subject.success
-        ).to eq('Successfully processed event: enroll.insurance_policies.refresh_requested')
+        ).to eq('Successfully published event: events.families.find_by_requested')
       end
     end
 
