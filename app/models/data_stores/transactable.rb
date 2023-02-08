@@ -42,10 +42,10 @@ module DataStores
       # delegate :started_at_timestamp, to: :request_event_timestamp
       # delegate :ended_at, to: :response_event,
 
-      def initialize(args)
-        super
-        @status_kinds = options[:status_kinds] || DEFAULT_STATUS_KINDS
-      end
+      # def initialize(args)
+      #   super
+      #   @status_kinds = options[:status_kinds] || DEFAULT_STATUS_KINDS
+      # end
 
       def status=(value)
         raise ArgumentError "must be one of: #{@status_kinds}" unless @status_kinds.includes?(value)
