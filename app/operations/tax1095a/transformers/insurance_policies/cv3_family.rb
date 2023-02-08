@@ -368,10 +368,11 @@ module Tax1095a
           tax_households.collect do |tax_household|
             next unless any_thh_members_enrolled?(tax_household, enrollments)
 
-            months_of_year = construct_coverage_information(insurance_policy, tax_household)
+            covered_individuals = construct_covered_individuals(enrollments, tax_household)
+            months_of_year = construct_coverage_information(insurance_policy, covered_individuals, tax_household)
             {
               hbx_assigned_id: tax_household.hbx_id,
-              covered_individuals: construct_covered_individuals(enrollments, tax_household),
+              covered_individuals: covered_individuals,
               months_of_year: months_of_year.compact,
               annual_premiums: construct_annual_premiums(months_of_year)
             }
@@ -396,6 +397,57 @@ module Tax1095a
           end
         end
 
+        def valid_enrollment_tax_household?(enr_thh, tax_household)
+          tax_filer_id = tax_household.primary&.person_id ||
+                         tax_household.tax_household_members.first.person_id
+
+          enr_thh_tax_filer_id = enr_thh.tax_household.primary&.person_id ||
+                                 enr_thh.tax_household.tax_household_members.first.person_id
+
+          enr_thh_tax_filer_id == tax_filer_id
+        end
+
+        def fetch_start_on_by_tax_household_and_policy(policy, tax_household)
+          enrollments = policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
+          enrollments_thhs = fetch_enrollments_tax_households(enrollments)
+          valid_enr_thhs = enrollments_thhs.select do |enr_thh|
+            valid_enrollment_tax_household?(enr_thh, tax_household)
+          end
+          valid_enr_thhs.flat_map(&:enrollment).pluck(:start_on).min
+        end
+
+        def covered_individuals_from_tax_household(covered_individuals, tax_household)
+          perso_hbx_ids = tax_household.tax_household_members.flat_map(&:person).flat_map(&:hbx_id)
+          covered_individuals.select do |individual|
+            perso_hbx_ids.include?(individual[:person][:hbx_id])
+          end
+        end
+
+        def update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
+          enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
+          valid_enr_thh = enrollments_thhs.detect do |enr_thh|
+            valid_enrollment_tax_household?(enr_thh, tax_household)
+          end
+          enrollment = valid_enr_thh.enrollment
+          valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals, valid_enr_thh.tax_household)
+          enrollment_start_on = fetch_start_on_by_tax_household_and_policy(enrollment.insurance_policy, tax_household)
+
+          valid_covered_individuals.map! do |individual|
+            individual[:coverage_start_on] = enrollment_start_on
+            individual[:coverage_end_on] = enrollment.enrollment_end_on
+            individual
+          end
+        end
+
+        def enrollments_tax_household_for_month_empty?(enrollments_for_month, tax_household)
+          return false unless tax_household.is_aqhp
+
+          enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
+          enrollments_thhs.detect do |enr_thh|
+            valid_enrollment_tax_household?(enr_thh, tax_household)
+          end.blank?
+        end
+
         def construct_annual_premiums(months_of_year)
           all_coverage_information = months_of_year.compact.collect { |m| m[:coverage_information] }
 
@@ -408,26 +460,24 @@ module Tax1095a
         end
 
         # rubocop:disable Metrics/MethodLength
-        def construct_coverage_information(insurance_policy, tax_household)
+        # rubocop:disable Metrics/CyclomaticComplexity
+        def construct_coverage_information(insurance_policy, covered_individuals, tax_household)
           (1..12).collect do |month|
             enrollments_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
                                     .enrollments_for_month(month, insurance_policy.start_on.year, [insurance_policy])
             next if enrollments_for_month.blank?
             next unless any_thh_members_enrolled?(tax_household, enrollments_for_month)
+            next if enrollments_tax_household_for_month_empty?(enrollments_for_month, tax_household)
 
-            _enrolled_members_in_month = fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month,
-                                                                                             tax_household)
+            if tax_household.is_aqhp && covered_individuals.present?
+              update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
+            end
+
             thh_members = fetch_tax_household_members(enrollments_for_month)
             pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members,
                                                                                          month)
 
             pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
-            # aptc_tax_credit = if tax_household.is_aqhp == true
-            #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month, tax_household)
-            #                   else
-            #                     insurance_policy.fetch_aptc_tax_credit(enrollments_for_month)
-            #                   end
-
             aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 
             slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
@@ -476,12 +526,16 @@ module Tax1095a
         end
         # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/PerceivedComplexity
+        # rubocop:enable Metrics/CyclomaticComplexity
 
         def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
+          valid_enr_thh = enrs_thhs.select do |enr_thh|
+            valid_enrollment_tax_household?(enr_thh, tax_household)
+          end
           enrolled_members = [enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)]
                              .flatten
-          thh_members = fetch_thh_members_from_enr_thhs(enrs_thhs, tax_household)
+          thh_members = fetch_thh_members_from_enr_thhs(valid_enr_thh, tax_household)
           enrolled_members.select { |enr_member| thh_members.map(&:person_id).include?(enr_member.person_id) }
         end
 
@@ -517,11 +571,12 @@ module Tax1095a
           return thh_members_from_enr_thhs if enr_thhs.present? && !tax_household.is_aqhp
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
-          tax_filer = tax_household.primary
-          enr_thh_for_month = enr_thhs.select do |enr_thh|
-            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
-          end.last
-          enr_thh_for_month&.tax_household&.tax_household_members ||
+          tax_filer = tax_household.primary || tax_household.tax_household_members.first
+          enr_thhs_for_month = enr_thhs.select do |_enr_thh|
+            tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
+          end
+
+          enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
             thh_members_from_enr_thhs
         end
         # rubocop:enable Metrics/CyclomaticComplexity

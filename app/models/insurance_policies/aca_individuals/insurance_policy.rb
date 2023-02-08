@@ -82,9 +82,14 @@ module InsurancePolicies
       def effectuated_aptc_tax_households_with_unique_composition
         enrollments_tax_households = enrollments_tax_households(effectuated_enrollments)
         aqhp_enr_thhs = fetch_aqhp_enrollments_tax_households(enrollments_tax_households)
-        return irs_group.uqhp_tax_households(start_on.year) if aqhp_enr_thhs.blank?
+        uqhp_enr_thhs = fetch_uqhp_enrollments_tax_households(enrollments_tax_households)
 
-        tax_households = aqhp_enr_thhs.flat_map(&:tax_household)
+        return [uqhp_enr_thhs&.last&.tax_household] || irs_group.uqhp_tax_households(start_on.year) if aqhp_enr_thhs.blank?
+
+        tax_households = aqhp_enr_thhs.flat_map(&:tax_household).uniq do |tax_household|
+          tax_household.primary&.person_id
+        end
+
         thh_with_members_info = fetch_aqhp_thh_member_info(tax_households)
         thh_with_members_info.uniq(&:last).to_h.keys.presence || irs_group.uqhp_tax_households(start_on.year)
       end
@@ -102,12 +107,18 @@ module InsurancePolicies
         end
       end
 
+      def fetch_uqhp_enrollments_tax_households(enrollments_tax_households)
+        enrollments_tax_households.reject do |enr_thh|
+          enr_thh.tax_household.is_aqhp
+        end
+      end
+
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/MethodLength
       # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def applied_aptc_amount_for(enrollments_for_month, calender_month, tax_household)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
-        primary_person_id = tax_household.primary&.person_id
+        primary_person_id = tax_household.primary&.person_id || tax_household.tax_household_members.first.person_id
         enr_thhs_for_month = en_tax_households.select do |enr_thh|
           enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id)
         end
