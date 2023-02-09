@@ -99,4 +99,25 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       end
     end
   end
+
+  context "#fetch_tax_filer" do
+    let(:tax_household_1) { FactoryBot.create(:tax_household, is_aqhp: false) }
+    let(:tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
+    let!(:tax_household_member_1) do
+      FactoryBot.create(:tax_household_member, tax_household: tax_household_1, person: subscriber_person,
+                        is_subscriber: true)
+    end
+    let!(:tax_household_member_2) do
+      FactoryBot.create(:tax_household_member, tax_household: tax_household_2, person: dependent_person,
+                        is_subscriber: true, tax_filer_status: "tax_filer")
+    end
+
+    it "should return subscriber if tax_household is uqhp" do
+      expect(insurance_policy.fetch_tax_filer(tax_household_1)).to eq tax_household_member_1
+    end
+
+    it "should return tax_filer if tax_household is aqhp" do
+      expect(insurance_policy.fetch_tax_filer(tax_household_2)).to eq tax_household_member_2
+    end
+  end
 end
