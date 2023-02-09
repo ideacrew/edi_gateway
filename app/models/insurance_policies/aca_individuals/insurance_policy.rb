@@ -211,6 +211,14 @@ module InsurancePolicies
         @effectuated_enrollments ||= enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
       end
 
+      def fetch_member_start_on(enrolled_member_hbx_id)
+        enrollments = effectuated_enrollments.select do |enrollment|
+          enrolled_members = [enrollment.subscriber] + enrollment.dependents
+          enrolled_members.any? { |member| member.person.hbx_id == enrolled_member_hbx_id }
+        end
+        enrollments.pluck(:start_on).min
+      end
+
       def fetch_enrolled_member_end_date(enrolled_member)
         enrolled_member_enrollments = effectuated_enrollments.select do |enrollment|
           members = [enrollment.subscriber] + enrollment.dependents
