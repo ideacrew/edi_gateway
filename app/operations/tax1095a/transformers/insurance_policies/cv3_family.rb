@@ -407,15 +407,6 @@ module Tax1095a
           enr_thh_tax_filer_id == tax_filer_id
         end
 
-        def fetch_start_on_by_tax_household_and_policy(policy, tax_household)
-          enrollments = policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
-          enrollments_thhs = fetch_enrollments_tax_households(enrollments)
-          valid_enr_thhs = enrollments_thhs.select do |enr_thh|
-            valid_enrollment_tax_household?(enr_thh, tax_household)
-          end
-          valid_enr_thhs.flat_map(&:enrollment).pluck(:start_on).min
-        end
-
         def covered_individuals_from_tax_household(covered_individuals, tax_household)
           perso_hbx_ids = tax_household.tax_household_members.flat_map(&:person).flat_map(&:hbx_id)
           covered_individuals.select do |individual|
@@ -430,10 +421,9 @@ module Tax1095a
           end
           enrollment = valid_enr_thh.enrollment
           valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals, valid_enr_thh.tax_household)
-          enrollment_start_on = fetch_start_on_by_tax_household_and_policy(enrollment.insurance_policy, tax_household)
-
           valid_covered_individuals.map! do |individual|
-            individual[:coverage_start_on] = enrollment_start_on
+            member_start_on = enrollment.insurance_policy.fetch_member_start_on(individual[:person][:hbx_id])
+            individual[:coverage_start_on] = member_start_on
             individual[:coverage_end_on] = enrollment.enrollment_end_on
             individual
           end
@@ -572,8 +562,8 @@ module Tax1095a
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
           tax_filer = tax_household.primary || tax_household.tax_household_members.first
-          enr_thhs_for_month = enr_thhs.select do |_enr_thh|
-            tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
+          enr_thhs_for_month = enr_thhs.select do |enr_thh|
+            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
           end
 
           enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
