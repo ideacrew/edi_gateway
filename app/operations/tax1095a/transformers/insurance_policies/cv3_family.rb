@@ -407,16 +407,6 @@ module Tax1095a
           enr_thh_tax_filer_id == tax_filer_id
         end
 
-        def fetch_member_start_on(hbx_id, policy)
-          enrollments = policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
-          enrollments_thhs = fetch_enrollments_tax_households(enrollments)
-          enrollments = enrollments_thhs.flat_map(&:enrollment).select do |enrollment|
-            enrolled_members = [enrollment.subscriber] + enrollment.dependents
-            enrolled_members.any? { |member| member.person.hbx_id == hbx_id }
-          end
-          enrollments.pluck(:start_on).min
-        end
-
         def covered_individuals_from_tax_household(covered_individuals, tax_household)
           perso_hbx_ids = tax_household.tax_household_members.flat_map(&:person).flat_map(&:hbx_id)
           covered_individuals.select do |individual|
@@ -432,7 +422,7 @@ module Tax1095a
           enrollment = valid_enr_thh.enrollment
           valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals, valid_enr_thh.tax_household)
           valid_covered_individuals.map! do |individual|
-            member_start_on = fetch_member_start_on(individual[:person][:hbx_id], enrollment.insurance_policy)
+            member_start_on = enrollment.insurance_policy.fetch_member_start_on(individual[:person][:hbx_id])
             individual[:coverage_start_on] = member_start_on
             individual[:coverage_end_on] = enrollment.enrollment_end_on
             individual

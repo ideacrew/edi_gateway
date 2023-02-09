@@ -11,14 +11,14 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
   let!(:enrollment_1) do
     FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
                                    end_on: Date.new(year, 5, 31), insurance_policy: insurance_policy,
-                                   subscriber: subscriber,
-                                   dependents: [dependents])
+                                   subscriber: subscriber)
   end
 
   let!(:enrollment_2) do
     FactoryBot.create(:enrollment, start_on: Date.new(year, 6, 1),
                                    end_on: Date.new(year, 12, 31), insurance_policy: insurance_policy,
-                                   subscriber: subscriber)
+                                   subscriber: subscriber,
+                                   dependents: [dependents])
   end
 
   let!(:enrollment_3) do
@@ -37,7 +37,19 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
 
     it "should return end_date based on member coverage period" do
       member_end_date = insurance_policy.fetch_enrolled_member_end_date(dependents)
-      expect(member_end_date).to eq enrollment_1.end_on
+      expect(member_end_date).to eq enrollment_2.end_on
+    end
+  end
+
+  context "#fetch_member_start_on" do
+    it "should return policy start_on if subscriber present through the coverage period" do
+      member_end_date = insurance_policy.fetch_member_start_on(subscriber_person.hbx_id)
+      expect(member_end_date).to eq insurance_policy.start_on
+    end
+
+    it "should return start_on on enrollment if member has been added mid coverage" do
+      member_end_date = insurance_policy.fetch_member_start_on(dependent_person.hbx_id)
+      expect(member_end_date).to eq enrollment_2.start_on
     end
   end
 
