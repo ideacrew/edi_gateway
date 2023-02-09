@@ -105,11 +105,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
     let(:tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
     let!(:tax_household_member_1) do
       FactoryBot.create(:tax_household_member, tax_household: tax_household_1, person: subscriber_person,
-                        is_subscriber: true)
+                                               is_subscriber: true)
     end
     let!(:tax_household_member_2) do
       FactoryBot.create(:tax_household_member, tax_household: tax_household_2, person: dependent_person,
-                        is_subscriber: true, tax_filer_status: "tax_filer")
+                                               is_subscriber: true, tax_filer_status: "tax_filer")
     end
 
     it "should return subscriber if tax_household is uqhp" do
