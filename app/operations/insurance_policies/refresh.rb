@@ -18,7 +18,7 @@ module InsurancePolicies
     private
 
     def build_event(_refresh_period)
-      event('events.families.find_by_requested', attributes: { person_hbx_id: 10239, year: 2022 })
+      event('events.families.find_by_requested', attributes: {})
     end
 
     def parsed_refresh_period(params)
