@@ -13,7 +13,7 @@ module IrsGroups
     def call(params)
       validated_params = yield validate(params)
       @family = validated_params[:family]
-      @year = validated_params[:year]
+      # @year = validated_params[:year]
       insurance_thh_groups = yield persist_tax_household_groups
       Success(insurance_thh_groups)
     end
@@ -22,7 +22,7 @@ module IrsGroups
 
     def validate(params)
       return Failure("Family should not be blank") if params[:family].blank?
-      return Failure("Year cannot be blank") if params[:year].blank?
+      # return Failure("Year cannot be blank") if params[:year].blank?
 
       Success(params)
     end

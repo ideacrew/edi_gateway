@@ -12,9 +12,9 @@ module IrsGroups
       validated_family_hash = yield validate_family_json_hash(params[:payload])
       family = yield build_family_entity(validated_family_hash)
       _thh_groups = yield CreateOrUpdateTaxHouseholdsAndGroups.new.call({ family: family,
-                                                                          year: params[:year].to_i })
+                                                                           })
       enr_policies_result = yield CreateOrUpdateEnrollmentsForPolicies.new.call({ family: family,
-                                                                                  year: params[:year].to_i })
+                                                                                   })
       Success(enr_policies_result)
     end
 
