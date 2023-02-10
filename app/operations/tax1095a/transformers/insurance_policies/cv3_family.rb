@@ -360,6 +360,17 @@ module Tax1095a
           end
         end
 
+        def update_covered_individuals_start_on(covered_individuals, months_of_year)
+          start_month_name = months_of_year.compact.first[:month]
+          start_month_number = Date.strptime(start_month_name, "%B").month
+          covered_individuals.map! do |individual|
+            start_month_day = individual[:coverage_start_on].day
+            start_month_year = individual[:coverage_start_on].year
+            individual[:coverage_start_on] = Date.new(start_month_year, start_month_number, start_month_day)
+            individual
+          end
+        end
+
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
@@ -370,6 +381,7 @@ module Tax1095a
 
             covered_individuals = construct_covered_individuals(enrollments, tax_household)
             months_of_year = construct_coverage_information(insurance_policy, covered_individuals, tax_household)
+            update_covered_individuals_start_on(covered_individuals, months_of_year)
             {
               hbx_assigned_id: tax_household.hbx_id,
               covered_individuals: covered_individuals,
@@ -577,9 +589,13 @@ module Tax1095a
           all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)]
                                  .flatten.uniq(&:person_id)
 
+          person_hbx_ids = tax_household.tax_household_members.flat_map(&:person).flat_map(&:hbx_id)
           thh_members = fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
+          valid_members = thh_members.select do |thh_member|
+            person_hbx_ids.include?(thh_member.person.hbx_id)
+          end
           all_enrolled_members.select do |member|
-            thh_members.map(&:person_id).include?(member.person_id)
+            valid_members.map(&:person_id).include?(member.person_id)
           end
         end
 
