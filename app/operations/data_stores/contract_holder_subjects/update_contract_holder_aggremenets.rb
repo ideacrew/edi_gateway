@@ -23,8 +23,15 @@ module DataStores
 
       private 
 
+      contract_holder_sync_job
+        start_time 
+        end_time 
+        hash_many contract_holder_subjects 
+                    - primary_person_hbx_id is unique
+                    - subscriber policies 
+                    - rp_policies
+
       def validate(params)
-        params[:sync_job_id]
         return Failure('sync_job id expected') unless params[:sync_job_id]
         return Failure('primary person hbx id expected') unless params[:primary_person_hbx_id]
          
@@ -47,19 +54,19 @@ module DataStores
         People::Persons::Create.new.call(person: glue_person)
       end
 
-      def find_or_create_irs_group(glue_policy)
+      def find_or_create_irs_group(subject)
         # date = glue_policy.subscriber.coverage_start.beginning_of_year ??
         # return Success({} )if non_eligible_policy(glue_policy)
   
-        glue_person  = find_person_from_glue_policy(glue_policy)
-        irs_group_id = construct_irs_group_id(date.year.to_s.last(2), glue_person.authority_member_id)
+        # glue_person  = find_person_from_glue_policy(glue_policy)
+        irs_group_id = construct_irs_group_id('22', subject.primary_person_hbx_id)
   
         irs_group = InsurancePolicies::AcaIndividuals::IrsGroups::Find
                     .new.call({ scope_name: :by_irs_group_id, criterion: irs_group_id })
         return irs_group if irs_group.success?
-  
+
         InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({ irs_group_id: irs_group_id,
-                                                                        start_on: date })
+                                                                        start_on: date }) # remove date dependency
       end
 
       def create_or_update_insurance_agreemenets(subject, contract_holder, irs_group)
@@ -88,7 +95,6 @@ module DataStores
     end
   end
 end
-
 
 
 #    Node will process subject 

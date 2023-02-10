@@ -100,11 +100,11 @@ module IrsGroups
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/MethodLength
 
-    def fetch_thh_groups_for_year(tax_household_groups)
-      tax_household_groups.select do |thh_group|
-        thh_group.start_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
-      end
-    end
+    # def fetch_thh_groups_for_year(tax_household_groups)
+    #   tax_household_groups.select do |thh_group|
+    #     thh_group.start_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
+    #   end
+    # end
 
     # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/CyclomaticComplexity
@@ -112,7 +112,7 @@ module IrsGroups
     def persist_tax_household_groups
       return Success(true) if @family.tax_household_groups.blank?
 
-      tax_household_groups = fetch_thh_groups_for_year(@family.tax_household_groups)
+      tax_household_groups = @family.tax_household_groups
       return Success(true) if tax_household_groups.blank?
 
       tax_household_groups.each do |tax_hh_group|

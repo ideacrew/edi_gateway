@@ -13,8 +13,8 @@ module IrsGroups
     def call(params)
       validated_params = yield validate(params)
       @family = validated_params[:family]
-      @year = validated_params[:year]
-      result = yield persist_enrollments
+      # @year   = validated_params[:year]
+      result  = yield persist_enrollments
 
       Success(result)
     end
@@ -23,7 +23,7 @@ module IrsGroups
 
     def validate(params)
       return Failure("Family should not be blank") if params[:family].blank?
-      return Failure("Year cannot be blank") if params[:year].blank?
+      # return Failure("Year cannot be blank") if params[:year].blank?
 
       Success(params)
     end
@@ -171,7 +171,10 @@ module IrsGroups
         next if insurance_agreement.insurance_policies.blank?
 
         insurance_agreement.insurance_policies.each do |insurance_policy|
-          insurance_policy_enrollment_ids = insurance_policy.hbx_enrollment_ids
+          policy = Policy.where(eg_id: insurance_policy.policy_id).first
+          next unless policy
+
+          insurance_policy_enrollment_ids = policy.hbx_enrollment_ids  
           enrollments_from_cv3 = fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
           next if enrollments_from_cv3.blank?
 
@@ -242,7 +245,7 @@ module IrsGroups
                                 end_on: end_on,
                                 is_aqhp: false,
                                 hbx_id: SecureRandom.uuid,
-                                assistance_year: @year,
+                                assistance_year: insurance_policy.start_on.year,
                                 irs_group_id: insurance_policy.irs_group.id })
 
       tax_household = ::InsurancePolicies::AcaIndividuals::TaxHousehold
@@ -290,8 +293,8 @@ module IrsGroups
 
     def fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
       @family.households.first.hbx_enrollments.select do |enrollment|
-        insurance_policy_enrollment_ids.include?(enrollment.hbx_id) &&
-          enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
+        insurance_policy_enrollment_ids.include?(enrollment.hbx_id)
+         # && # enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
       end
     end
 
