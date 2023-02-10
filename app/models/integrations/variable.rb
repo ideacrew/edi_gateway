@@ -7,7 +7,7 @@ module Integrations
     include Mongoid::Timestamps
 
     field :name, type: String
-    field :data_type, type: StringifiedHash
+    field :data_type, type: String # StringifiedHash
     field :value, type: String
   end
 end

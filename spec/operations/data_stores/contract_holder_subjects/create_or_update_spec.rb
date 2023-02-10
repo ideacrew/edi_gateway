@@ -28,8 +28,13 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
       }
     end
 
+    let(:event_detail) do
+      double(name: 'events.families.find_by_requested', payload: { person_hbx_id: person.authority_member_id }.to_json,
+             publish: true)
+    end
+
     let(:request_event) do
-      double(name: 'events.families.find_by_requested', payload: "hello world!!", publish: true)
+      double(success: event_detail)
     end
 
     before do
@@ -58,8 +63,8 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
         request_event_instance = @result.success.request_event
 
         expect(request_event_instance).to be_present
-        expect(request_event_instance.name).to eq request_event.name
-        expect(request_event_instance.body).to eq request_event.payload
+        expect(request_event_instance.name).to eq event_detail.name
+        expect(request_event_instance.body).to eq event_detail.payload
       end
     end
 

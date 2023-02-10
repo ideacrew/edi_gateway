@@ -98,4 +98,3 @@ RSpec.describe InsurancePolicies::Refresh do
     end
   end
 end
-

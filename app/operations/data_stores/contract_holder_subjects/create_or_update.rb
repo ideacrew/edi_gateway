@@ -13,7 +13,7 @@ module DataStores
       def call(params)
         values  = yield validate(params)
         subject = yield create_or_update_subject(values)
-        output  = yield publish_event(subject)
+        _output = yield publish_event(subject)
 
         Success(subject)
       end
@@ -44,6 +44,7 @@ module DataStores
         end
       end
 
+      # rubocop:disable Metrics/AbcSize
       def publish_event(subject)
         return Success(subject) if subject.request_event&.transmitted?
 
@@ -51,6 +52,7 @@ module DataStores
         event_payload = { person_hbx_id: subject.primary_person_hbx_id }.to_json
         event = event(event_name, attributes: event_payload)
         event.success.publish
+
         logger.info("published family refresh event for #{subject.primary_person_hbx_id} at #{DateTime.now}")
         persist_request_event(subject, event_name, event_payload)
         Success("published family refresh event for #{subject.primary_person_hbx_id} at #{DateTime.now}")
@@ -59,6 +61,7 @@ module DataStores
         persist_request_event(subject, event_name, event_payload, [e.to_s])
         Failure("unable to publish family refresh for #{subject.primary_person_hbx_id} due to #{e.inspect}")
       end
+      # rubocop:enable Metrics/AbcSize
 
       def persist_request_event(subject, event_name, event_payload, errors = [])
         request_event = Integrations::Events::Build.new.call({
