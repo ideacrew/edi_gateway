@@ -360,17 +360,6 @@ module Tax1095a
           end
         end
 
-        def update_covered_individuals_start_on(covered_individuals, months_of_year)
-          start_month_name = months_of_year.compact.first[:month]
-          start_month_number = Date.strptime(start_month_name, "%B").month
-          covered_individuals.map! do |individual|
-            start_month_day = individual[:coverage_start_on].day
-            start_month_year = individual[:coverage_start_on].year
-            individual[:coverage_start_on] = Date.new(start_month_year, start_month_number, start_month_day)
-            individual
-          end
-        end
-
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
@@ -381,7 +370,6 @@ module Tax1095a
 
             covered_individuals = construct_covered_individuals(enrollments, tax_household)
             months_of_year = construct_coverage_information(insurance_policy, covered_individuals, tax_household)
-            update_covered_individuals_start_on(covered_individuals, months_of_year)
             {
               hbx_assigned_id: tax_household.hbx_id,
               covered_individuals: covered_individuals,
