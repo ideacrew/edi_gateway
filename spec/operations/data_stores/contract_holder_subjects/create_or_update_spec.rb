@@ -21,11 +21,19 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
 
     let(:params) do
       {
-        contract_holder_sync_job_id: contract_holder_sync_job.id,
+        contract_holder_sync_job: contract_holder_sync_job,
         primary_person_hbx_id: person.authority_member_id,
         subscriber_policies: subscriber_policies,
         responsible_party_policies: responsible_party_policies
       }
+    end
+
+    let(:request_event) do
+      double(name: 'events.families.find_by_requested', payload: "hello world!!", publish: true)
+    end
+
+    before do
+      allow(subject).to receive(:event).and_return(request_event)
     end
 
     context 'and new primary person' do
@@ -45,6 +53,14 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
         expect(@result.success.subscriber_policies).to eq subscriber_policies
         expect(@result.success.responsible_party_policies).to eq responsible_party_policies
       end
+
+      it "should store request event" do
+        request_event_instance = @result.success.request_event
+
+        expect(request_event_instance).to be_present
+        expect(request_event_instance.name).to eq request_event.name
+        expect(request_event_instance.body).to eq request_event.payload
+      end
     end
 
     context 'and existing primary person' do
@@ -55,7 +71,7 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
 
       let(:updated_params) do
         {
-          contract_holder_sync_job_id: contract_holder_sync_job.id,
+          contract_holder_sync_job: contract_holder_sync_job,
           primary_person_hbx_id: person.authority_member_id,
           subscriber_policies: updated_subscriber_policies,
           responsible_party_policies: updated_responsible_party_policies

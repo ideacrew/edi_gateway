@@ -16,6 +16,7 @@ module DataStores
     field :status, type: Symbol
     field :started_at, type: DateTime, default: -> { Time.now }
     field :completed_at, type: DateTime
+    field :error_messages, type: Array, default: -> { [] }
 
     index({ time_span_end: -1 })
 

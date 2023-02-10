@@ -5,4 +5,3 @@ FactoryBot.define do
     sequence(:primary_person_hbx_id)
   end
 end
-  

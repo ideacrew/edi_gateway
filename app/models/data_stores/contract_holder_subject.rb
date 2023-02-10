@@ -5,13 +5,13 @@ module DataStores
   class ContractHolderSubject
     include Mongoid::Document
     include Mongoid::Timestamps
-    # include DataStores::Transactable
+    include DataStores::Transactable
 
     belongs_to :contract_holder_sync, class_name: 'DataStores::ContractHolderSyncJob', counter_cache: true
 
     field :primary_person_hbx_id, type: String
-    field :subscriber_policies, type: Array
-    field :responsible_party_policies, type: Array
+    field :subscriber_policies, type: Array, default: -> { [] }
+    field :responsible_party_policies, type: Array, default: -> { [] }
 
     index({ primary_person_hbx_id: 1 })
 

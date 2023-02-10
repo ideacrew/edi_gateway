@@ -11,7 +11,15 @@ module Integrations
     field :name, type: String
     field :body, type: String
     field :status, type: String
-    field :errors, type: Array
+    field :error_messages, type: Array
     field :timestamp, type: DateTime, default: -> { Time.now }
+
+    def transmitted?
+      status == :transmitted
+    end
+
+    def errored?
+      status == :errored
+    end
   end
 end
