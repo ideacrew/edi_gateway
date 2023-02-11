@@ -28,7 +28,7 @@ module InsurancePolicies
         def create(validated_params, product, agreement, irs_group)
           attrs = validated_params.to_h
           insurance_policy = ::InsurancePolicies::AcaIndividuals::InsurancePolicy
-                             .create!(policy_id: attrs[:policy_id], #hbx_enrollment_ids: attrs[:hbx_enrollment_ids],
+                             .create!(policy_id: attrs[:policy_id], # hbx_enrollment_ids: attrs[:hbx_enrollment_ids],
                                       start_on: attrs[:start_on],
                                       end_on: attrs[:end_on],
                                       term_for_np: attrs[:term_for_np],

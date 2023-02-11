@@ -11,11 +11,8 @@ module IrsGroups
 
     def call(params)
       validated_params = yield validate(params)
-      # glue_policy = yield fetch_policy_from_glue(validated_params[:policy_id])
       insurance_provider_hash = yield persist_insurance_provider(values)
       insurance_product_hash = yield persist_insurance_product(insurance_provider_hash, values)
-      # person_hash = yield persist_contract_holder(glue_policy)
-      # irs_group_hash = yield persist_irs_group(glue_policy)
       insurance_agreement_hash = yield persist_insurance_agreement(values, insurance_provider_hash,
                                                                    insurance_product_hash)
       insurance_policy = yield persist_insurance_policy(values, insurance_agreement_hash, insurance_product_hash)
@@ -32,13 +29,6 @@ module IrsGroups
 
       Success(params)
     end
-
-    # def fetch_policy_from_glue(policy_id)
-    #   policy = Policy.where(eg_id: policy_id).first
-    #   Success(policy)
-    # rescue Mongoid::Errors::DocumentNotFound
-    #   Failure("Unable to find Policy with EG ID #{policy_id}.")
-    # end
 
     def build_insurance_product_hash(glue_policy)
       plan = glue_policy.plan
@@ -58,7 +48,6 @@ module IrsGroups
 
     def map_person_to_contract_params(person_hash)
       person_hash.merge!(person_name: person_hash[:name])
-
       person_hash[:addresses].collect do |address|
         address[:city] = address[:city_name]
       end
@@ -87,17 +76,6 @@ module IrsGroups
       InsurancePolicies::InsuranceProducts::Create.new.call(params_hash)
     end
 
-    # def persist_contract_holder(glue_policy)
-    #   glue_person = find_person_from_glue_policy(glue_policy)
-    #   authority_member = glue_person.authority_member
-    #   return Failure("No authority member for policy #{glue_policy.eg_id}") if authority_member.blank?
-
-    #   result = People::Persons::Find.new.call({ hbx_id: glue_person.authority_member_id })
-    #   return result if result.success?
-
-    #   People::Persons::Create.new.call({ person: glue_person })
-    # end
-
     def persist_insurance_agreement(values, provider_hash, product_hash)
       plan_year = values[:policy].plan.year
       agreement = InsurancePolicies::InsuranceAgreements::Find
@@ -114,21 +92,6 @@ module IrsGroups
                                                                 insurance_provider: provider_hash,
                                                                 insurance_policy: policy_params })
     end
-
-    # def persist_irs_group(glue_policy)
-    #   date = glue_policy.subscriber.coverage_start.beginning_of_year
-    #   # return Success({} )if non_eligible_policy(glue_policy)
-
-    #   glue_person = find_person_from_glue_policy(glue_policy)
-    #   irs_group_id = construct_irs_group_id(date.year.to_s.last(2), glue_person.authority_member_id)
-
-    #   irs_group = InsurancePolicies::AcaIndividuals::IrsGroups::Find
-    #               .new.call({ scope_name: :by_irs_group_id, criterion: irs_group_id })
-    #   return irs_group if irs_group.success?
-
-    #   InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({ irs_group_id: irs_group_id,
-    #                                                                   start_on: date })
-    # end
 
     def update_insurance_policy(glue_policy)
       insurance_policy = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.where(policy_id: glue_policy.eg_id).first
@@ -151,30 +114,6 @@ module IrsGroups
                                 insurance_product: product_hash,
                                 irs_group: values[:irs_group])
       InsurancePolicies::AcaIndividuals::InsurancePolicies::Create.new.call(policy_hash_params)
-    end
-
-    # def find_person_from_glue_policy(policy)
-    #   if policy.responsible_party_id.present?
-    #     Person.where("responsible_parties._id" => policy.responsible_party_id).first
-    #   else
-    #     policy.subscriber.person
-    #   end
-    # end
-
-    # def construct_irs_group_id(year, hbx_id)
-    #   total_length_excluding_year = 14
-    #   hbx_id_number = format("%0#{total_length_excluding_year}d", hbx_id)
-    #   year + hbx_id_number
-    # end
-
-    def non_eligible_policy(pol)
-      return true if pol.canceled?
-      return true if pol.kind == "coverall"
-      return true if pol.plan.coverage_type == "dental"
-      return true if pol.plan.metal_level == "catastrophic"
-      return true if pol.subscriber.cp_id.blank?
-
-      false
     end
   end
 end

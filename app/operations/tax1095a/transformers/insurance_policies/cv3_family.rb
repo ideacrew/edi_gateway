@@ -50,7 +50,7 @@ module Tax1095a
         def construct_cv3_family(values, irs_group)
           params = values.slice(:tax_form_type, :tax_year).merge(irs_group: irs_group)
 
-          InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCvFamilyPayload.new.call(params)
+          ::InsurancePolicies::AcaIndividuals::IrsGroups::ConstructCv3Payload.new.call(params)
         end
 
         def validate_payload(cv3_payload)

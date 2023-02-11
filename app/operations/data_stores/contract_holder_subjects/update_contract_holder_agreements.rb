@@ -6,7 +6,7 @@ require 'dry/monads/do'
 module DataStores
   module ContractHolderSubjects
     # Operation to create or update ContractHolderSubjects
-    class UpdateContractHolderAggrements
+    class UpdateContractHolderAgreements
       send(:include, Dry::Monads[:result, :do])
       include EventSource::Command
 
@@ -14,27 +14,19 @@ module DataStores
         values          = yield validate(params)
         subject         = yield find_contract_holder_subject(values)
         contract_holder = yield find_or_create_contract_holder(subject)
-        is_group        = yield find_or_create_irs_group(subject)
-        aggrements      = yield create_or_update_insurance_agreemenets(subject, contract_holder, irs_group)
-        family_cv       = yield process_irs_group_updates(subject)
+        irs_group       = yield find_or_create_irs_group(subject)
+        _agreements     = yield create_or_update_insurance_agreements(subject, contract_holder, irs_group)
+        _output         = yield process_irs_group_updates(subject)
 
         Success(subject)
       end
 
-      private 
-
-      contract_holder_sync_job
-        start_time 
-        end_time 
-        hash_many contract_holder_subjects 
-                    - primary_person_hbx_id is unique
-                    - subscriber policies 
-                    - rp_policies
+      private
 
       def validate(params)
         return Failure('sync_job id expected') unless params[:sync_job_id]
         return Failure('primary person hbx id expected') unless params[:primary_person_hbx_id]
-         
+
         Success(values)
       end
 
@@ -50,17 +42,17 @@ module DataStores
 
         edidb_person = People::Persons::Find.new.call({ hbx_id: subject.authority_member_id })
         return edidb_person if edidb_person.success?
-  
+
         People::Persons::Create.new.call(person: glue_person)
       end
 
       def find_or_create_irs_group(subject)
         # date = glue_policy.subscriber.coverage_start.beginning_of_year ??
         # return Success({} )if non_eligible_policy(glue_policy)
-  
+
         # glue_person  = find_person_from_glue_policy(glue_policy)
         irs_group_id = construct_irs_group_id('22', subject.primary_person_hbx_id)
-  
+
         irs_group = InsurancePolicies::AcaIndividuals::IrsGroups::Find
                     .new.call({ scope_name: :by_irs_group_id, criterion: irs_group_id })
         return irs_group if irs_group.success?
@@ -69,7 +61,7 @@ module DataStores
                                                                         start_on: date }) # remove date dependency
       end
 
-      def create_or_update_insurance_agreemenets(subject, contract_holder, irs_group)
+      def create_or_update_insurance_agreements(subject, contract_holder, irs_group)
         policy_ids = subject.subscriber_policies + subject.responsible_party_policies
 
         Policy.where(:eg_id.in => policy_ids.uniq).each do |policy|
@@ -92,29 +84,38 @@ module DataStores
         hbx_id_number = format("%0#{total_length_excluding_year}d", hbx_id)
         year + hbx_id_number
       end
+
+      def non_eligible_policy(pol)
+        return true if pol.canceled?
+        return true if pol.kind == "coverall"
+        return true if pol.plan.coverage_type == "dental"
+        return true if pol.plan.metal_level == "catastrophic"
+        return true if pol.subscriber.cp_id.blank?
+
+        false
+      end
     end
   end
 end
 
+#    Node will process subject
 
-#    Node will process subject 
-
-#    - create contract holder 
+#    - create contract holder
 #    - create irs_group
 #    - call operation to create insurance agreement for each policies create
 
-#   -> Store policies 
+#   -> Store policies
 
 #   operation: IrsGroups::CreateOrUpdateInsuranceAgreement
 #   input: policy_id
 
 #   make sure to create person and irs group first before triggering async calls for policy persistance
-#   make sure policies persisted successfully before triggering persistance of family cv 
+#   make sure policies persisted successfully before triggering persistance of family cv
 
 #   create inadvance following and pass it to above operation
 #     person_hash = yield persist_contract_holder(glue_policy)
 #     irs_group_hash = yield persist_irs_group(glue_policy)
 
-#   -> Family CV persistance 
-    
-#   Remove calendar year dependency 
+#   -> Family CV persistance
+
+#   Remove calendar year dependency

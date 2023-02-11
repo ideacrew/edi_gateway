@@ -6,16 +6,18 @@ require 'dry/monads/do'
 module InsurancePolicies
   module AcaIndividuals
     module InsurancePolicies
+      # rubocop:disable Metrics/ClassLength
       # Operation to create insurance policy
-      class ConstructCvPayload
+      class ConstructCv3Payload
         send(:include, Dry::Monads[:result, :do])
 
         def call(params)
-          values = yield validate(params)
-          insurance_product = yield construct_insurance_product(values[:insurance_policy])
-          enrollments = yield construct_enrollments(values[:insurance_policy])
+          values                  = yield validate(params)
+          insurance_product       = yield construct_insurance_product(values[:insurance_policy])
+          enrollments             = yield construct_enrollments(values[:insurance_policy])
           aptc_csr_tax_households = yield construct_aptc_csr_tax_households(values[:insurance_policy])
-          insurance_policy_hash = construct_insurance_policy(values[:insurance_policy], insurance_product, enrollments, aptc_csr_tax_households)
+          insurance_policy_hash   = yield construct_insurance_policy(values[:insurance_policy], insurance_product, enrollments,
+                                                                     aptc_csr_tax_households)
 
           Success(insurance_policy_hash)
         end
@@ -58,6 +60,7 @@ module InsurancePolicies
           Success(enrollments_hash)
         end
 
+        # rubocop:disable Metrics/AbcSize
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
@@ -78,6 +81,7 @@ module InsurancePolicies
 
           Success(tax_households_hash)
         end
+        # rubocop:enable Metrics/AbcSize
 
         def construct_insurance_policy(insurance_policy, insurance_product, enrollments, aptc_csr_tax_households)
           Success({
@@ -146,14 +150,41 @@ module InsurancePolicies
           end
         end
 
-        def non_eligible_policy(pol, year, tax_form_type)
-          return true if pol.aasm_state == "canceled"
-          return true if pol.insurance_product.coverage_type == 'dental'
-          return true if tax_form_type == "IVL_TAX" && pol.insurance_product.metal_level == "catastrophic"
-          return true if pol.carrier_policy_id.blank?
-          return true if pol.start_on.year.to_s != year
+        def address_result(result, address, is_contract_holder)
+          if is_contract_holder
+            result.merge!(state_abbreviation: address.state_abbreviation,
+                          zip_code: address.zip_code)
+          else
+            result.merge!(state: address.state_abbreviation,
+                          zip: address.zip_code)
+          end
+        end
 
-          false
+        def construct_addresses(insurance_person, is_contract_holder: false)
+          insurance_person.addresses.collect do |address|
+            result = {
+              kind: address.kind,
+              address_1: address.address_1,
+              address_2: address.address_2,
+              address_3: address.address_3,
+              city: address.city_name,
+              county_name: address.county_name
+            }
+            address_result(result, address, is_contract_holder)
+          end
+        end
+
+        def construct_emails(insurance_person)
+          insurance_person.emails.collect do |email|
+            {
+              kind: email.kind,
+              address: email.address
+            }
+          end
+        end
+
+        def fetch_person_from_glue(people_person)
+          Person.where(authority_member_id: people_person.hbx_id).first
         end
 
         def any_thh_members_enrolled?(tax_household, enrs)
@@ -179,6 +210,33 @@ module InsurancePolicies
               filer_status: fetch_tax_filer_status(tax_household, enrolled_member)
             }
           end
+        end
+
+        def construct_person_hash(insurance_person, glue_person)
+          authority_member = glue_person.authority_member
+          {
+            hbx_id: glue_person.authority_member_id,
+            person_name: { first_name: glue_person.name_first, last_name: glue_person.name_last },
+            person_demographics: person_demographics_hash(authority_member),
+            person_health: {},
+            is_active: true,
+            addresses: construct_addresses(insurance_person),
+            emails: construct_emails(insurance_person)
+          }
+        end
+
+        def person_demographics_hash(authority_member)
+          result =  {
+            gender: authority_member.gender,
+            dob: authority_member.dob
+          }
+          result.merge!(encrypted_ssn: encrypt_ssn(authority_member.ssn)) if authority_member.ssn.present?
+          result
+        end
+
+        def encrypt_ssn(ssn)
+          result = AcaEntities::Operations::Encryption::Encrypt.new.call({ value: ssn })
+          result.success? ? result.value! : ""
         end
 
         def valid_enrollment_tax_household?(enr_thh, tax_household)
@@ -379,6 +437,7 @@ module InsurancePolicies
           thh_member&.tax_filer_status || "non_filer"
         end
       end
+      # rubocop:enable Metrics/ClassLength
     end
   end
 end

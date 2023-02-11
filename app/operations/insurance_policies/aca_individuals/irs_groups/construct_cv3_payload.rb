@@ -5,9 +5,9 @@ require 'dry/monads/do'
 
 module InsurancePolicies
   module AcaIndividuals
-    module InsurancePolicies
+    module IrsGroups
       # Operation to create insurance policy
-      class ConstructCvFamilyPayload
+      class ConstructCv3Payload
         send(:include, Dry::Monads[:result, :do])
 
         def call(params)
@@ -47,13 +47,15 @@ module InsurancePolicies
           policies = values[:irs_group].aca_individual_insurance_policies
 
           all_members = fetch_all_members(contract_holder, policies)
-          all_members.compact.collect do |insurance_person|
+          family_member_hash = all_members.compact.collect do |insurance_person|
             glue_person = fetch_person_from_glue(insurance_person)
             {
               is_primary_applicant: contract_holder == insurance_person,
               person: construct_person_hash(insurance_person, glue_person)
             }
           end
+
+          Success(family_member_hash)
         end
 
         def construct_households(values, insurance_agreements)
@@ -213,10 +215,20 @@ module InsurancePolicies
           return [] if valid_policies.empty?
 
           valid_policies.collect do |insurance_policy|
-            InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCvPayload.new.call(
+            ::InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv3Payload.new.call(
               insurance_policy: insurance_policy
-            )
+            ).success
           end
+        end
+
+        def non_eligible_policy(pol, year, tax_form_type)
+          return true if pol.aasm_state == "canceled"
+          return true if pol.insurance_product.coverage_type == 'dental'
+          return true if tax_form_type == "IVL_TAX" && pol.insurance_product.metal_level == "catastrophic"
+          return true if pol.carrier_policy_id.blank?
+          return true if pol.start_on.year.to_s != year
+
+          false
         end
 
         def encrypt_ssn(ssn)

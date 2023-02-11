@@ -23,6 +23,7 @@ module IrsGroups
 
     def validate(params)
       return Failure("Family should not be blank") if params[:family].blank?
+
       # return Failure("Year cannot be blank") if params[:year].blank?
 
       Success(params)
@@ -174,7 +175,7 @@ module IrsGroups
           policy = Policy.where(eg_id: insurance_policy.policy_id).first
           next unless policy
 
-          insurance_policy_enrollment_ids = policy.hbx_enrollment_ids  
+          insurance_policy_enrollment_ids = policy.hbx_enrollment_ids
           enrollments_from_cv3 = fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
           next if enrollments_from_cv3.blank?
 
@@ -294,7 +295,7 @@ module IrsGroups
     def fetch_enrollments_from_cv3(insurance_policy_enrollment_ids)
       @family.households.first.hbx_enrollments.select do |enrollment|
         insurance_policy_enrollment_ids.include?(enrollment.hbx_id)
-         # && # enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
+        # && # enrollment.effective_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
       end
     end
 
