@@ -59,7 +59,7 @@ RSpec.describe IrsGroups::SeedIrsGroup do
                                                                                    insurance_agreement: insurance_agreement,
                                                                                    irs_group: irs_group)
 
-    res = subject.call({ payload: family_params.to_h, year: Date.today.year })
+    res = subject.call({ payload: family_params.to_h })
     expect(res.success?).to be_truthy
     expect(InsurancePolicies::AcaIndividuals::IrsGroup.all.count).to eq(1)
     expect(InsurancePolicies::AcaIndividuals::TaxHousehold.all.count).to eq(1)
