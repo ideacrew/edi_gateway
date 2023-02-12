@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - "ticket_184450326"
+      - "trunk"
   pull_request:
     branches:
-      - "ticket_184450326"
+      - "trunk"
 
 concurrency:
   group: docker-${{ github.ref }}
