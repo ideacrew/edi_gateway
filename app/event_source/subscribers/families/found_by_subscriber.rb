@@ -13,7 +13,7 @@ module Subscribers
         logger.info "on_found_by response: #{response}"
         subscriber_logger.info "on_found_by response: #{response}"
 
-        process_families_found_by_event(subscriber_logger, response) unless Rails.env.test?
+        DataStores::ContractHolderSyncJobs::StoreResponseEvent.new.call(response)
 
         ack(delivery_info.delivery_tag)
       rescue StandardError, SystemStackError => e
@@ -29,22 +29,6 @@ module Subscribers
         else
           result.failure
         end
-      end
-
-      def process_families_found_by_event(subscriber_logger, response)
-        subscriber_logger.info "process_families_found_by_event: ------- start"
-        result = ::InsurancePolicies::CreateOrUpdate.new.call(response)
-
-        if result.success?
-          message = result.success
-          subscriber_logger.info "on_found_by acked #{message.is_a?(Hash) ? message[:event] : message}"
-        else
-          subscriber_logger.info "process_families_found_by_event: failure: #{error_messages(result)}"
-        end
-        subscriber_logger.info "process_families_found_by_event: ------- end"
-      rescue StandardError => e
-        subscriber_logger.error "process_families_found_by_event: error: #{e} backtrace: #{e.backtrace}"
-        subscriber_logger.error "process_families_found_by_event: ------- end"
       end
 
       def subscriber_logger_for(event)

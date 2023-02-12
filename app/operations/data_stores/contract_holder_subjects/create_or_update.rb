@@ -49,7 +49,10 @@ module DataStores
         return Success(subject) if subject.request_event&.transmitted?
 
         event_name = "events.families.find_by_requested"
-        event_payload = { person_hbx_id: subject.primary_person_hbx_id }.to_json
+        event_payload = {
+          primary_person_hbx_id: subject.primary_person_hbx_id,
+          sync_job_id: subject.contract_holder_sync.id
+        }.to_json
         event = event(event_name, attributes: event_payload)
         event.success.publish
 
