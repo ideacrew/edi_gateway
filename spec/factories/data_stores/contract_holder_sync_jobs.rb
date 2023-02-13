@@ -2,7 +2,9 @@
 
 FactoryBot.define do
   factory :contract_holder_sync_job, class: DataStores::ContractHolderSyncJob do
-    started_at { DateTime.now }
-    completed_at { DateTime.now + 6.hours }
+    time_span_start { DateTime.now }
+    time_span_end { DateTime.now + 24.hours }
+    start_at { DateTime.now }
+    end_at { DateTime.now + 5.minutes }
   end
 end

@@ -7,6 +7,7 @@ module InsurancePolicies
   # Persist contract holder sync job with subjects into the database
   class Refresh
     send(:include, Dry::Monads[:result, :do])
+    include EventSource::Command
 
     attr_reader :error_handler
 
@@ -99,7 +100,7 @@ module InsurancePolicies
           raise event.failure unless event.success?
 
           event.success.publish
-          persist_request_event(subject, event_name, event_payload)
+          persist_request_event(subject, event.success)
         end
       end
 
@@ -111,14 +112,13 @@ module InsurancePolicies
       event_payload = {
         primary_person_hbx_id: subject.primary_person_hbx_id,
         correlation_id: subject.contract_holder_sync.job_id # move it into the header
-      }.to_json
+      }
       event(event_name, attributes: event_payload)
     end
 
-    def persist_request_event(subject, event_name, event_payload, errors = [])
+    def persist_request_event(subject, event, errors = [])
       request_event =
-        Integrations::Events::Build.new.call({ name: event_name, body: event_payload, errors: errors }).success
-
+        Integrations::Events::Build.new.call({ name: event.name, body: event.payload, errors: errors }).success
       subject.update(request_event: request_event, status: :transmitted)
     end
 

@@ -8,7 +8,6 @@ module DataStores
     # Operation to create or update ContractHolderSubjects
     class CreateOrUpdate
       send(:include, Dry::Monads[:result, :do])
-      include EventSource::Command
 
       def call(params)
         values = yield validate(params)

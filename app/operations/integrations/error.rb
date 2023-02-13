@@ -7,7 +7,7 @@ module Integrations
 
     def initialize
       @errors = []
-      @errors_by_identifier = []
+      @errors_by_identifier = {}
     end
 
     def capture_exception
@@ -19,7 +19,7 @@ module Integrations
     def capture_exception_with(identifier)
       yield
     rescue StandardError => e
-      @errors_by_identifier[identifier] = e.to_s
+      (@errors_by_identifier[identifier] ||= []) << e.to_s
     end
 
     def errored_on?(identifier)
@@ -31,7 +31,7 @@ module Integrations
     end
 
     def error_messages
-      (@errors + @errors_by_identifier.values).to_json
+      (@errors + @errors_by_identifier.values).flatten
     end
   end
 end

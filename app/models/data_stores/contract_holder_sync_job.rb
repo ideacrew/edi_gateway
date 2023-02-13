@@ -25,10 +25,10 @@ module DataStores
     index({ status: 1 })
 
     # FIXME: test following scope
-    scope :latest_time_span_end, -> { where(:status.ne => :noop).order_by(time_span_end: -1).first }
+    scope :latest_job, -> { where(:status.ne => :noop).order_by(time_span_end: -1) }
     scope :exceptions, -> { exists?('subjects.errors': true) }
 
-    validates :validate_timespan
+    validate :validate_timespan
 
     # All subject_entries successfully processed
     def is_complete?
@@ -36,14 +36,18 @@ module DataStores
     end
 
     def end_at=(value = Time.now)
-      write_attribute(end_at: value)
+      write_attribute(:end_at, value)
+    end
+
+    def latest_time_span_end
+      self.class.latest_job.first&.time_span_end
     end
 
     private
 
     # Guard for start dates in the future and those that precede a prior sync operation
     def validate_time_span_start
-      start_time = [time_span_start, Time.now, latest_time_span_end].min
+      start_time = [time_span_start, Time.now, latest_time_span_end].compact.min
 
       write_attribute(:time_span_start, start_time)
     end
