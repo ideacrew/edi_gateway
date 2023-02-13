@@ -27,6 +27,7 @@ module InsurancePolicies
     def validate(params)
       return Failure('start_time is required') unless params[:start_time].present?
       return Failure('end_time is required') unless params[:end_time].present?
+
       @error_handler = Integrations::Error.new
 
       Success(params)
@@ -61,12 +62,14 @@ module InsurancePolicies
       Success(sync_job)
     end
 
+    # rubocop:disable Metrics/MethodLength
     def persist_responsible_party_policies(sync_job, policy_query)
       policy_query.policies_by_responsible_party do |result|
         @error_handler.capture_exception do
           responsible_person = responsible_party_person_for(result['_id'])
           next if @error_handler.errored_on?(responsible_person.authority_member_id)
           raise "unable to find person record for with responsible party #{result['_id']}" unless responsible_person
+
           @error_handler.capture_exception_with(responsible_person.authority_member_id) do
             subject_create_or_update(
               {
@@ -82,6 +85,8 @@ module InsurancePolicies
       Success(sync_job)
     end
 
+    # rubocop:enable Metrics/MethodLength
+
     def subject_create_or_update(options)
       response = DataStores::ContractHolderSubjects::CreateOrUpdate.new.call(options)
       raise response.failure if response.failure?
@@ -92,6 +97,7 @@ module InsurancePolicies
         @error_handler.capture_exception_with(subject.primary_person_hbx_id) do
           event = build_event(subject)
           raise event.failure unless event.success?
+
           event.success.publish
           persist_request_event(subject, event_name, event_payload)
         end

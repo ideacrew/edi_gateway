@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Integrations
   # Captures all the exceptions occurred during the process
   class Error

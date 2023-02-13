@@ -13,6 +13,7 @@ module DataStores
     field :subscriber_policies, type: Array, default: -> { [] }
     field :responsible_party_policies, type: Array, default: -> { [] }
 
+    field :status, type: Symbol, default: :created
     index({ primary_person_hbx_id: 1 })
 
     scope :by_primary_hbx_id, ->(hbx_id) { where(primary_person_hbx_id: hbx_id) }

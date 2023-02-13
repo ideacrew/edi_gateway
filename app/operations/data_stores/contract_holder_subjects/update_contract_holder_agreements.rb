@@ -50,7 +50,10 @@ module DataStores
           )
         return irs_group if irs_group.success?
 
-        InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({ irs_group_id: irs_group_id, start_on: date }) # remove date dependency
+        InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call(
+          irs_group_id: irs_group_id,
+          start_on: date || Date.today # FIXME: remove date dependency
+        )
       end
 
       def create_or_update_insurance_agreements(values, contract_holder, irs_group)

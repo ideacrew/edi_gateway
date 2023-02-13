@@ -9,12 +9,14 @@ module DataStores
   DEFAULT_STATUS_KINDS = %i[
     acked
     completed
+    created
     denied
     errored
     excluded
     expired
     failed
     nacked
+    noop
     pending
     processing
     submitted

@@ -8,45 +8,61 @@ module DataStores
 
     has_many :subjects, class_name: 'DataStores::ContractHolderSubject'
 
+    field :job_id, type: String, default: -> { SecureRandom.uuid }
+
     # Time boundary parameters for the job
     field :time_span_start, type: DateTime
     field :time_span_end, type: DateTime
 
     # State for the job
-    field :status, type: Symbol
-    field :started_at, type: DateTime, default: -> { Time.now }
-    field :completed_at, type: DateTime
+    field :status, type: Symbol, default: :created
+    field :start_at, type: DateTime, default: -> { Time.now }
+    field :end_at, type: DateTime
     field :error_messages, type: Array, default: -> { [] }
 
+    index({ job_id: 1 })
     index({ time_span_end: -1 })
+    index({ status: 1 })
 
-    scope :lastest_end_date, -> { order_by(time_span_end: -1).first }
+    # FIXME: test following scope
+    scope :latest_time_span_end, -> { where(:status.ne => :noop).order_by(time_span_end: -1).first }
     scope :exceptions, -> { exists?('subjects.errors': true) }
+
+    validates :validate_timespan
 
     # All subject_entries successfully processed
     def is_complete?
-      # code here
+      end_at.nil? == false
     end
 
-    def exceptions; end
+    def end_at=(value = Time.now)
+      write_attribute(end_at: value)
+    end
 
     private
 
     # Guard for start dates in the future and those that precede a prior sync operation
     def validate_time_span_start
-      start_at = [[time_span_start, Time.now].min, lastest_end_date].max
-      write_attribute(:time_span_start, start_at)
+      start_time = [time_span_start, Time.now, latest_time_span_end].min
+
+      write_attribute(:time_span_start, start_time)
     end
 
     # Guard for end dates in the future that if persisted will result in time gaps due to
     # time_span_start validation
     def validate_time_span_end
-      end_at = [end_at, Time.now].min
-      write_attribute(:time_span_end, end_at)
+      end_time = [[time_span_end, Time.now].min, time_span_start].max
+
+      write_attribute(:time_span_end, end_time)
     end
 
-    def validate_time_span
-      time_span_sttart < time_span_end
+    def validate_timespan
+      validate_time_span_start
+      validate_time_span_end
+      return true unless time_span_start == time_span_end
+
+      self.end_at = start_at
+      write_attribute(:status, :noop)
     end
   end
 end
