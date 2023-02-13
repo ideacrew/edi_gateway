@@ -4,21 +4,6 @@ require 'dry/monads'
 require 'dry/monads/do'
 
 module InsurancePolicies
-  # this will capture all the exceptions occurred during the process
-  class ErrorHandler
-    attr_reader :errors
-
-    def initialize
-      @errors = []
-    end
-
-    def capture_exception
-      yield
-    rescue StandardError => e
-      @errors << e.to_s
-    end
-  end
-
   # Persist contract holder sync job with subjects into the database
   class Refresh
     send(:include, Dry::Monads[:result, :do])
@@ -26,12 +11,13 @@ module InsurancePolicies
     attr_reader :error_handler
 
     def call(params)
-      values       = yield validate(params)
-      sync_job     = yield create_sync_job(values)
-      query        = yield create_new_query(values)
-      _policies    = yield persist_subscriber_policies(sync_job, query)
-      _rp_policies = yield persist_responsible_party_policies(sync_job, query)
-      sync_job     = yield close_sync_job(sync_job)
+      values = yield validate(params)
+      sync_job = yield create_sync_job(values)
+      query = yield create_new_query(values)
+      sync_job = yield persist_subscriber_policies(sync_job, query)
+      sync_job = yield persist_responsible_party_policies(sync_job, query)
+      sync_job = yield request_family_payloads(sync_job)
+      sync_job = yield close_sync_job(sync_job)
 
       Success(sync_job)
     end
@@ -39,10 +25,9 @@ module InsurancePolicies
     private
 
     def validate(params)
-      return Failure("start_time is required") unless params[:start_time].present?
-      return Failure("end_time is required") unless params[:end_time].present?
-
-      @error_handler = ErrorHandler.new
+      return Failure('start_time is required') unless params[:start_time].present?
+      return Failure('end_time is required') unless params[:end_time].present?
+      @error_handler = Integrations::Error.new
 
       Success(params)
     end
@@ -62,33 +47,39 @@ module InsurancePolicies
 
     def persist_subscriber_policies(sync_job, policy_query)
       policy_query.policies_by_subscriber do |result|
-        @error_handler.capture_exception do
-          subject_create_or_update({
-                                     contract_holder_sync_job: sync_job,
-                                     primary_person_hbx_id: result["_id"],
-                                     subscriber_policies: result["enrolled_policies"]
-                                   })
+        @error_handler.capture_exception_with(result['_id']) do
+          subject_create_or_update(
+            {
+              contract_holder_sync_job: sync_job,
+              primary_person_hbx_id: result['_id'],
+              subscriber_policies: result['enrolled_policies']
+            }
+          )
         end
       end
 
-      Success(true)
+      Success(sync_job)
     end
 
     def persist_responsible_party_policies(sync_job, policy_query)
       policy_query.policies_by_responsible_party do |result|
         @error_handler.capture_exception do
           responsible_person = responsible_party_person_for(result['_id'])
+          next if @error_handler.errored_on?(responsible_person.authority_member_id)
           raise "unable to find person record for with responsible party #{result['_id']}" unless responsible_person
-
-          subject_create_or_update({
-                                     contract_holder_sync_job: sync_job,
-                                     primary_person_hbx_id: responsible_person.authority_member_id,
-                                     responsible_party_policies: result["enrolled_policies"]
-                                   })
+          @error_handler.capture_exception_with(responsible_person.authority_member_id) do
+            subject_create_or_update(
+              {
+                contract_holder_sync_job: sync_job,
+                primary_person_hbx_id: responsible_person.authority_member_id,
+                responsible_party_policies: result['enrolled_policies']
+              }
+            )
+          end
         end
       end
 
-      Success(true)
+      Success(sync_job)
     end
 
     def subject_create_or_update(options)
@@ -96,31 +87,45 @@ module InsurancePolicies
       raise response.failure if response.failure?
     end
 
+    def request_family_payloads(sync_job)
+      sync_job.subjects.each do |subject|
+        @error_handler.capture_exception_with(subject.primary_person_hbx_id) do
+          event = build_event(subject)
+          raise event.failure unless event.success?
+          event.success.publish
+          persist_request_event(subject, event_name, event_payload)
+        end
+      end
+
+      Success(sync_job)
+    end
+
+    def build_event(subject)
+      event_name = 'events.families.find_by_requested'
+      event_payload = {
+        primary_person_hbx_id: subject.primary_person_hbx_id,
+        correlation_id: subject.contract_holder_sync.job_id # move it into the header
+      }.to_json
+      event(event_name, attributes: event_payload)
+    end
+
+    def persist_request_event(subject, event_name, event_payload, errors = [])
+      request_event =
+        Integrations::Events::Build.new.call({ name: event_name, body: event_payload, errors: errors }).success
+
+      subject.update(request_event: request_event, status: :transmitted)
+    end
+
     def close_sync_job(sync_job)
       status = :transmitted
-      status = :errored if @error_handler.errors.present?
-      sync_job.update(status: status, error_messages: @error_handler.errors)
+      status = :errored if @error_handler.errors_found?
+      sync_job.update(status: status, error_messages: @error_handler.error_messages)
 
       Success(sync_job)
     end
 
     def responsible_party_person_for(responsible_party_id)
-      Person.where(:'responsible_parties._id' => responsible_party_id).first
+      Person.where('responsible_parties._id': responsible_party_id).first
     end
   end
 end
-
-#
-# params: datetime range
-#     calculate_date_range
-#     start_date max of the parameter start date and refresh end date
-#     end_date is min of the parameter end date and datetime now
-#        if end date is less than refresh end date (nothing to do)
-
-#  query gluedb for policies and primary person with given datetime range
-#    - query for policies create or updated
-
-#  persist as transactions in refresh table (by primary person)
-#  fire events to request enroll family cv for each primary applicant
-#  query glue policies with date time range
-#  trigger enroll refresh for each family
