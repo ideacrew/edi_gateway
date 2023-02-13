@@ -13,7 +13,7 @@ module Subscribers
         logger.info "on_found_by response: #{response}"
         subscriber_logger.info "on_found_by response: #{response}"
 
-        DataStores::ContractHolderSyncJobs::StoreResponseEvent.new.call(response)
+        DataStores::ContractHolderSyncJobs::ProcessResponseEvent.new.call(response)
 
         ack(delivery_info.delivery_tag)
       rescue StandardError, SystemStackError => e
@@ -24,15 +24,13 @@ module Subscribers
       private
 
       def error_messages(result)
-        if result.failure.is_a?(Dry::Validation::Result)
-          result.failure.errors.to_h
-        else
-          result.failure
-        end
+        result.failure.is_a?(Dry::Validation::Result) ? result.failure.errors.to_h : result.failure
       end
 
       def subscriber_logger_for(event)
-        Logger.new("#{Rails.root}/log/#{event}_#{Date.today.in_time_zone('Eastern Time (US & Canada)').strftime('%Y_%m_%d')}.log")
+        Logger.new(
+          "#{Rails.root}/log/#{event}_#{Date.today.in_time_zone('Eastern Time (US & Canada)').strftime('%Y_%m_%d')}.log"
+        )
       end
     end
   end

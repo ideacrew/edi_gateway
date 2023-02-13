@@ -11,12 +11,11 @@ module DataStores
       include EventSource::Command
 
       def call(params)
-        values          = yield validate(params)
-        subject         = yield find_contract_holder_subject(values)
-        contract_holder = yield find_or_create_contract_holder(subject)
-        irs_group       = yield find_or_create_irs_group(subject)
-        _agreements     = yield create_or_update_insurance_agreements(subject, contract_holder, irs_group)
-        _output         = yield process_irs_group_updates(subject)
+        values = yield validate(params)
+        contract_holder = yield find_or_create_contract_holder(values)
+        irs_group = yield find_or_create_irs_group(values)
+        _agreements = yield create_or_update_insurance_agreements(subject, contract_holder, irs_group)
+        _output = yield process_irs_group_updates(values)
 
         Success(subject)
       end
@@ -24,59 +23,52 @@ module DataStores
       private
 
       def validate(params)
-        return Failure('sync_job id expected') unless params[:sync_job_id]
-        return Failure('primary person hbx id expected') unless params[:primary_person_hbx_id]
+        return Failure('subject expected') unless params[:subject]
 
         Success(values)
       end
 
-      def find_contract_holder_subject(values)
-        sync_job = DataStores::ContractHolderSyncJob.find(values[:sync_job_id])
-        subject = sync_job.subjects.by_primary_hbx_id(values[:primary_person_hbx_id]).first
+      def find_or_create_contract_holder(values)
+        glue_person = Person.where(authority_member_id: values[:subject].primary_person_hbx_id).first
 
-        Success(subject)
-      end
-
-      def find_or_create_contract_holder(subject)
-        glue_person = Person.where(authority_member_id: subject.primary_person_hbx_id).first
-
-        edidb_person = People::Persons::Find.new.call({ hbx_id: subject.authority_member_id })
+        edidb_person = People::Persons::Find.new.call({ hbx_id: values[:subject].authority_member_id })
         return edidb_person if edidb_person.success?
 
         People::Persons::Create.new.call(person: glue_person)
       end
 
-      def find_or_create_irs_group(subject)
+      def find_or_create_irs_group(values)
         # date = glue_policy.subscriber.coverage_start.beginning_of_year ??
         # return Success({} )if non_eligible_policy(glue_policy)
 
         # glue_person  = find_person_from_glue_policy(glue_policy)
-        irs_group_id = construct_irs_group_id('22', subject.primary_person_hbx_id)
+        irs_group_id = construct_irs_group_id('22', values[:subject].primary_person_hbx_id)
 
-        irs_group = InsurancePolicies::AcaIndividuals::IrsGroups::Find
-                    .new.call({ scope_name: :by_irs_group_id, criterion: irs_group_id })
+        irs_group =
+          InsurancePolicies::AcaIndividuals::IrsGroups::Find.new.call(
+            { scope_name: :by_irs_group_id, criterion: irs_group_id }
+          )
         return irs_group if irs_group.success?
 
-        InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({ irs_group_id: irs_group_id,
-                                                                        start_on: date }) # remove date dependency
+        InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call({ irs_group_id: irs_group_id, start_on: date }) # remove date dependency
       end
 
-      def create_or_update_insurance_agreements(subject, contract_holder, irs_group)
-        policy_ids = subject.subscriber_policies + subject.responsible_party_policies
+      def create_or_update_insurance_agreements(values, contract_holder, irs_group)
+        policy_ids = values[:subject].subscriber_policies + values[:subject].responsible_party_policies
 
-        Policy.where(:eg_id.in => policy_ids.uniq).each do |policy|
-          IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
-            contract_holder: contract_holder,
-            irs_group: irs_group,
-            policy: policy
-          )
-        end
+        Policy
+          .where(:eg_id.in => policy_ids.uniq)
+          .each do |policy|
+            IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
+              contract_holder: contract_holder,
+              irs_group: irs_group,
+              policy: policy
+            )
+          end
       end
 
-      def process_irs_group_updates(subject)
-        IrsGroups::SeedIrsGroup.new.call(
-          payload: subject.response_event.body
-        )
+      def process_irs_group_updates(values)
+        IrsGroups::SeedIrsGroup.new.call(payload: values[:subject].response_event.body)
       end
 
       def construct_irs_group_id(year, hbx_id)
@@ -87,9 +79,9 @@ module DataStores
 
       def non_eligible_policy(pol)
         return true if pol.canceled?
-        return true if pol.kind == "coverall"
-        return true if pol.plan.coverage_type == "dental"
-        return true if pol.plan.metal_level == "catastrophic"
+        return true if pol.kind == 'coverall'
+        return true if pol.plan.coverage_type == 'dental'
+        return true if pol.plan.metal_level == 'catastrophic'
         return true if pol.subscriber.cp_id.blank?
 
         false
