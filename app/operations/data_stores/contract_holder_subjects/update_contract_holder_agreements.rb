@@ -39,9 +39,9 @@ module DataStores
 
       def find_or_create_irs_group(values)
         # date = glue_policy.subscriber.coverage_start.beginning_of_year ??
-        # return Success({} )if non_eligible_policy(glue_policy)
-
+        # return Success({} ) if non_eligible_policy(glue_policy)
         # glue_person  = find_person_from_glue_policy(glue_policy)
+
         irs_group_id = construct_irs_group_id('22', values[:subject].primary_person_hbx_id)
 
         irs_group =
@@ -52,7 +52,8 @@ module DataStores
 
         InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call(
           irs_group_id: irs_group_id,
-          start_on: date || Date.today # FIXME: remove date dependency
+          family_hbx_assigned_id: values[:family_cv][:hbx_id],
+          start_on: Date.today # FIXME: remove date dependency
         )
       end
 
@@ -80,15 +81,15 @@ module DataStores
         year + hbx_id_number
       end
 
-      def non_eligible_policy(pol)
-        return true if pol.canceled?
-        return true if pol.kind == 'coverall'
-        return true if pol.plan.coverage_type == 'dental'
-        return true if pol.plan.metal_level == 'catastrophic'
-        return true if pol.subscriber.cp_id.blank?
+      # def non_eligible_policy(pol)
+      #   return true if pol.canceled?
+      #   return true if pol.kind == 'coverall'
+      #   return true if pol.plan.coverage_type == 'dental'
+      #   return true if pol.plan.metal_level == 'catastrophic'
+      #   return true if pol.subscriber.cp_id.blank?
 
-        false
-      end
+      #   false
+      # end
     end
   end
 end

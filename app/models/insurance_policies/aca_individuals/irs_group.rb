@@ -11,8 +11,9 @@ module InsurancePolicies
                class_name: 'InsurancePolicies::AcaIndividuals::InsurancePolicy',
                inverse_of: :irs_group
 
-      has_many :tax_household_groups, class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup',
-                                      dependent: :destroy
+      has_many :tax_household_groups,
+               class_name: 'InsurancePolicies::AcaIndividuals::TaxHouseholdGroup',
+               dependent: :destroy
 
       field :irs_group_id, type: String
       field :family_hbx_assigned_id, type: String
@@ -33,10 +34,14 @@ module InsurancePolicies
       end
 
       def active_thhs_with_tax_filer(calendar_year)
-        active_tax_household_group(calendar_year)&.tax_households&.select do |thh|
-          thh if thh.tax_household_members.where(tax_filer_status: "tax_filer").present? ||
+        active_tax_household_group(calendar_year)
+          &.tax_households
+          &.select do |thh|
+            if thh.tax_household_members.where(tax_filer_status: 'tax_filer').present? ||
                  thh.tax_household_members.where(is_medicaid_chip_eligible: true).present?
-        end
+              thh
+            end
+          end
       end
 
       def uqhp_tax_households(calendar_year)
@@ -56,19 +61,21 @@ module InsurancePolicies
       # rubocop:disable Metrics/AbcSize
       # rubocop:disable Metrics/CyclomaticComplexity
       def active_thh_for_month(month, year)
-        tax_household_groups.flat_map(&:tax_households).detect do |thh|
-          next if thh.start_on == thh.end_on
-          next if thh.tax_household_group.is_aqhp == false
+        tax_household_groups
+          .flat_map(&:tax_households)
+          .detect do |thh|
+            next if thh.start_on == thh.end_on
+            next if thh.tax_household_group.is_aqhp == false
 
-          end_of_month = Date.new(year, month, 1).end_of_month
-          next unless thh.start_on < end_of_month
+            end_of_month = Date.new(year, month, 1).end_of_month
+            next unless thh.start_on < end_of_month
 
-          start_date = thh.start_on
-          end_date = thh.end_on.present? ? thh.end_on.month : start_date.end_of_year
-          coverage_end_month = end_date.month
-          coverage_end_month = 12 if year != end_date.year
-          (start_date.month..coverage_end_month).include?(month)
-        end
+            start_date = thh.start_on
+            end_date = thh.end_on.present? ? thh.end_on.month : start_date.end_of_year
+            coverage_end_month = end_date.month
+            coverage_end_month = 12 if year != end_date.year
+            (start_date.month..coverage_end_month).include?(month)
+          end
       end
       # rubocop:enable Metrics/AbcSize
       # rubocop:enable Metrics/CyclomaticComplexity

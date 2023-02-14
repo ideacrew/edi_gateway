@@ -109,11 +109,10 @@ module InsurancePolicies
 
     def build_event(subject)
       event_name = 'events.families.find_by_requested'
-      event_payload = {
-        primary_person_hbx_id: subject.primary_person_hbx_id,
-        correlation_id: subject.contract_holder_sync.job_id # move it into the header
-      }
-      event(event_name, attributes: event_payload)
+      correlation_id = subject.contract_holder_sync.job_id
+      event_payload = { primary_person_hbx_id: subject.primary_person_hbx_id }
+
+      event(event_name, attributes: event_payload, headers: { correlation_id: correlation_id })
     end
 
     def persist_request_event(subject, event, errors = [])
