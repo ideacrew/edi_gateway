@@ -14,7 +14,7 @@ RSpec.describe IrsGroups::SeedIrsGroup do
   it "should fail if it is unable to fetch person from gluedb" do
     res = subject.call({ payload: family_params.to_h })
     expect(res.failure?).to be_truthy
-    expect(res.failure).to eq "Unable to fetch insurance agreements"
+    expect(res.failure).to match(/Unable to find IRS group for family/)
   end
 
   it "should seed IRS group and return success if everything is valid" do
@@ -54,7 +54,6 @@ RSpec.describe IrsGroups::SeedIrsGroup do
     irs_group = InsurancePolicies::AcaIndividuals::IrsGroup.create!(irs_group_id: "2200000001234567")
 
     _insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicy.create!(policy_id: "1000",
-                                                                                   hbx_enrollment_ids: ["1000"],
                                                                                    insurance_product: insurance_product,
                                                                                    insurance_agreement: insurance_agreement,
                                                                                    irs_group: irs_group)

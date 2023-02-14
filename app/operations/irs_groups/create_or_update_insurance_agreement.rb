@@ -48,7 +48,6 @@ module IrsGroups
         start_on: glue_policy.policy_start,
         end_on: glue_policy.policy_end,
         policy_id: glue_policy.eg_id,
-        # hbx_enrollment_ids: glue_policy.hbx_enrollment_ids,
         aasm_state: glue_policy.aasm_state,
         carrier_policy_id: glue_policy.subscriber.cp_id,
         term_for_np: glue_policy.term_for_np

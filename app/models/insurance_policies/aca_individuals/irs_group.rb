@@ -15,11 +15,13 @@ module InsurancePolicies
                                       dependent: :destroy
 
       field :irs_group_id, type: String
+      field :family_hbx_assigned_id, type: String
       field :start_on, type: Date
       field :end_on, type: Date
 
       # indexes
       index({ irs_group_id: 1 })
+      index({ family_hbx_assigned_id: 1 })
 
       def insurance_agreements
         aca_individual_insurance_policies&.map(&:insurance_agreement)&.uniq

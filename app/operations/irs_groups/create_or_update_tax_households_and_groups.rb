@@ -32,12 +32,14 @@ module IrsGroups
       contract_holder = People::Persons::Find.new.call({ hbx_id: primary_member.person.hbx_id })
       return Failure("Unable to find contract holder") if contract_holder.failure?
 
-      InsurancePolicies::InsuranceAgreement.where(contract_holder_id: contract_holder.value![:id])
+      Success(InsurancePolicies::InsuranceAgreement.where(contract_holder_id: contract_holder.value![:id]))
     end
 
     def fetch_irs_group
-      agreements = fetch_insurance_agreements
-      agreements&.flat_map(&:insurance_policies)&.pluck(:irs_group_id)&.compact&.first
+      result = fetch_insurance_agreements
+      return if result.failure?
+
+      result.success&.flat_map(&:insurance_policies)&.pluck(:irs_group_id)&.compact&.first
     end
 
     # rubocop:disable Metrics/CyclomaticComplexity

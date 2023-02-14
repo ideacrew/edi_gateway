@@ -14,10 +14,11 @@ module InsurancePolicies
         def call(params)
           values                  = yield validate(params)
           insurance_product       = yield construct_insurance_product(values[:insurance_policy])
+          insurance_provider      = yield construct_insurance_provider(values[:insurance_policy])
           enrollments             = yield construct_enrollments(values[:insurance_policy])
           aptc_csr_tax_households = yield construct_aptc_csr_tax_households(values[:insurance_policy])
           insurance_policy_hash   = yield construct_insurance_policy(values[:insurance_policy], insurance_product, enrollments,
-                                                                     aptc_csr_tax_households)
+                                                                     insurance_provider, aptc_csr_tax_households)
 
           Success(insurance_policy_hash)
         end
@@ -44,6 +45,31 @@ module InsurancePolicies
                   })
         end
 
+        def construct_insurance_provider(insurance_policy)
+          insurance_provider = insurance_policy.insurance_product.insurance_provider
+
+          Success({
+                    title: insurance_provider.title,
+                    hios_id: insurance_provider.hios_id,
+                    fein: insurance_provider.fein,
+                    insurance_products: construct_insurance_products(insurance_provider.insurance_products)
+                  })
+        end
+
+        def construct_insurance_products(insurance_products)
+          insurance_products.collect do |insurance_product|
+            {
+              name: insurance_product.name,
+              hios_plan_id: insurance_product.hios_plan_id,
+              plan_year: insurance_product.plan_year,
+              coverage_type: insurance_product.coverage_type,
+              metal_level: insurance_product.metal_level,
+              market_type: insurance_product.market_type,
+              ehb: insurance_product.ehb
+            }
+          end
+        end
+
         def construct_enrollments(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           enrollments_hash = enrollments.collect do |enr|
@@ -60,7 +86,6 @@ module InsurancePolicies
           Success(enrollments_hash)
         end
 
-        # rubocop:disable Metrics/AbcSize
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == "coverage_canceled" }
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
@@ -72,6 +97,7 @@ module InsurancePolicies
             covered_individuals = construct_covered_individuals(enrollments, tax_household)
             months_of_year = construct_coverage_information(insurance_policy, covered_individuals, tax_household)
             {
+              tax_household_members: construct_tax_household_members(tax_household),
               hbx_assigned_id: tax_household.hbx_id,
               covered_individuals: covered_individuals,
               months_of_year: months_of_year.compact,
@@ -81,13 +107,34 @@ module InsurancePolicies
 
           Success(tax_households_hash)
         end
-        # rubocop:enable Metrics/AbcSize
 
-        def construct_insurance_policy(insurance_policy, insurance_product, enrollments, aptc_csr_tax_households)
+        def construct_tax_household_members(tax_household)
+          tax_household.tax_household_members.collect do |thh_member|
+            glue_person = fetch_person_from_glue(thh_member.person)
+            result = {
+              family_member_reference: { family_member_hbx_id: thh_member.person.hbx_id,
+                                         relation_with_primary: thh_member.relation_with_primary,
+                                         first_name: thh_member.person.name.first_name,
+                                         last_name: thh_member.person.name.last_name,
+                                         dob: glue_person&.authority_member&.dob },
+
+              tax_filer_status: thh_member&.tax_filer_status,
+              is_subscriber: thh_member&.is_subscriber || false
+            }
+
+            if glue_person&.authority_member&.ssn.present?
+              result[:family_member_reference][:encrypted_ssn] = encrypt_ssn(glue_person&.authority_member&.ssn)
+            end
+            result
+          end
+        end
+
+        def construct_insurance_policy(insurance_policy, insurance_product, enrollments, insurance_provider,
+                                       aptc_csr_tax_households)
           Success({
                     policy_id: insurance_policy.policy_id,
                     insurance_product: insurance_product,
-                    hbx_enrollment_ids: insurance_policy.hbx_enrollment_ids,
+                    insurance_provider: insurance_provider,
                     start_on: insurance_policy.start_on,
                     end_on: insurance_policy.policy_end_on,
                     enrollments: enrollments,
@@ -101,12 +148,12 @@ module InsurancePolicies
             enrolled_thh_members =  fetch_enrolled_thh_members([enrollment], tax_household)
             {
               hbx_id: tax_household.hbx_id,
-              tax_household_members: construct_tax_household_members(tax_household, enrolled_thh_members)
+              tax_household_members: construct_enrolled_tax_household_members(tax_household, enrolled_thh_members)
             }
           end
         end
 
-        def construct_tax_household_members(tax_household, enrolled_thh_members)
+        def construct_enrolled_tax_household_members(tax_household, enrolled_thh_members)
           enrolled_thh_members.collect do |enrolled_thh_member|
             thh_member = tax_household.tax_household_members.where(:person_id => enrolled_thh_member.person_id).first
             {
@@ -292,7 +339,6 @@ module InsurancePolicies
           result.deep_transform_values(&:to_hash)
         end
 
-        # rubocop:disable Metrics/MethodLength
         # rubocop:disable Metrics/CyclomaticComplexity
         def construct_coverage_information(insurance_policy, covered_individuals, tax_household)
           (1..12).collect do |month|
@@ -360,7 +406,6 @@ module InsurancePolicies
 
           format('%.2f', (premium_amount * insurance_policy.insurance_product.ehb))
         end
-        # rubocop:enable Metrics/MethodLength
         # rubocop:enable Metrics/PerceivedComplexity
         # rubocop:enable Metrics/CyclomaticComplexity
 
