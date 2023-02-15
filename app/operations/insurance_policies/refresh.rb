@@ -110,7 +110,7 @@ module InsurancePolicies
     def build_event(subject)
       event_name = 'events.families.find_by_requested'
       correlation_id = subject.contract_holder_sync.job_id
-      event_payload = { primary_person_hbx_id: subject.primary_person_hbx_id }
+      event_payload = { person_hbx_id: subject.primary_person_hbx_id }
 
       event(event_name, attributes: event_payload, headers: { correlation_id: correlation_id })
     end
