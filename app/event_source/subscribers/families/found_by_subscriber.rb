@@ -7,13 +7,17 @@ module Subscribers
       include ::EventSource::Subscriber[amqp: 'enroll.families']
 
       subscribe(:on_found_by) do |delivery_info, _properties, response|
+        logger = subscriber_logger_for(:on_families_found_by)
         logger.info "on_found_by response: #{response}"
-        subscriber_logger = subscriber_logger_for(:on_families_found_by)
         response = JSON.parse(response, symbolize_names: true)
-        logger.info "on_found_by response: #{response}"
-        subscriber_logger.info "on_found_by response: #{response}"
+        logger.info "on_found_by response: payload #{response}"
 
-        DataStores::ContractHolderSyncJobs::ProcessResponseEvent.new.call(response)
+        result = DataStores::ContractHolderSyncJobs::ProcessResponseEvent.new.call(response)
+        if result.success?
+          logger.info 'processed response event successfully'
+        else
+          logger.error "failed to process response event due to: #{error_messages(result)}"
+        end
 
         ack(delivery_info.delivery_tag)
       rescue StandardError, SystemStackError => e

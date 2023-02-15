@@ -24,13 +24,9 @@ module IrsGroups
     end
 
     def build_family_entity(family_hash)
-      result = Try do
-        AcaEntities::Families::Family.new(family_hash)
-      end
+      result = Try() { AcaEntities::Families::Family.new(family_hash) }
 
-      result.or do |e|
-        Failure(e)
-      end
+      result.or { |e| Failure(e) }
     end
   end
 end

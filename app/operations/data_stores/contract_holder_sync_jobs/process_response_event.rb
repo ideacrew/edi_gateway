@@ -45,15 +45,25 @@ module DataStores
       end
 
       def store_response_event(values, subject)
-        response_event =
-          Integrations::Events::Build.new.call({ name: values[:event_name], body: values[:family] }).success
+        response_event = Integrations::Events::Build.new.call({ name: values[:event_name], body: values[:family] })
+        return Failure("unable to create response event #{response_event.failure}") if response_event.failure?
 
-        subject.update(response_event: response_event)
+        subject.update(response_event: response_event.success)
         Success(subject)
       end
 
-      def process_response_event(subject)
-        DataStores::ContractHolderSubjects::UpdateContractHolderAgreements.new.call(subject: subject)
+      # add spec to test peristance on the response event
+      def update_edidb(subject)
+        result = InsuracePolicies::ContractHolders::CreateOrUpdate.new.call(subject: subject)
+
+        response_event = subject.response_event
+        if result.success?
+          response_event.update(status: :transmitted)
+        else
+          response_event.update(errors: result.failure.errors, status: :errored)
+        end
+
+        result
       end
     end
   end

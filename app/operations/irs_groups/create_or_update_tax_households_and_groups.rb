@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/ClassLength
 module IrsGroups
   # Parse CV3 family payload and store necessary information
   class CreateOrUpdateTaxHouseholdsAndGroups
@@ -13,9 +11,8 @@ module IrsGroups
     def call(params)
       validated_params = yield validate(params)
       @family = validated_params[:family]
-
-      # @year = validated_params[:year]
       insurance_thh_groups = yield persist_tax_household_groups
+
       Success(insurance_thh_groups)
     end
 
@@ -23,8 +20,6 @@ module IrsGroups
 
     def validate(params)
       return Failure('Family should not be blank') if params[:family].blank?
-
-      # return Failure("Year cannot be blank") if params[:year].blank?
 
       Success(params)
     end
@@ -44,8 +39,6 @@ module IrsGroups
       result.success&.flat_map(&:insurance_policies)&.pluck(:irs_group_id)&.compact&.first
     end
 
-    # rubocop:disable Metrics/CyclomaticComplexity
-    # rubocop:disable Metrics/MethodLength
     def build_tax_household_and_members(tax_household)
       result = {
         hbx_id: tax_household.hbx_id,
@@ -74,15 +67,10 @@ module IrsGroups
       result
     end
 
-    # rubocop:enable Metrics/CyclomaticComplexity
-    # rubocop:enable Metrics/MethodLength
-
     def build_tax_household_members(tax_household)
       tax_household.tax_household_members.collect { |thh_member| tax_household_member_hash(thh_member) }
     end
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
     def tax_household_member_hash(thh_member)
       result = {
         is_subscriber: thh_member.is_subscriber,
@@ -111,9 +99,6 @@ module IrsGroups
       result
     end
 
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
-
     # def fetch_thh_groups_for_year(tax_household_groups)
     #   tax_household_groups.select do |thh_group|
     #     thh_group.start_on.between?(Date.new(@year, 1, 1), Date.new(@year, 12, 31))
@@ -121,8 +106,6 @@ module IrsGroups
     # end
 
     # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/CyclomaticComplexity
-    # rubocop:disable Metrics/MethodLength
     def persist_tax_household_groups
       return Success(true) if @family.tax_household_groups.blank?
 
@@ -161,9 +144,6 @@ module IrsGroups
     end
 
     # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/CyclomaticComplexity
-    # rubocop:enable Metrics/MethodLength
-
     def persist_tax_households(tax_households, thh_group_hash)
       tax_households.each do |tax_household|
         insurance_thh =
@@ -208,5 +188,3 @@ module IrsGroups
     end
   end
 end
-# rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/ClassLength

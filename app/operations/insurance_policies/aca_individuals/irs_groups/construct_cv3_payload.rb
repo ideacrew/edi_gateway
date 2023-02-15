@@ -71,12 +71,14 @@ module InsurancePolicies
         end
 
         def construct_family_cv(values, family_members, households)
-          Success({
-                    hbx_id: values[:irs_group].family_hbx_assigned_id,
-                    irs_group_id: values[:irs_group].irs_group_id,
-                    family_members: family_members,
-                    households: households
-                  })
+          Success(
+            {
+              hbx_id: values[:irs_group].family_hbx_assigned_id,
+              irs_group_id: values[:irs_group].irs_group_id,
+              family_members: family_members,
+              households: households
+            }
+          )
         end
 
         def fetch_all_members(contract_holder, policies)
@@ -92,7 +94,6 @@ module InsurancePolicies
           [{ is_immediate_family: true, coverage_household_members: [] }]
         end
 
-        # rubocop:disable Metrics/MethodLength
         def construct_insurance_agreements(insurance_agreements, tax_form_type)
           insurance_agreements = insurance_agreements.uniq(&:id)
 
@@ -115,8 +116,6 @@ module InsurancePolicies
             }
           end
         end
-
-        # rubocop:enable Metrics/MethodLength
 
         def construct_person_hash(insurance_person, glue_person)
           authority_member = glue_person.authority_member

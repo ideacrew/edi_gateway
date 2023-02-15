@@ -13,8 +13,6 @@ module IrsGroups
     def call(params)
       validated_params = yield validate(params)
       @family = validated_params[:family]
-
-      # @year   = validated_params[:year]
       result = yield persist_enrollments
 
       Success(result)
@@ -24,8 +22,6 @@ module IrsGroups
 
     def validate(params)
       return Failure('Family should not be blank') if params[:family].blank?
-
-      # return Failure("Year cannot be blank") if params[:year].blank?
 
       Success(params)
     end
@@ -62,7 +58,6 @@ module IrsGroups
       enrollment_members.collect { |enr_member| enr_member_hash(enr_member) }
     end
 
-    # rubocop:disable Metrics/MethodLength
     def enr_member_hash(enr_member)
       result = {
         family_member_reference: {
@@ -124,8 +119,6 @@ module IrsGroups
       result
     end
 
-    # rubocop:enable Metrics/MethodLength
-
     def build_issuer_profile_reference(issuer_profile_reference)
       {
         hbx_id: issuer_profile_reference.hbx_id,
@@ -154,7 +147,12 @@ module IrsGroups
         start_on: ea_enrollment.effective_on,
         effectuated_on: ea_enrollment.effective_on,
         end_on: ea_enrollment.terminated_on,
-        aasm_state: ea_enrollment.aasm_state
+        aasm_state: ea_enrollment.aasm_state,
+        total_premium_amount: ea_enrollment.total_premium,
+        total_premium_adjustment_amount: {
+          cents: ea_enrollment.applied_aptc_amount&.cents,
+          currency_iso: ea_enrollment.applied_aptc_amount&.currency_iso
+        }
       )
 
       ea_enrollment.hbx_enrollment_members.each do |enrollment_member|
@@ -175,7 +173,6 @@ module IrsGroups
       Success(insurance_enrollment.to_hash)
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/CyclomaticComplexity
     def persist_enrollments
       insurance_agreements = fetch_insurance_agreements
@@ -222,7 +219,6 @@ module IrsGroups
       Success(true)
     end
 
-    # rubocop:enable Metrics/PerceivedComplexity
     # rubocop:enable Metrics/CyclomaticComplexity
     # rubocop:enable Metrics/MethodLength
 
