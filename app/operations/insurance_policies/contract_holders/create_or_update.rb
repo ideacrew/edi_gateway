@@ -43,11 +43,15 @@ module InsurancePolicies
       # if there's no differece we don't update
       # if there's is a difference - can we update entity?
 
+      def update_contract_holder(person, incoming_person)
+        People::Persons::Update.new.call(person: person, incoming_person: incoming_person)
+      end
+
       def find_or_create_contract_holder(values)
         edidb_person = People::Persons::Find.new.call({ hbx_id: values[:subject].primary_person_hbx_id })
-        return edidb_person if edidb_person.success?
-
         glue_person = Person.where(authority_member_id: values[:subject].primary_person_hbx_id).first
+        return update_contract_holder(edidb_person.success, glue_person) if edidb_person.success?
+
         People::Persons::Create.new.call(person: glue_person)
       end
 
@@ -74,14 +78,14 @@ module InsurancePolicies
         #  ex. when 3 policies passed, first two are processed successfully and it may fail on 3rd one.
         results =
           Policy
-          .where(:eg_id.in => policy_ids.uniq)
-          .collect do |policy|
-            IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
-              contract_holder_hash: contract_holder,
-              irs_group_hash: irs_group,
-              policy: policy
-            )
-          end
+            .where(:eg_id.in => policy_ids.uniq)
+            .collect do |policy|
+              IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
+                contract_holder_hash: contract_holder,
+                irs_group_hash: irs_group,
+                policy: policy
+              )
+            end
         if results.any?(&:failure?)
           errors = results.select(&:failure?).map { |output| output.failure.errors.to_h }
           return Failure(errors)
