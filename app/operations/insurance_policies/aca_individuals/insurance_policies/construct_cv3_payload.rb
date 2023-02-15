@@ -452,9 +452,8 @@ module InsurancePolicies
           return thh_members_from_enr_thhs if enr_thhs.present? && !tax_household.is_aqhp
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
-          tax_filer = tax_household.primary || tax_household.tax_household_members.first
           enr_thhs_for_month = enr_thhs.select do |enr_thh|
-            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
+            valid_enrollment_tax_household?(enr_thh, tax_household)
           end
 
           enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
