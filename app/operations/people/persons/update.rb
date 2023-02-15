@@ -20,8 +20,8 @@ module People
       private
 
       def validate(params)
-        return Failure('Person cannot be blank') if params[:person].blank?
-        return Failure('Person cannot be blank') if params[:incoming_person].blank?
+        return Failure('EDI DB Person cannot be blank') if params[:person].blank?
+        return Failure('Glue Person cannot be blank') if params[:incoming_person].blank?
 
         @type = params[:type] || 'Glue'
 
@@ -35,17 +35,32 @@ module People
         Success(person)
       end
 
+      def compare_and_update_name(person, incoming_person)
+        person_name = person.name
+        old_name =  { first_name: person_name.first_name, last_name: person_name.last_name, name_pfx: person_name.name_pfx,
+                      name_sfx: person_name.name_sfx, middle_name: person_name.middle_name }
+        new_name = construct_person_name(incoming_person)
+        result = old_name.values.compact <=> new_name.values.compact
+        person.name.update!(new_name) unless result.zero?
+      end
+
       def compare_and_update_addresses(person, incoming_person)
         comparable = Integrations::CompareRecords.new(AcaEntities::Locations::Address, :kind)
         comparable.add_old_entry(fetch_person_addresses(person))
         comparable.add_new_entry(construct_addresses(incoming_person))
         comparable.changed_records
 
-        comparable.records_to_delete { |record| person.addresses.delete_if { |address| address.kind == record[:kind] } }
-        comparable.records_to_create { |record| person.addresses.create(record) }
-        comparable.records_to_update do |record|
+        comparable.records_to_delete.each do |record|
+          person.addresses.delete_if { |address| address.kind == record[:kind] }
+        end
+        comparable.records_to_create.each do |record|
+          person.addresses.create(record)
+          person.save!
+        end
+        comparable.records_to_update.each do |record|
           address_record = person.addresses.detect { |address| address.kind == record[:kind] }
           address_record.update(record)
+          person.save!
         end
       end
 
@@ -55,31 +70,44 @@ module People
         comparable.add_new_entry(construct_emails(incoming_person))
         comparable.changed_records
 
-        comparable.records_to_delete { |record| person.emails.delete_if { |address| address.kind == record[:kind] } }
-        comparable.records_to_create { |record| person.emails.create(record) }
-        comparable.records_to_update do |record|
+        comparable.records_to_delete.each do |record|
+          person.emails.delete_if { |address| address.kind == record[:kind] }
+        end
+        comparable.records_to_create.each do |record|
+          person.emails.create(record)
+          person.save!
+        end
+        comparable.records_to_update.each do |record|
           email_record = person.emails.detect { |email| email.kind == record[:kind] }
           email_record.update(record)
+          person.save!
         end
       end
 
       def compare_and_update_phones(person, incoming_person)
         comparable = Integrations::CompareRecords.new(AcaEntities::Contacts::PhoneContact, :kind)
-        comparable.add_old_entry(fetch_person_phones(person))
+        comparable.add_old_entry(fetch_person_phones(person)).map(&:symbolize_keys)
         comparable.add_new_entry(construct_phones(incoming_person))
         comparable.changed_records
 
-        comparable.records_to_delete { |record| person.phones.delete_if { |address| address.kind == record[:kind] } }
-        comparable.records_to_create { |record| person.phones.create(record) }
-        comparable.records_to_update do |record|
+        comparable.records_to_delete.each do |record|
+          person.phones.delete_if { |address| address.kind == record[:kind] }
+        end
+        comparable.records_to_create.each do |record|
+          person.phones.create(record)
+          person.save!
+        end
+        comparable.records_to_update.each do |record|
           phone_record = person.phones.detect { |phone| phone.kind == record[:kind] }
           phone_record.update(record)
+          person.save!
         end
       end
 
       def update_person(person, values)
         incoming_person = values[:incoming_person]
 
+        compare_and_update_name(person, incoming_person)
         compare_and_update_addresses(person, incoming_person)
         compare_and_update_emails(person, incoming_person)
         compare_and_update_phones(person, incoming_person)

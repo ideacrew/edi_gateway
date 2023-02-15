@@ -57,7 +57,8 @@ RSpec.describe IrsGroups::SeedIrsGroup do
         carrier_id: carrier.id,
         enrollees: [enrollee]
       )
-    contract_holder = People::Person.create!(hbx_id: person.authority_member_id)
+    contract_holder = People::Person.create!(hbx_id: person.authority_member_id,
+                                             name: { first_name: "hello", last_name: "world" })
 
     insurance_provider = InsurancePolicies::InsuranceProvider.create!(hios_id: '33653', title: 'test')
     insurance_product =

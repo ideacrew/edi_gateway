@@ -32,7 +32,7 @@ module Integrations
         matched_keys.collect do |matched_key|
           old_record = @old_entry.detect { |record| record[identifier] == matched_key }
           new_record = @new_entry.detect { |record| record[identifier] == matched_key }
-          result = old_record.values <=> new_record.values
+          result = old_record.values.compact <=> new_record.values.compact
           result.zero? ? nil : new_record
         end.compact
     end
