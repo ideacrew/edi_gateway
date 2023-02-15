@@ -331,10 +331,14 @@ module IrsGroups
         end
     end
 
+    def update_person(person, incoming_person)
+      People::Persons::Update.new.call(person: person, incoming_person: incoming_person, type: 'Enroll')
+    end
+
     def find_or_create_person(member)
       family_member = fetch_person_details_from_family(member)
       result = People::Persons::Find.new.call({ hbx_id: family_member.person.hbx_id })
-      return result if result.success?
+      return update_person(result.success, family_member.person) if result.success?
 
       result = People::Persons::Create.new.call({ person: family_member.person, type: 'Enroll' })
       return Failure('unable to create or find person') if result.failure?

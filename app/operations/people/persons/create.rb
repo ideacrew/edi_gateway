@@ -20,6 +20,7 @@ module People
 
       def validate(params)
         return Failure('Person cannot be blank') if params[:person].blank?
+
         @type = params[:type] || 'Glue'
 
         Success(params)
