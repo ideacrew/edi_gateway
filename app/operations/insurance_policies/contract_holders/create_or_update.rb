@@ -13,10 +13,11 @@ module InsurancePolicies
 
       def call(params)
         values = yield validate(params)
+        family_cv = yield load_family_payload(values)
         contract_holder = yield find_or_create_contract_holder(values)
-        irs_group = yield find_or_create_irs_group(values)
+        irs_group = yield find_or_create_irs_group(values, family_cv)
         _agreements = yield create_or_update_insurance_agreements(values, contract_holder, irs_group)
-        _output = yield process_irs_group_updates(values)
+        _output = yield process_irs_group_updates(values, family_cv)
 
         Success(contract_holder)
       end
@@ -27,9 +28,13 @@ module InsurancePolicies
         return Failure('subject expected') unless params[:subject]
         return Failure('response event not found on subject') unless params[:subject].response_event
 
-        params[:family_cv] = JSON.parse(params[:subject].response_event&.body, symbolize_names: true)
-
         Success(params)
+      end
+
+      def load_family_payload(values)
+        payload = JSON.parse(values[:subject].response_event&.body, symbolize_names: true)
+
+        Success(payload)
       end
 
       # currenty_entity = find or initialize entity
@@ -46,7 +51,7 @@ module InsurancePolicies
         People::Persons::Create.new.call(person: glue_person)
       end
 
-      def find_or_create_irs_group(values)
+      def find_or_create_irs_group(values, family_cv)
         irs_group_id = construct_irs_group_id('22', values[:subject].primary_person_hbx_id)
 
         irs_group =
@@ -57,7 +62,7 @@ module InsurancePolicies
 
         InsurancePolicies::AcaIndividuals::IrsGroups::Create.new.call(
           irs_group_id: irs_group_id,
-          family_hbx_assigned_id: values[:family_cv][:hbx_id],
+          family_hbx_assigned_id: family_cv[:hbx_id],
           start_on: Date.today # NOTE: when does irs group end. death?
         )
       end
@@ -69,14 +74,14 @@ module InsurancePolicies
         #  ex. when 3 policies passed, first two are processed successfully and it may fail on 3rd one.
         results =
           Policy
-          .where(:eg_id.in => policy_ids.uniq)
-          .collect do |policy|
-            IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
-              contract_holder_hash: contract_holder,
-              irs_group_hash: irs_group,
-              policy: policy
-            )
-          end
+            .where(:eg_id.in => policy_ids.uniq)
+            .collect do |policy|
+              IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
+                contract_holder_hash: contract_holder,
+                irs_group_hash: irs_group,
+                policy: policy
+              )
+            end
         if results.any?(&:failure?)
           errors = results.select(&:failure?).map { |output| output.failure.errors.to_h }
           return Failure(errors)
@@ -84,8 +89,8 @@ module InsurancePolicies
         Success(true)
       end
 
-      def process_irs_group_updates(values)
-        IrsGroups::SeedIrsGroup.new.call(payload: values[:family_cv])
+      def process_irs_group_updates(values, family_cv)
+        IrsGroups::SeedIrsGroup.new.call(payload: family_cv)
       end
 
       def construct_irs_group_id(year, hbx_id)

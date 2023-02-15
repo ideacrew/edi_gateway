@@ -15,16 +15,16 @@ module DataStores
         sync_job = yield find_contract_holder_sync_job(values)
         subject = yield find_contract_holder_subject(values, sync_job)
         subject = yield store_response_event(values, subject)
-        output = yield process_response_event(subject)
+        response_event = yield update_edidb(subject)
 
-        Success(output)
+        Success(response_event)
       end
 
       private
 
       def validate(params)
         errors = []
-        errors << 'sync_job_id is required' unless params[:sync_job_id]
+        errors << 'correlation_id is required' unless params[:correlation_id]
         errors << 'primary_person_hbx_id is required' unless params[:primary_person_hbx_id]
         errors << 'family is required' unless params[:family]
         errors << 'event_name is required' unless params[:event_name]
@@ -33,7 +33,7 @@ module DataStores
       end
 
       def find_contract_holder_sync_job(values)
-        sync_job = DataStores::ContractHolderSyncJob.where(id: values[:sync_job_id]).first
+        sync_job = DataStores::ContractHolderSyncJob.where(job_id: values[:correlation_id]).first
 
         sync_job ? Success(sync_job) : Failure("unable to find sync job with #{values}")
       end
@@ -45,25 +45,34 @@ module DataStores
       end
 
       def store_response_event(values, subject)
-        response_event = Integrations::Events::Build.new.call({ name: values[:event_name], body: values[:family] })
+        response_event =
+          Integrations::Events::Build.new.call({ name: values[:event_name], body: values[:family].to_json })
         return Failure("unable to create response event #{response_event.failure}") if response_event.failure?
 
         subject.update(response_event: response_event.success)
         Success(subject)
       end
 
-      # add spec to test peristance on the response event
       def update_edidb(subject)
-        result = InsuracePolicies::ContractHolders::CreateOrUpdate.new.call(subject: subject)
+        result = contract_holder_update_service.call(subject: subject)
 
         response_event = subject.response_event
+
         if result.success?
-          response_event.update(status: :transmitted)
+          subject.response_event.status = :transmitted
         else
-          response_event.update(errors: result.failure.errors, status: :errored)
+          subject.response_event.status = :errored
+          subject.response_event.error_messages = result.failure.errors
         end
 
-        result
+        subject.response_event.save
+        subject.save
+
+        Success(response_event)
+      end
+
+      def contract_holder_update_service
+        ::InsurancePolicies::ContractHolders::CreateOrUpdate.new
       end
     end
   end
