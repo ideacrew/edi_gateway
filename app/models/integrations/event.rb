@@ -7,6 +7,7 @@ module Integrations
     include Mongoid::Timestamps
 
     # embeds_one :head
+    embedded_in :contract_holder_subject, class_name: ":DataStores::ContractHolderSubject"
 
     field :name, type: String
     field :body, type: String
