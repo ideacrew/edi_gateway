@@ -560,10 +560,8 @@ module Tax1095a
                                               .flat_map(&:tax_household_members).uniq(&:person_id)
           return thh_members_from_enr_thhs if enr_thhs.present? && !tax_household.is_aqhp
           return tax_household.tax_household_members unless tax_household.is_aqhp
-
-          tax_filer = tax_household.primary || tax_household.tax_household_members.first
           enr_thhs_for_month = enr_thhs.select do |enr_thh|
-            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
+            valid_enrollment_tax_household?(enr_thh, tax_household)
           end
 
           enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
@@ -576,7 +574,6 @@ module Tax1095a
           enr_thhs = fetch_enrollments_tax_households(enrollments)
           all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)]
                                  .flatten.uniq(&:person_id)
-
           thh_members = fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
           all_enrolled_members.select do |member|
             thh_members.map(&:person_id).include?(member.person_id)
