@@ -12,7 +12,7 @@ module InsurancePolicies
     end
 
     def group_by_subscriber_query
-      Policy.collection.raw_aggregate(
+      Policy.collection.aggregate(
         [
           {
             '$match' => {
@@ -48,7 +48,7 @@ module InsurancePolicies
     end
 
     def group_by_responsible_party_query
-      Policy.collection.raw_aggregate(
+      Policy.collection.aggregate(
         [
           {
             '$match' => {

@@ -12,11 +12,9 @@ module Subscribers
         response = JSON.parse(response, symbolize_names: true)
         logger.info "on_found_by response: payload #{response}"
 
-        correlation_id = properties[:headers]['correlation_id']
-
         result =
           DataStores::ContractHolderSyncJobs::ProcessResponseEvent.new.call(
-            correlation_id: correlation_id,
+            correlation_id: properties.correlation_id,
             family: response[:family],
             primary_person_hbx_id: response[:primary_person_hbx_id],
             event_name: 'events.enroll.families.found_by'
