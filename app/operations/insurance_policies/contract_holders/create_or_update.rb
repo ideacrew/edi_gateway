@@ -74,14 +74,14 @@ module InsurancePolicies
         #  ex. when 3 policies passed, first two are processed successfully and it may fail on 3rd one.
         results =
           Policy
-            .where(:eg_id.in => policy_ids.uniq)
-            .collect do |policy|
-              IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
-                contract_holder_hash: contract_holder,
-                irs_group_hash: irs_group,
-                policy: policy
-              )
-            end
+          .where(:eg_id.in => policy_ids.uniq)
+          .collect do |policy|
+            IrsGroups::CreateOrUpdateInsuranceAgreement.new.call(
+              contract_holder_hash: contract_holder,
+              irs_group_hash: irs_group,
+              policy: policy
+            )
+          end
         if results.any?(&:failure?)
           errors = results.select(&:failure?).map { |output| output.failure.errors.to_h }
           return Failure(errors)
@@ -89,7 +89,7 @@ module InsurancePolicies
         Success(true)
       end
 
-      def process_irs_group_updates(values, family_cv)
+      def process_irs_group_updates(_values, family_cv)
         IrsGroups::SeedIrsGroup.new.call(payload: family_cv)
       end
 

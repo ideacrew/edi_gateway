@@ -68,17 +68,18 @@ RSpec.describe DataStores::ContractHolderSyncJobs::ProcessResponseEvent do
     context 'on failure to process db updates' do
       before do
         allow_any_instance_of(described_class).to receive(:contract_holder_update_service).and_return(service_instance)
+        allow_any_instance_of(described_class).to receive(:error_messages).and_return(failure_double.failure.errors)
         allow(service_instance).to receive(:call).with(subject: contract_holder_subject).and_return(failure_double)
 
         @result = subject.call(params)
       end
 
-      it 'return success' do
-        expect(@result.success?).to be_truthy
+      it 'return failure' do
+        expect(@result.failure?).to be_truthy
       end
 
       it 'should create response event with errors' do
-        expect(@result.success.class).to be Integrations::Event
+        expect(@result.failure.class).to be Integrations::Event
         response_event = contract_holder_subject.reload.response_event
 
         expect(response_event).to be_present

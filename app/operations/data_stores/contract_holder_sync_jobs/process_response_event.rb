@@ -56,19 +56,17 @@ module DataStores
       def update_edidb(subject)
         result = contract_holder_update_service.call(subject: subject)
 
-        response_event = subject.response_event
-
         if result.success?
-          subject.response_event.status = :transmitted
+          subject.response_event.update(status: :transmitted)
+          Success(subject.response_event)
         else
-          subject.response_event.status = :errored
-          subject.response_event.error_messages = result.failure.errors
+          subject.response_event.update(status: :errored, error_messages: error_messages(result))
+          Failure(subject.response_event)
         end
+      end
 
-        subject.response_event.save
-        subject.save
-
-        Success(response_event)
+      def error_messages(result)
+        result.failure.is_a?(Dry::Validation::Result) ? [result.failure.errors.to_h] : [result.failure]
       end
 
       def contract_holder_update_service

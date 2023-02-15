@@ -31,8 +31,8 @@ module DataStores
     included do
       # belongs_to :account, class_name: 'Accounts::Account', optional: true
 
-      embeds_one :request_event, class_name: '::Integrations::Event', cascade_callbacks: true
-      embeds_one :response_event, class_name: '::Integrations::Event', cascade_callbacks: true
+      embeds_one :request_event, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
+      embeds_one :response_event, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
 
       field :acknowledged_at, type: DateTime
       field :status, type: Symbol
