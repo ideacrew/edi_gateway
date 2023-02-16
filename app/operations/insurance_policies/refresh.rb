@@ -63,7 +63,6 @@ module InsurancePolicies
       Success(sync_job)
     end
 
-    # rubocop:disable Metrics/MethodLength
     def persist_responsible_party_policies(sync_job, policy_query)
       policy_query.policies_by_responsible_party do |result|
         @error_handler.capture_exception do
@@ -85,8 +84,6 @@ module InsurancePolicies
 
       Success(sync_job)
     end
-
-    # rubocop:enable Metrics/MethodLength
 
     def subject_create_or_update(options)
       response = DataStores::ContractHolderSubjects::CreateOrUpdate.new.call(options)
