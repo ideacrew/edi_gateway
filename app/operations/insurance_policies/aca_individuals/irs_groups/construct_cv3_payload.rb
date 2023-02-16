@@ -33,7 +33,7 @@ module InsurancePolicies
         def find_insurance_agreements(values)
           result = if values[:tax_year].present?
                      values[:irs_group].insurance_agreements.select do |agreement|
-                       agreement.plan_year == values[:tax_year]
+                       agreement.plan_year == values[:tax_year].to_s
                      end
                    else
                      values[:irs_group].insurance_agreements
