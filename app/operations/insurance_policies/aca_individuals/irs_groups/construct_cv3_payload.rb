@@ -31,11 +31,13 @@ module InsurancePolicies
         end
 
         def find_insurance_agreements(values)
-          # if values[:policies]
-          # else
-          result = values[:irs_group].insurance_agreements
-
-          # end
+          result = if values[:tax_year].present?
+                     values[:irs_group].insurance_agreements.select do |agreement|
+                       agreement.plan_year == values[:tax_year]
+                     end
+                   else
+                     values[:irs_group].insurance_agreements
+                   end
 
           return Failure("Unable to fetch insurance_agreements for irs_group_id: #{values[:irs_group].id}") unless result.present?
 
@@ -73,7 +75,7 @@ module InsurancePolicies
         def construct_family_cv(values, family_members, households)
           Success(
             {
-              hbx_id: values[:irs_group].family_hbx_assigned_id,
+              hbx_id: values[:irs_group].irs_group_id,
               irs_group_id: values[:irs_group].irs_group_id,
               family_members: family_members,
               households: households
