@@ -28,13 +28,14 @@ module InsurancePolicies
           ::InsurancePolicies::AcaIndividuals::Enrollment.where(hbx_id: enrollment_hash[:hbx_id]).first
         end
 
-        def initialize_enrolled_member(glue_enrollee, person_id, slcsp_member_premium, non_tobacco_use_premium = nil)
+        def initialize_enrolled_member(glue_enrollee, person_id, slcsp_member_premium, tobacco_use, non_tobacco_use_premium = nil)
           ::InsurancePolicies::AcaIndividuals::EnrolledMember
             .new(ssn: glue_enrollee.person.authority_member.ssn,
                  dob: glue_enrollee.person.authority_member.dob,
                  gender: glue_enrollee.person.authority_member.gender,
                  relation_with_primary: glue_enrollee.rel_code,
                  person_id: person_id,
+                 tobacco_use: tobacco_use,
                  premium_schedule: { premium_amount: glue_enrollee.pre_amt,
                                      benchmark_ehb_premium_amount: slcsp_member_premium,
                                      non_tobacco_use_premium: non_tobacco_use_premium })
@@ -45,6 +46,7 @@ module InsurancePolicies
             glue_enrollee,
             person_hash[:id],
             validated_params[:slcsp_member_premium],
+            validated_params[:tobacco_use],
             validated_params[:non_tobacco_use_premium]
           )
 

@@ -9,12 +9,14 @@ module DataStores
   DEFAULT_STATUS_KINDS = %i[
     acked
     completed
+    created
     denied
     errored
     excluded
     expired
     failed
     nacked
+    noop
     pending
     processing
     submitted
@@ -27,10 +29,10 @@ module DataStores
     extend ActiveSupport::Concern
 
     included do
-      belongs_to :account, class_name: 'Accounts::Account', optional: true
+      # belongs_to :account, class_name: 'Accounts::Account', optional: true
 
-      embeds_one :request_event, class_name: '::Integrations::Event'
-      embeds_one :response_event, class_name: '::Integrations::Event'
+      embeds_one :request_event, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
+      embeds_one :response_event, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
 
       field :acknowledged_at, type: DateTime
       field :status, type: Symbol
@@ -54,10 +56,10 @@ module DataStores
     end
 
     # add scopes to query requests event not triggered, response events not received
-    class_methods do
-      # scope :started_at, -> { ('request_event.timestamp': true) }
-      # scope :valid?, -> { ('request_event.errors': true) }
-      # scope :transactions_completed, -> { exists?('response_event.timestamp': false) }
-    end
+    # class_methods do
+    #   # scope :started_at, -> { ('request_event.timestamp': true) }
+    #   # scope :valid?, -> { ('request_event.errors': true) }
+    #   # scope :transactions_completed, -> { exists?('response_event.timestamp': false) }
+    # end
   end
 end

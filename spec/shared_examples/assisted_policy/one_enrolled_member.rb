@@ -35,6 +35,7 @@ RSpec.shared_context 'one_enrolled_member' do
   end
   let!(:irs_group) do
     irs_group = enrollment.insurance_policy.irs_group
+    irs_group.family_hbx_assigned_id = "12345"
     irs_group.start_on = start_on.year
     irs_group.save!
     irs_group
@@ -55,7 +56,6 @@ RSpec.shared_context 'one_enrolled_member' do
     insurance_policy.start_on = start_on
     insurance_policy.policy_id = enrollment.hbx_id
     insurance_policy.carrier_policy_id = "1234"
-    insurance_policy.hbx_enrollment_ids = [enrollment.hbx_id]
     insurance_policy.save!
     insurance_policy
   end

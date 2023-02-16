@@ -25,7 +25,6 @@ module InsurancePolicies
 
       field :policy_id, type: String
       field :insurer_policy_id, type: String
-      field :hbx_enrollment_ids, type: Array
       field :marketplace_segment_id, type: String
       field :start_on, type: Date
       field :end_on, type: Date
@@ -35,7 +34,6 @@ module InsurancePolicies
 
       # indexes
       index({ "policy_id" => 1 })
-      index({ "hbx_enrollment_ids" => 1 })
       index({ "aasm_state" => 1 })
       index({ "start_on" => 1 })
       index({ "end_on" => 1 })

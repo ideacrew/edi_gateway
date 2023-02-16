@@ -1,5 +1,6 @@
 {
     "hbx_id": "2200000001000533",
+    "irs_group_id": "2200000001000533",
     "family_members": [
         {
             "is_primary_applicant": true,
@@ -100,9 +101,22 @@
                                 "market_type": "individual",
                                 "ehb": "1.0"
                             },
-                            "hbx_enrollment_ids": [
-                                "1000"
-                            ],
+                            "insurance_provider": {
+                                "title": "ABC carrier",
+                                "hios_id": "123456",
+                                "fein": "311705652",
+                                "insurance_products": [
+                                    {
+                                        "name": "ABC plan",
+                                        "hios_plan_id": "123456",
+                                        "plan_year": 2023,
+                                        "coverage_type": "health",
+                                        "metal_level": "silver",
+                                        "market_type": "individual",
+                                        "ehb": "1.0"
+                                    }
+                                ]
+                            },
                             "start_on": "2023-01-01",
                             "end_on": "2023-12-31",
                             "enrollments": [
@@ -168,6 +182,18 @@
                             "aptc_csr_tax_households": [
                                 {
                                     "hbx_assigned_id": "828762",
+                                    "tax_household_members": [
+                                        {"family_member_reference": {
+                                            "family_member_hbx_id":"1000595",
+                                            "first_name":"first name",
+                                            "last_name":"last name",
+                                            "encrypted_ssn":"s1y5WExaiCaCzOsnLFgh5oABu/0GLcZGng==\n",
+                                            "dob":"2010-01-01",
+                                            "relation_with_primary":"self"},
+                                            "is_subscriber":true,
+                                            "tax_filer_status":"tax_filer"
+                                        }
+                                    ],
                                     "covered_individuals": [
                                         {
                                             "coverage_start_on": "2023-01-01",

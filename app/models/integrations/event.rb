@@ -6,11 +6,12 @@ module Integrations
     include Mongoid::Document
     include Mongoid::Timestamps
 
-    embeds_one :head
+    # embeds_one :head
+    embedded_in :eventable, polymorphic: true # polyclass_name: ":DataStores::ContractHolderSubject"
 
     field :name, type: String
     field :body, type: String
-    field :status, type: String
+    field :status, type: Symbol
     field :error_messages, type: Array
     field :timestamp, type: DateTime, default: -> { Time.now }
 
