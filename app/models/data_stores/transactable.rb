@@ -33,6 +33,7 @@ module DataStores
 
       embeds_one :request_event, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
       embeds_one :response_event, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
+      embeds_many :transmit_events, as: :eventable, class_name: '::Integrations::Event', cascade_callbacks: true
 
       field :acknowledged_at, type: DateTime
       field :status, type: Symbol

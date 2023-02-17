@@ -11,6 +11,7 @@ module Integrations
 
     field :name, type: String
     field :body, type: String
+    filed :headers, type: String
     field :status, type: Symbol
     field :error_messages, type: Array
     field :timestamp, type: DateTime, default: -> { Time.now }

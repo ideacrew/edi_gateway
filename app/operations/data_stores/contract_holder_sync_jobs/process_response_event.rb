@@ -15,9 +15,10 @@ module DataStores
         sync_job = yield find_contract_holder_sync_job(values)
         subject = yield find_contract_holder_subject(values, sync_job)
         subject = yield store_response_event(values, subject)
-        response_event = yield update_edidb(subject)
+        _response_event = yield update_edidb(subject)
+        response = yield send_family_payload(subject)
 
-        Success(response_event)
+        Success(response)
       end
 
       private
@@ -63,6 +64,20 @@ module DataStores
           subject.response_event.update(status: :errored, error_messages: error_messages(result))
           Failure(subject.response_event)
         end
+      end
+
+      def send_family_payload(subject)
+        event =
+          event(
+            'events.insurance_policies.tax1095a_payload.requested',
+            attributes: {
+              primary_person_hbx_id: subject.primary_person_hbx_id,
+              sync_job_id: subject.contract_holder_sync.job_id
+            }
+          ).success
+
+        event.publish
+        Success("Successfully published the payload for event: #{subject.primary_person_hbx_id}")
       end
 
       def error_messages(result)
