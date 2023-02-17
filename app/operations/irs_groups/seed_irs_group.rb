@@ -11,10 +11,8 @@ module IrsGroups
     def call(params)
       validated_family_hash = yield validate_family_json_hash(params[:payload])
       family = yield build_family_entity(validated_family_hash)
-      _thh_groups = yield CreateOrUpdateTaxHouseholdsAndGroups.new.call({ family: family,
-                                                                          year: params[:year].to_i })
-      enr_policies_result = yield CreateOrUpdateEnrollmentsForPolicies.new.call({ family: family,
-                                                                                  year: params[:year].to_i })
+      _thh_groups = yield CreateOrUpdateTaxHouseholdsAndGroups.new.call({ family: family })
+      enr_policies_result = yield CreateOrUpdateEnrollmentsForPolicies.new.call({ family: family })
       Success(enr_policies_result)
     end
 
@@ -26,13 +24,9 @@ module IrsGroups
     end
 
     def build_family_entity(family_hash)
-      result = Try do
-        AcaEntities::Families::Family.new(family_hash)
-      end
+      result = Try() { AcaEntities::Families::Family.new(family_hash) }
 
-      result.or do |e|
-        Failure(e)
-      end
+      result.or { |e| Failure(e) }
     end
   end
 end

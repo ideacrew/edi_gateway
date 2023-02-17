@@ -8,7 +8,7 @@ RSpec.describe ::Tax1095a::Transformers::InsurancePolicies::Cv3Family do
 
   describe 'with valid params, construct payload' do
     before :each do
-      @valid_result = subject.call({ tax_year: start_on.year, tax_form_type: "IVL_TAX",
+      @valid_result = subject.call({ tax_year: insurance_agreement.plan_year, tax_form_type: "IVL_TAX",
                                      irs_group_id: enrollment.insurance_policy.irs_group.irs_group_id })
     end
 
@@ -27,7 +27,7 @@ RSpec.describe ::Tax1095a::Transformers::InsurancePolicies::Cv3Family do
 
   describe 'with invalid params, do not construct payload' do
     before :each do
-      @invalid_result = subject.call({ tax_year: start_on.year, tax_form_type: "",
+      @invalid_result = subject.call({ tax_year: insurance_agreement.plan_year, tax_form_type: "",
                                        irs_group_id: enrollment.insurance_policy.irs_group.irs_group_id })
     end
 

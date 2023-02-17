@@ -42,7 +42,6 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::Create do
     let!(:params) do
       { start_on: policy.policy_start, end_on: policy.policy_end,
         policy_id: "1234",
-        hbx_enrollment_ids: ['1234', '4321'],
         aasm_state: 'coverage_selected',
         carrier_policy_id: policy.subscriber.cp_id }
     end

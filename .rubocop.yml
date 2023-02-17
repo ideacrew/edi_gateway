@@ -19,10 +19,19 @@ Metrics/BlockLength:
   Enabled: false
 
 Metrics/MethodLength:
-  Max: 15
+  Max: 30
+
+Metrics/AbcSize:
+  Max: 30
 
 Metrics/ClassLength:
   Max: 300
+
+Metrics/CyclomaticComplexity:
+  Max: 10
+
+Metrics/PerceivedComplexity:
+  Max: 15
 
 Naming/PredicateName:
   Enabled: false
