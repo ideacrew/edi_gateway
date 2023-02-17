@@ -35,6 +35,7 @@ module Subscribers
         Logger.new("#{Rails.root}/log/#{event}_#{Date.today.strftime('%Y_%m_%d')}.log")
       end
 
+      # rubocop:disable Metrics/MethodLength
       def process_irs_group(payload, subscriber_logger, routing_key)
         cv3_payload =
           ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
@@ -74,6 +75,7 @@ module Subscribers
           )
         end
       end
+      # rubocop:enable Metrics/MethodLength
     end
   end
 end

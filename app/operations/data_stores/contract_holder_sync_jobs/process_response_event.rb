@@ -8,6 +8,7 @@ module DataStores
     # Operation to update ContractHolderSubject with response event and cv3 payload
     class ProcessResponseEvent
       send(:include, Dry::Monads[:result, :do])
+      include EventSource::Command
 
       # @param [Hash] params the parameters used update ContractHolderSubject with response event and cv3 payload
       def call(params)
@@ -15,10 +16,10 @@ module DataStores
         sync_job = yield find_contract_holder_sync_job(values)
         subject = yield find_contract_holder_subject(values, sync_job)
         subject = yield store_response_event(values, subject)
-        _response_event = yield update_edidb(subject)
-        response = yield send_family_payload(subject)
+        response_event = yield update_edidb(subject)
+        _response = yield send_family_payload(subject)
 
-        Success(response)
+        Success(response_event)
       end
 
       private
