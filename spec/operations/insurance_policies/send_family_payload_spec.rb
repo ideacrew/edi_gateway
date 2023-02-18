@@ -150,5 +150,27 @@ RSpec.describe InsurancePolicies::SendFamilyPayload do
         end
       end
     end
+
+    context 'when cv3 family build errored' do
+      let(:failure_double) { double(success?: false) }
+
+      before { allow(subject).to receive(:build_cv_payload_with).and_return(failure_double) }
+
+      it 'should create transmit events with errors' do
+        result = subject.call(params)
+        expect(result.success?).to be_falsey
+        ch_subject.reload
+        expect(ch_subject.transmit_events.count).to eq 2
+        ch_subject.transmit_events.each do |event|
+          expect(event.errored?).to be_truthy
+          expect(event.name).to eq 'events.insurance_policies.posted'
+          headers = JSON.parse(event.headers, symbolize_names: true)
+          expect(headers[:correlation_id]).to be_present
+          expect(headers[:assistance_year]).to be_present
+          expect(event.error_messages).to include("cv3 family payload errored for #{past_policy.enrollment_group_id}")
+          expect(event.error_messages).to include("cv3 family payload errored for #{policy.enrollment_group_id}")
+        end
+      end
+    end
   end
 end

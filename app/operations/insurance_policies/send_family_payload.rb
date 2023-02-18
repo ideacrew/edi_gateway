@@ -57,14 +57,14 @@ module InsurancePolicies
       policies_by_year.each do |calendar_year, policies|
         @error_handler.capture_exception do
           payload = build_cv_payload_with(subject, calendar_year, policies)
-          raise "cv3 family payload errored for #{policies.map(&:eg_id)}" unless payload.success?
+          raise "cv3 family payload errored for #{policies.map(&:eg_id).join(',')}" unless payload.success?
 
           cv3_payloads[calendar_year] = payload.success
         end
       end
 
       if @error_handler.error_messages.any?
-        store_transmit_events_with_errors(subject, policies_by_subscriber)
+        store_transmit_events_with_errors(subject, policies_by_year)
         Failure(@error_handler.error_messages)
       else
         Success(cv3_payloads)
@@ -82,7 +82,7 @@ module InsurancePolicies
       )
     end
 
-    def store_transmit_events_with_errors(subject, _policies_by_subscriber)
+    def store_transmit_events_with_errors(subject, policies_by_year)
       subject.transmit_events =
         policies_by_year.collect do |tax_year, policies|
           headers = {
@@ -109,7 +109,6 @@ module InsurancePolicies
 
           posted_event_headers = posted_event.headers.dup
           posted_event.publish
-
           build_transmit_event(posted_event.name, posted_event_headers)
         end
 
@@ -118,10 +117,9 @@ module InsurancePolicies
     end
 
     def build_transmit_event(event_name, headers, errors = [])
-      attrs = { name: event_name, headers: headers.to_json, status: :transmitted }
-      attrs.merge(error_messages: errors, status: :errored) if errors.present?
-
-      ::Integrations::Event.new(attrs)
+      attrs = { name: event_name, body: {}.to_json, headers: headers.to_json, status: :transmitted }
+      attrs.merge!(error_messages: errors, status: :errored) if errors.present?
+      Integrations::Events::Build.new.call(attrs).success
     end
   end
 end

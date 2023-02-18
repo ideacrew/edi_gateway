@@ -23,20 +23,18 @@ module Integrations
 
       def validate(params)
         errors = []
-        errors << "name is required" unless params[:name]
-        errors << "body is required" unless params[:body]
-        params[:errors] ||= []
-        errors << "errors array expected" unless params[:errors].is_a?(Array)
+        params[:error_messages] ||= []
+        errors << 'name is required' unless params[:name]
+        errors << 'body is required' unless params[:body]
+        errors << 'errors array expected' unless params[:error_messages].is_a?(Array)
 
         errors.blank? ? Success(params) : Failure(errors)
       end
 
       def build(values)
-        attributes = values.slice(:name, :body)
-        attributes[:error_messages] = values[:errors]
-        attributes[:status] = values[:errors].present? ? :errored : :transmitted
+        values[:status] ||= (values[:error_messages].present? ? :errored : :transmitted)
 
-        Success(Integrations::Event.new(attributes))
+        Success(Integrations::Event.new(values))
       end
     end
   end
