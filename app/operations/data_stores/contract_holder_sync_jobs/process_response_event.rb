@@ -48,7 +48,13 @@ module DataStores
 
       def store_response_event(values, subject)
         response_event =
-          Integrations::Events::Build.new.call({ name: values[:event_name], body: values[:family].to_json })
+          Integrations::Events::Build.new.call(
+            {
+              name: values[:event_name],
+              body: values[:family].to_json,
+              headers: { correlation_id: values[:correlation_id] }.to_json
+            }
+          )
         return Failure("unable to create response event #{response_event.failure}") if response_event.failure?
 
         subject.update(response_event: response_event.success)

@@ -15,10 +15,9 @@ module InsurancePolicies
       subject = yield validate_subject(subject)
       policies_by_year = yield find_affected_policies_by_year(subject)
       cv3_payloads = yield send_family_payloads(subject, policies_by_year)
-      _output = publish_family_cv_payloads(subject, policies_by_year, cv3_payloads)
+      subject = yield publish_family_cv_payloads(subject, policies_by_year, cv3_payloads)
 
-      # trigger h36 family payload to fdsh with all information across all years
-      Success(policies_by_year)
+      Success(subject)
     end
 
     private
@@ -50,7 +49,6 @@ module InsurancePolicies
     def find_affected_policies_by_year(subject)
       policies = Policy.where(:eg_id.in => (subject.subscriber_policies + subject.responsible_party_policies))
       policies_by_year = policies.group_by { |p| p.policy_start.year }
-
       Success(policies_by_year)
     end
 
@@ -87,10 +85,13 @@ module InsurancePolicies
     def store_transmit_events_with_errors(subject, _policies_by_subscriber)
       subject.transmit_events =
         policies_by_year.collect do |tax_year, policies|
-          build_transmit_event(
-            { plan_year: tax_year, affected_policies: policies.map(&:eg_id) },
-            @error_handler.error_messages
-          )
+          headers = {
+            assistance_year: tax_year,
+            correlation_id: SecureRandom.uuid,
+            affected_policies: policies.map(&:eg_id)
+          }
+          posted_event = event('events.insurance_policies.posted', attributes: {}, headers: headers).success
+          build_transmit_event(posted_event.name, posted_event.headers, @error_handler.error_messages)
         end
       subject.save
     end
@@ -101,21 +102,23 @@ module InsurancePolicies
           headers = {
             assistance_year: tax_year,
             correlation_id: SecureRandom.uuid,
-            affected_policies: policies_by_year[tax_year]
+            affected_policies: policies_by_year[tax_year].map(&:eg_id)
           }
-          event =
-            event('events.edi_gateway.insurance_policies.posted', attributes: { family: payload }, headers: headers)
-            .success
-          event.publish
-          build_transmit_event(headers)
-        end
-      subject.save
+          posted_event =
+            event('events.insurance_policies.posted', attributes: { family: payload }, headers: headers).success
 
+          posted_event_headers = posted_event.headers.dup
+          posted_event.publish
+
+          build_transmit_event(posted_event.name, posted_event_headers)
+        end
+
+      subject.save
       Success(subject)
     end
 
-    def build_transmit_event(headers, errors = [])
-      attrs = { name: 'events.edi_gateway.insurance_policies.posted', headers: headers.to_json, status: :transmitted }
+    def build_transmit_event(event_name, headers, errors = [])
+      attrs = { name: event_name, headers: headers.to_json, status: :transmitted }
       attrs.merge(error_messages: errors, status: :errored) if errors.present?
 
       ::Integrations::Event.new(attrs)

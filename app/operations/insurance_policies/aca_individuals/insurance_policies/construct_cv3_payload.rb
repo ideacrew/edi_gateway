@@ -156,7 +156,7 @@ module InsurancePolicies
               insurance_provider: insurance_provider,
               start_on: insurance_policy.start_on,
               end_on: insurance_policy.policy_end_on,
-              aasm_state: insurance_policy.aasm_state,
+              aasm_state: insurance_policy.aasm_state.to_s,
               term_for_np: insurance_policy.term_for_np,
               enrollments: enrollments,
               aptc_csr_tax_households: aptc_csr_tax_households,

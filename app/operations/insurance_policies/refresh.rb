@@ -95,9 +95,10 @@ module InsurancePolicies
         @error_handler.capture_exception_with(subject.primary_person_hbx_id) do
           event = build_event(subject)
           raise event.failure unless event.success?
-
-          event.success.publish
-          persist_request_event(subject, event.success)
+          event = event.success
+          event_headers = event.headers.dup
+          event.publish
+          persist_request_event(subject, event, event_headers)
         end
       end
 
@@ -112,9 +113,12 @@ module InsurancePolicies
       event(event_name, attributes: event_payload, headers: { correlation_id: correlation_id })
     end
 
-    def persist_request_event(subject, event, errors = [])
+    def persist_request_event(subject, event, event_headers)
       request_event =
-        Integrations::Events::Build.new.call({ name: event.name, body: event.payload, errors: errors }).success
+        Integrations::Events::Build
+          .new
+          .call({ name: event.name, body: event.payload, headers: event_headers.to_json })
+          .success
       subject.update(request_event: request_event, status: :transmitted)
     end
 
