@@ -17,6 +17,7 @@ module InsurancePolicies
       cv3_payloads = yield send_family_payloads(subject, policies_by_year)
       _output = publish_family_cv_payloads(subject, policies_by_year, cv3_payloads)
 
+      # trigger h36 family payload to fdsh with all information across all years
       Success(policies_by_year)
     end
 
@@ -26,13 +27,13 @@ module InsurancePolicies
       return Failure('sync_job_id is required') unless params[:sync_job_id]
       return Failure('primary_person_hbx_id is required') unless params[:primary_person_hbx_id]
 
-      @error_handler = Integrations::Error.new
+      @error_handler = ::Integrations::Error.new
 
       Success(params)
     end
 
     def find_contract_holder_subject(values)
-      sync_job = DataStore::ContractHolderSyncJob.where(job_id: values[:sync_job_id]).first
+      sync_job = ::DataStores::ContractHolderSyncJob.where(job_id: values[:sync_job_id]).first
       subject = sync_job.subjects.where(primary_person_hbx_id: values[:primary_person_hbx_id]).first
 
       Success(subject)
@@ -47,7 +48,7 @@ module InsurancePolicies
     end
 
     def find_affected_policies_by_year(subject)
-      policies = Policy.where(:eg_id.in => subject.subscriber_policies + subject.responsible_party_policies)
+      policies = Policy.where(:eg_id.in => (subject.subscriber_policies + subject.responsible_party_policies))
       policies_by_year = policies.group_by { |p| p.policy_start.year }
 
       Success(policies_by_year)
@@ -60,7 +61,7 @@ module InsurancePolicies
           payload = build_cv_payload_with(subject, calendar_year, policies)
           raise "cv3 family payload errored for #{policies.map(&:eg_id)}" unless payload.success?
 
-          cv3_payloads[calendar_year] = payload
+          cv3_payloads[calendar_year] = payload.success
         end
       end
 
@@ -72,9 +73,14 @@ module InsurancePolicies
       end
     end
 
-    def build_cv_payload_with(_subject, calendar_year, _policies)
+    def build_cv_payload_with(subject, calendar_year, _policies)
       ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
-        { tax_year: calendar_year, tax_form_type: payload[:tax_form_type], irs_group_id: payload[:irs_group_id] }
+        {
+          tax_year: calendar_year,
+          tax_form_type: payload[:tax_form_type],
+          irs_group_id: payload[:irs_group_id],
+          affected_policies: subject.subscriber_policies + subject.responsible_party_policies
+        }
       )
     end
 
@@ -91,22 +97,15 @@ module InsurancePolicies
 
     def publish_family_cv_payloads(subject, policies_by_year, cv3_payloads)
       subject.transmit_events =
-        cv3_payloads.collect do |tax_year, _paylaod|
+        cv3_payloads.collect do |tax_year, payload|
           headers = {
-            plan_year: tax_year,
+            assistance_year: tax_year,
             correlation_id: SecureRandom.uuid,
             affected_policies: policies_by_year[tax_year]
           }
           event =
-            event(
-              'events.edi_gateway.insurance_policies.posted',
-              attributes: {
-                tax_year: tax_year,
-                tax_form_type: values[:tax_form_type],
-                cv3_family: payload
-              },
-              headers: headers
-            ).success
+            event('events.edi_gateway.insurance_policies.posted', attributes: { family: payload }, headers: headers)
+            .success
           event.publish
           build_transmit_event(headers)
         end

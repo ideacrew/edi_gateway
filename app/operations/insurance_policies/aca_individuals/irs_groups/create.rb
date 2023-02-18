@@ -19,15 +19,20 @@ module InsurancePolicies
         private
 
         def validate(params)
-          return Failure("Unable to find irs group id") if params[:irs_group_id].blank?
+          return Failure('Unable to find irs group id') if params[:irs_group_id].blank?
+          return Failure('Unable to find family hbx assigned id') if params[:family_hbx_assigned_id].blank?
 
           Success(params)
         end
 
         def create(validated_params)
           attrs = validated_params.to_h
-          irs_group = ::InsurancePolicies::AcaIndividuals::IrsGroup.create!(irs_group_id: attrs[:irs_group_id],
-                                                                            start_on: attrs[:start_on])
+          irs_group =
+            ::InsurancePolicies::AcaIndividuals::IrsGroup.create!(
+              irs_group_id: attrs[:irs_group_id],
+              family_hbx_assigned_id: attrs[:family_hbx_assigned_id],
+              start_on: attrs[:start_on]
+            )
 
           if irs_group.present?
             irs_group_hash = irs_group.to_hash
