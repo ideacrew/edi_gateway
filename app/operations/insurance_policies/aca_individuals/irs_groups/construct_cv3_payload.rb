@@ -232,7 +232,7 @@ module InsurancePolicies
           return true if pol.aasm_state == 'canceled'
           return true if pol.insurance_product.coverage_type == 'dental'
           return true if tax_form_type == 'IVL_TAX' && pol.insurance_product.metal_level == 'catastrophic'
-          return true if pol.carrier_policy_id.blank?
+          return true if pol.carrier_policy_id.blank? && pol.aasm_state != 'canceled'
           return true if pol.start_on.year.to_s != year
 
           false
