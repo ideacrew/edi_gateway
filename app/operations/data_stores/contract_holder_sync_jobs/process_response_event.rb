@@ -8,6 +8,7 @@ module DataStores
     # Operation to update ContractHolderSubject with response event and cv3 payload
     class ProcessResponseEvent
       send(:include, Dry::Monads[:result, :do])
+      include EventSource::Command
 
       # @param [Hash] params the parameters used update ContractHolderSubject with response event and cv3 payload
       def call(params)
@@ -16,6 +17,7 @@ module DataStores
         subject = yield find_contract_holder_subject(values, sync_job)
         subject = yield store_response_event(values, subject)
         response_event = yield update_edidb(subject)
+        _response = yield send_family_payload(subject)
 
         Success(response_event)
       end
@@ -46,7 +48,13 @@ module DataStores
 
       def store_response_event(values, subject)
         response_event =
-          Integrations::Events::Build.new.call({ name: values[:event_name], body: values[:family].to_json })
+          Integrations::Events::Build.new.call(
+            {
+              name: values[:event_name],
+              body: values[:family].to_json,
+              headers: { correlation_id: values[:correlation_id] }.to_json
+            }
+          )
         return Failure("unable to create response event #{response_event.failure}") if response_event.failure?
 
         subject.update(response_event: response_event.success)
@@ -63,6 +71,20 @@ module DataStores
           subject.response_event.update(status: :errored, error_messages: error_messages(result))
           Failure(subject.response_event)
         end
+      end
+
+      def send_family_payload(subject)
+        event =
+          event(
+            'events.insurance_policies.tax1095a_payload.requested',
+            attributes: {
+              primary_person_hbx_id: subject.primary_person_hbx_id,
+              sync_job_id: subject.contract_holder_sync.job_id
+            }
+          ).success
+
+        event.publish
+        Success("Successfully published the payload for event: #{subject.primary_person_hbx_id}")
       end
 
       def error_messages(result)

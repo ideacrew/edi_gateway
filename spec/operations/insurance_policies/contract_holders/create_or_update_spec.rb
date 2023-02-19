@@ -87,6 +87,9 @@ RSpec.describe InsurancePolicies::ContractHolders::CreateOrUpdate do
 
         expect(output.success?).to be_truthy
         expect(InsurancePolicies::AcaIndividuals::IrsGroup.all.count).to eq(1)
+        expect(InsurancePolicies::AcaIndividuals::IrsGroup.all.first.family_hbx_assigned_id).to eq family_params.to_h[
+             :hbx_id
+           ]
         expect(InsurancePolicies::InsuranceProduct.all.count).to eq(1)
         expect(InsurancePolicies::InsuranceProvider.all.count).to eq(1)
         expect(InsurancePolicies::AcaIndividuals::InsurancePolicy.all.count).to eq(1)
