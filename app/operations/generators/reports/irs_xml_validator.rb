@@ -11,13 +11,13 @@ module Generators
       end
 
       def validate(_filename = nil)
-        Dir.foreach("#{@folder_path}/transmission") do |filename|
+        Dir.foreach("#{Rails.root}/2023_h36") do |filename|
           next if (filename == '.') || (filename == '..') || (filename == 'manifest.xml') || (filename == '.DS_Store')
 
           xsd_file = "#{Rails.root}/HHS_ACA_XML_LIBRARY_10.1/MSG/HHS-IRS-MonthlyExchangePeriodicDataMessage-1.0.xsd"
           puts "processing...#{filename.inspect}"
           xsd = Nokogiri::XML::Schema(File.open(xsd_file))
-          doc = Nokogiri::XML(File.open("#{@folder_path}/transmission/" + filename))
+          doc = Nokogiri::XML(File.open("#{Rails.root}/2023_h36/" + filename))
 
           xsd.validate(doc).each do |error|
             puts error.message
