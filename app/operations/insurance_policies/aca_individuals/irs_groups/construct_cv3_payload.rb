@@ -22,22 +22,28 @@ module InsurancePolicies
 
         private
 
+        # h36 send all insurance agreements and policies
+        # h41 filter agreements by affected policies and make sure to pull on affected policies from those agreements
         def validate(params)
           return Failure('tax_form_type is not present') unless params[:tax_form_type]
-          return Failure('tax_year is not present') unless params[:tax_year]
+
+          # return Failure('tax_year is not present') unless params[:tax_year] # optional for h36
           return Failure('irs_group is not present') unless params[:irs_group]
+
+          # return Failure('affected_policies is not present') unless params[:affected_policies] # optional
 
           Success(params)
         end
 
         def find_insurance_agreements(values)
-          result = if values[:tax_year].present?
-                     values[:irs_group].insurance_agreements.select do |agreement|
-                       agreement.plan_year == values[:tax_year].to_s
-                     end
-                   else
-                     values[:irs_group].insurance_agreements
-                   end
+          result =
+            if values[:tax_year].present?
+              values[:irs_group].insurance_agreements.select do |agreement|
+                agreement.plan_year == values[:tax_year].to_s
+              end
+            else
+              values[:irs_group].insurance_agreements
+            end
 
           return Failure("Unable to fetch insurance_agreements for irs_group_id: #{values[:irs_group].id}") unless result.present?
 
@@ -75,7 +81,7 @@ module InsurancePolicies
         def construct_family_cv(values, family_members, households)
           Success(
             {
-              hbx_id: values[:irs_group].irs_group_id,
+              hbx_id: values[:irs_group].family_hbx_assigned_id,
               irs_group_id: values[:irs_group].irs_group_id,
               family_members: family_members,
               households: households
@@ -98,13 +104,13 @@ module InsurancePolicies
 
         def construct_insurance_agreements(insurance_agreements, tax_form_type)
           insurance_agreements = insurance_agreements.uniq(&:id)
-
-          # rejecting dental agreements
-          agreement =
-            insurance_agreements.reject do |insurance_agreement|
-              insurance_agreement if %w[010286541].include?(insurance_agreement.insurance_provider.fein)
+          insurance_agreements.reject! do |insurance_agreement|
+            insurance_agreement.insurance_policies.any? do |insurance_policy|
+              insurance_policy.insurance_product.coverage_type == 'dental'
             end
-          agreement.collect do |insurance_agreement|
+          end
+
+          insurance_agreements.collect do |insurance_agreement|
             {
               plan_year: insurance_agreement.plan_year,
               contract_holder: construct_contract_holder(insurance_agreement.contract_holder),
@@ -229,8 +235,6 @@ module InsurancePolicies
         end
 
         def non_eligible_policy(pol, year, tax_form_type)
-          return true if pol.aasm_state == 'canceled'
-          return true if pol.insurance_product.coverage_type == 'dental'
           return true if tax_form_type == 'IVL_TAX' && pol.insurance_product.metal_level == 'catastrophic'
           return true if pol.carrier_policy_id.blank? && pol.aasm_state != 'canceled'
           return true if pol.start_on.year.to_s != year
