@@ -29,6 +29,7 @@ module Tax1095a
         private
 
         def validate(params)
+          params[:tax_form_type] ||= 'IVL_TAX'
           tax_form_type = params[:tax_form_type]
           tax_year = params[:tax_year]
           irs_group_id = params[:irs_group_id]
