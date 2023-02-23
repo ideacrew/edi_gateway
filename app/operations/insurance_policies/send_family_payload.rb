@@ -56,7 +56,7 @@ module InsurancePolicies
       cv3_payloads = {}
       policies_by_year.each do |calendar_year, policies|
         @error_handler.capture_exception do
-          payload = build_cv_payload_with(subject, calendar_year, policies)
+          payload = build_cv_payload_with(subject, calendar_year, policies.map(&:eg_id))
           raise "cv3 family payload errored for #{policies.map(&:eg_id).join(',')}" unless payload.success?
 
           cv3_payloads[calendar_year] = payload.success
@@ -71,13 +71,15 @@ module InsurancePolicies
       end
     end
 
-    def build_cv_payload_with(subject, calendar_year, _policies)
+    def build_cv_payload_with(_subject, _calendar_year, policies)
+      insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicy.where(:policy_id.in => policies).first
+      irs_group = insurance_policy.irs_group
+
       ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
         {
-          tax_year: calendar_year,
-          tax_form_type: payload[:tax_form_type],
-          irs_group_id: payload[:irs_group_id],
-          affected_policies: subject.subscriber_policies + subject.responsible_party_policies
+          tax_year: 2022,
+          irs_group_id: irs_group.irs_group_id,
+          affected_policies: policies
         }
       )
     end
