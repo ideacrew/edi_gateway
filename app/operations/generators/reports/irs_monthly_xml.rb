@@ -67,8 +67,9 @@ module Generators
         tax_households.each do |tax_household|
           irs_hhg_xml.TaxHousehold do |thh_xml|
             (1..max_month).each do |calendar_month|
-              enrs_for_month = ::InsurancePolicies::AcaIndividuals::InsurancePolicy.enrollments_for_month(calendar_month,
-                                                                                                          calendar_year, policies)
+              enrs_for_month =  policies.collect do |policy|
+                policy.enrollments_for_month(calendar_month, calendar_year)
+              end.flatten
               next unless any_thh_members_enrolled?(tax_household, enrs_for_month)
 
               active_thh_for_month = irs_group.active_thh_for_month(calendar_month, calendar_year)
