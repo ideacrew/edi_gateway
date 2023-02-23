@@ -71,13 +71,13 @@ module InsurancePolicies
       end
     end
 
-    def build_cv_payload_with(_subject, _calendar_year, policies)
+    def build_cv_payload_with(_subject, calendar_year, policies)
       insurance_policy = InsurancePolicies::AcaIndividuals::InsurancePolicy.where(:policy_id.in => policies).first
       irs_group = insurance_policy.irs_group
 
       ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
         {
-          tax_year: 2022,
+          tax_year: calendar_year,
           irs_group_id: irs_group.irs_group_id,
           affected_policies: policies
         }
