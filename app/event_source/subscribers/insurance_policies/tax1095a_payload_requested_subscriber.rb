@@ -15,7 +15,7 @@ module Subscribers
         payload = JSON.parse(response, symbolize_names: true)
 
         if payload[:sync_job_id]
-          InsurancePolicies.SendFamilyPayload.new.call(payload)
+          ::InsurancePolicies::SendFamilyPayload.new.call(payload)
         else
           process_irs_group(payload, subscriber_logger, routing_key)
         end
