@@ -100,7 +100,7 @@ module InsurancePolicies
         def construct_aptc_csr_tax_households(insurance_policy)
           enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == 'coverage_canceled' }
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
-          return [] if tax_households.compact.blank?
+          return Success([]) if tax_households.compact.blank?
 
           tax_households_hash =
             tax_households.collect do |tax_household|
