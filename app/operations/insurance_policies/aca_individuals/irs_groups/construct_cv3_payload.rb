@@ -81,7 +81,7 @@ module InsurancePolicies
         def construct_family_cv(values, family_members, households)
           Success(
             {
-              hbx_id: values[:irs_group].irs_group_id,
+              hbx_id: values[:irs_group].family_hbx_assigned_id,
               irs_group_id: values[:irs_group].irs_group_id,
               family_members: family_members,
               households: households

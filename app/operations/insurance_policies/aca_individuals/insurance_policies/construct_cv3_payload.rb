@@ -98,7 +98,11 @@ module InsurancePolicies
         end
 
         def construct_aptc_csr_tax_households(insurance_policy)
-          enrollments = insurance_policy.enrollments.reject { |enr| enr.aasm_state == 'coverage_canceled' }
+          enrollments = if insurance_policy.aasm_state == "canceled"
+                          insurance_policy.enrollments
+                        else
+                          insurance_policy.enrollments.reject { |enr| enr.aasm_state == 'coverage_canceled' }
+                        end
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
           return Success([]) if tax_households.compact.blank?
 
@@ -361,36 +365,41 @@ module InsurancePolicies
 
         def construct_coverage_information(insurance_policy, covered_individuals, tax_household)
           (1..12).collect do |month|
-            enrollments_for_month =
-              ::InsurancePolicies::AcaIndividuals::InsurancePolicy.enrollments_for_month(
-                month,
-                insurance_policy.start_on.year,
-                [insurance_policy]
-              )
-            next if enrollments_for_month.blank?
-            next unless any_thh_members_enrolled?(tax_household, enrollments_for_month)
-            next if enrollments_tax_household_for_month_empty?(enrollments_for_month, tax_household)
-
-            if tax_household.is_aqhp && covered_individuals.present?
-              update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
-            end
-
-            thh_members = fetch_tax_household_members(enrollments_for_month)
-            pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members, month)
-
-            pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
-            aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
-
-            slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
-            total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
-            {
-              month: Date::MONTHNAMES[month],
-              coverage_information: {
-                tax_credit: Money.new((BigDecimal(aptc_tax_credit) * 100).round, 'USD'),
-                total_premium: Money.new((BigDecimal(total_premium) * 100).round, 'USD'),
-                slcsp_benchmark_premium: Money.new((BigDecimal(slcsp) * 100).round, 'USD')
+            enrollments_for_month = insurance_policy.enrollments_for_month(month, insurance_policy.start_on.year)
+            if insurance_policy.aasm_state == "canceled"
+              {
+                month: Date::MONTHNAMES[month],
+                coverage_information: {
+                  tax_credit: Money.new((BigDecimal("0.0") * 100).round, 'USD'),
+                  total_premium: Money.new((BigDecimal("0.0") * 100).round, 'USD'),
+                  slcsp_benchmark_premium: Money.new((BigDecimal("0.0") * 100).round, 'USD')
+                }
               }
-            }
+            else
+              next if enrollments_for_month.blank?
+              next unless any_thh_members_enrolled?(tax_household, enrollments_for_month)
+              next if enrollments_tax_household_for_month_empty?(enrollments_for_month, tax_household)
+
+              if tax_household.is_aqhp && covered_individuals.present?
+                update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
+              end
+
+              thh_members = fetch_tax_household_members(enrollments_for_month)
+              pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members, month)
+              pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
+              aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
+
+              slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
+              total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
+              {
+                month: Date::MONTHNAMES[month],
+                coverage_information: {
+                  tax_credit: Money.new((BigDecimal(aptc_tax_credit) * 100).round, 'USD'),
+                  total_premium: Money.new((BigDecimal(total_premium) * 100).round, 'USD'),
+                  slcsp_benchmark_premium: Money.new((BigDecimal(slcsp) * 100).round, 'USD')
+                }
+              }
+            end
           end
         end
 
