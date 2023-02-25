@@ -226,7 +226,9 @@ module InsurancePolicies
       end
 
       def enrollments_for_month(month, year)
-        enrollments.collect do |enrollment|
+        enrollments.select do |enrollment|
+          next if enrollment.aasm_state == "coverage_canceled"
+
           start_date = enrollment.effectuated_on
           end_date = enrollment.end_on.present? ? enrollment.end_on : start_date.end_of_year
           end_of_month = Date.new(year, month, 1).end_of_month
@@ -235,7 +237,6 @@ module InsurancePolicies
           next unless start_date < end_of_month
 
           (start_date.month..coverage_end_month).include?(month)
-          enrollment
         end.compact
       end
     end

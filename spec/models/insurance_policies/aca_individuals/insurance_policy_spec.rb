@@ -4,18 +4,20 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
   let(:subscriber_person) { FactoryBot.create(:people_person) }
   let(:dependent_person) { FactoryBot.create(:people_person) }
 
-  let(:year) { Date.new.year }
+  let(:year) { Date.today.year }
   let(:insurance_policy) { FactoryBot.create(:insurance_policy, start_on: Date.new(year, 1, 1), end_on: Date.new(year, 12, 31)) }
   let(:subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
   let(:dependents) { FactoryBot.build(:enrolled_member, person: dependent_person) }
   let!(:enrollment_1) do
     FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
+                                   effectuated_on: Date.new(year, 1, 1),
                                    end_on: Date.new(year, 5, 31), insurance_policy: insurance_policy,
                                    subscriber: subscriber)
   end
 
   let!(:enrollment_2) do
     FactoryBot.create(:enrollment, start_on: Date.new(year, 6, 1),
+                                   effectuated_on: Date.new(year, 6, 1),
                                    end_on: Date.new(year, 12, 31), insurance_policy: insurance_policy,
                                    subscriber: subscriber,
                                    dependents: [dependents])
@@ -23,6 +25,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
 
   let!(:enrollment_3) do
     FactoryBot.create(:enrollment, start_on: Date.new(year, 6, 1),
+                                   effectuated_on: Date.new(year, 6, 1),
                                    aasm_state: "coverage_canceled",
                                    end_on: Date.new(year, 12, 31), insurance_policy: insurance_policy,
                                    subscriber: subscriber,
@@ -130,6 +133,20 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
 
     it "should return tax_filer if tax_household is aqhp" do
       expect(insurance_policy.fetch_tax_filer(tax_household_2)).to eq tax_household_member_2
+    end
+  end
+
+  context "#enrollments_for_month" do
+    it "should not return canceled enrollments if exists" do
+      result = insurance_policy.enrollments_for_month(6, year)
+      expect(result).to match_array([enrollment_2])
+      expect(result).not_to include([enrollment_3])
+    end
+
+    it "should return enrollments which exists in a given month and year" do
+      result = insurance_policy.enrollments_for_month(5, year)
+      expect(result).to match_array([enrollment_1])
+      expect(result).not_to include([enrollment_2])
     end
   end
 end
