@@ -28,17 +28,22 @@ module DataStores
         errors << "end_time is required" unless params[:end_time]
         errors << "status is required" unless params[:status]
 
-        errors.present? ? Failure(errors) : Success(params)
+        errors.present? ? Failure(errors) : Success(convert_to_job_params(params))
       end
 
       def create(values)
-        sync_job = DataStores::ContractHolderSyncJob.create(
-          time_span_start: values[:start_time],
-          time_span_end: values[:end_time],
-          status: values[:status]
-        )
+        sync_job = DataStores::ContractHolderSyncJob.create(values)
 
         Success(sync_job)
+      end
+
+      def convert_to_job_params(params)
+        {
+          time_span_start: params[:start_time],
+          time_span_end: params[:end_time],
+          status: params[:status],
+          source_job_id: params[:source_job_id]
+        }
       end
     end
   end

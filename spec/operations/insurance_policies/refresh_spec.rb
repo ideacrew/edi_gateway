@@ -11,6 +11,18 @@ RSpec.describe InsurancePolicies::Refresh do
       res = subject.call({})
       expect(res.failure?).to be_truthy
     end
+
+    context 'when inclusion list passed' do
+      it 'return source_job_id required error' do
+        res = subject.call({
+                             start_time: Time.now,
+                             end_time: Time.now + 1.hour,
+                             inclusion_policies: ['332323']
+                           })
+
+        expect(res.failure).to eq('source_job_id is required')
+      end
+    end
   end
 
   context 'with valid params' do
