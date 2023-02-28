@@ -29,6 +29,8 @@ module InsurancePolicies
       return Failure('start_time is required') unless params[:start_time].present?
       return Failure('end_time is required') unless params[:end_time].present?
 
+      return Failure('source_job_id is required') if params[:inclusion_policies].present? && !params[:source_job_id].present?
+
       @error_handler = Integrations::Error.new
 
       Success(params)
@@ -37,12 +39,14 @@ module InsurancePolicies
     def create_sync_job(values)
       job_params = values.slice(:start_time, :end_time)
       job_params[:status] = :processing
+      job_params.merge!(source_job_id: values[:source_job_id]) if values[:source_job_id]
 
       DataStores::ContractHolderSyncJobs::Create.new.call(job_params)
     end
 
     def create_new_query(values)
       query = GluePolicyQuery.new(values[:start_time], values[:end_time])
+      query.add_inclusion_policies(values[:inclusion_policies]) if values[:inclusion_policies]
 
       Success(query)
     end
