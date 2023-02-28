@@ -13,6 +13,7 @@ module DataStores
     # Time boundary parameters for the job
     field :time_span_start, type: DateTime
     field :time_span_end, type: DateTime
+    field :source_job_id, type: String # required only when processing failing subjects from previous sync job
 
     # State for the job
     field :status, type: Symbol, default: :created
@@ -61,6 +62,8 @@ module DataStores
     end
 
     def validate_timespan
+      return true if source_job_id.present?
+
       validate_time_span_start
       validate_time_span_end
       return true unless time_span_start == time_span_end
