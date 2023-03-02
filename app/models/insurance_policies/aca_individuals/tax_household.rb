@@ -45,6 +45,10 @@ module InsurancePolicies
         Enrollment.in(id: enrollments_tax_households.pluck(:enrollment_id))
       end
 
+      def primary_tax_filer_hbx_id
+        primary&.person&.hbx_id || tax_household_members.first.person.hbx_id
+      end
+
       def primary
         tax_household_members.where(tax_filer_status: "tax_filer").first ||
           tax_household_members.where(relation_with_primary: "self").first
