@@ -115,6 +115,7 @@ module InsurancePolicies
               {
                 tax_household_members: construct_tax_household_members(tax_household),
                 hbx_assigned_id: tax_household.hbx_id,
+                primary_tax_filer_hbx_id: tax_household.primary_tax_filer_hbx_id,
                 covered_individuals: covered_individuals,
                 months_of_year: months_of_year.compact,
                 annual_premiums: construct_annual_premiums(months_of_year)
@@ -325,17 +326,21 @@ module InsurancePolicies
           enr_thh_tax_filer_id == tax_filer_id
         end
 
-        def covered_individuals_from_tax_household(covered_individuals, tax_household)
-          perso_hbx_ids = tax_household.tax_household_members.flat_map(&:person).flat_map(&:hbx_id)
-          covered_individuals.select { |individual| perso_hbx_ids.include?(individual[:person][:hbx_id]) }
+        def covered_individuals_from_tax_household(covered_individuals, tax_household, enrollment)
+          person_hbx_ids = tax_household.tax_household_members.flat_map(&:person).flat_map(&:hbx_id)
+          enrolled_person_hbx_ids = [[enrollment.subscriber] + enrollment.dependents].flatten.map(&:person).map(&:hbx_id)
+          covered_individuals.select do |individual|
+            person_hbx_ids.include?(individual[:person][:hbx_id]) &&
+              enrolled_person_hbx_ids.include?(individual[:person][:hbx_id])
+          end
         end
 
         def update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
           valid_enr_thh = enrollments_thhs.detect { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household) }
           enrollment = valid_enr_thh.enrollment
-          valid_covered_individuals =
-            covered_individuals_from_tax_household(covered_individuals, valid_enr_thh.tax_household)
+          valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals,
+                                                                             valid_enr_thh.tax_household, enrollment)
           valid_covered_individuals.map! do |individual|
             member_start_on = enrollment.insurance_policy.fetch_member_start_on(individual[:person][:hbx_id])
             individual[:coverage_start_on] = member_start_on

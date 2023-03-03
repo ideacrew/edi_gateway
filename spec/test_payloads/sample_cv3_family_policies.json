@@ -162,6 +162,7 @@
                             "aptc_csr_tax_households": [
                                 {
                                     "hbx_assigned_id": "828762",
+                                    "primary_tax_filer_hbx_id": "1000595",
                                     "tax_household_members": [
                                         {
                                             "family_member_reference": {
@@ -507,6 +508,7 @@
                             "aptc_csr_tax_households": [
                                 {
                                     "hbx_assigned_id": "828762",
+                                    "primary_tax_filer_hbx_id": "1000595",
                                     "tax_household_members": [
                                         {
                                             "family_member_reference": {
