@@ -104,11 +104,6 @@ module InsurancePolicies
 
         def construct_insurance_agreements(insurance_agreements, tax_form_type)
           insurance_agreements = insurance_agreements.uniq(&:id)
-          insurance_agreements.reject! do |insurance_agreement|
-            insurance_agreement.insurance_policies.all? do |insurance_policy|
-              insurance_policy.insurance_product.coverage_type == 'dental'
-            end
-          end
 
           insurance_agreements.collect do |insurance_agreement|
             {
@@ -218,29 +213,12 @@ module InsurancePolicies
         end
 
         def construct_insurance_policies(insurance_policies, year, tax_form_type)
-          valid_policies =
-            insurance_policies.reject do |insurance_policy|
-              # TODO: support for all tax forms
-              non_eligible_policy(insurance_policy, year, tax_form_type) if %w[IVL_TAX IVL_CAP].include?(tax_form_type)
-            end
-
-          return [] if valid_policies.empty?
-
-          valid_policies.collect do |insurance_policy|
+          insurance_policies.collect do |insurance_policy|
             ::InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv3Payload
               .new
               .call(insurance_policy: insurance_policy)
               .success
           end
-        end
-
-        def non_eligible_policy(pol, year, tax_form_type)
-          return true if tax_form_type == 'IVL_TAX' && pol.insurance_product.metal_level == 'catastrophic'
-          return true if pol.carrier_policy_id.blank? && pol.aasm_state != 'canceled'
-          return true if pol.insurance_product.coverage_type == 'dental'
-          return true if pol.start_on.year.to_s != year
-
-          false
         end
 
         def encrypt_ssn(ssn)
