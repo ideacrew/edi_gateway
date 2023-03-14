@@ -50,8 +50,19 @@ module InsurancePolicies
       end
 
       def primary
-        tax_household_members.where(tax_filer_status: "tax_filer").first ||
-          tax_household_members.where(relation_with_primary: "self").first
+        thh_members = tax_household_members.where(tax_filer_status: "tax_filer")
+        thh_member = if thh_members.count == 1
+                       thh_members.first
+                     elsif thh_members.count > 1
+                       fetch_valid_thh_member(thh_members)
+                     end
+        thh_member || tax_household_members.where(relation_with_primary: "self").first
+      end
+
+      def fetch_valid_thh_member(thh_members)
+        thh_members.where(relation_with_primary: 'self').first.presence || thh_members.min_by do |member|
+          member.person.hbx_id
+        end
       end
 
       def spouse

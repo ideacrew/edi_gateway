@@ -10,6 +10,10 @@ RSpec.describe People::Person, type: :model, db_clean: :before do
   include_context 'shared_contacts'
   include_context 'shared_addresses'
 
+  before do
+    DatabaseCleaner.clean
+  end
+
   context 'Model supports Domain Model behaviors' do
     it_behaves_like 'domainable'
   end
