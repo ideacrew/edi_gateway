@@ -124,8 +124,8 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
         person = create(:people_person, hbx_id: "12345")
         tax_household = create(:tax_household)
         _thh_member_1 = create(:tax_household_member, tax_filer_status: nil,
-                                                     tax_household: tax_household, relation_with_primary: "spouse",
-                                                     person: person)
+                                                      tax_household: tax_household, relation_with_primary: "spouse",
+                                                      person: person)
         expect(tax_household.primary).to eq nil
       end
     end
