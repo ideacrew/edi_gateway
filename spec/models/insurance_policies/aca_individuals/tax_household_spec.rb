@@ -62,4 +62,72 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
       end
     end
   end
+
+  context "AQHP" do
+    context "Only 1 tax filer" do
+      it "should return the tax_filer" do
+        person = create(:people_person)
+        tax_household = create(:tax_household)
+        thh_member_1 = create(:tax_household_member, tax_filer_status: "tax_filer", tax_household: tax_household,
+                                                     person: person)
+        expect(tax_household.primary).to eq thh_member_1
+      end
+    end
+
+    context "multiple tax filers with married filing jointly" do
+      it "should return the tax_filer" do
+        person_1 = create(:people_person)
+        person_2 = create(:people_person)
+        tax_household = create(:tax_household)
+        thh_member_1 = create(:tax_household_member, tax_filer_status: "tax_filer",
+                                                     tax_household: tax_household, relation_with_primary: "self",
+                                                     person: person_1)
+        _thh_member_2 = create(:tax_household_member, tax_filer_status: "tax_filer", tax_household: tax_household,
+                                                      relation_with_primary: "spouse",
+                                                      person: person_2)
+
+        expect(tax_household.primary).to eq thh_member_1
+      end
+    end
+
+    context "multiple tax filers with spouse and child as tax_filers" do
+      it "should return the tax_filer" do
+        person_1 = create(:people_person, hbx_id: "12345")
+        person_2 = create(:people_person, hbx_id: "45678")
+        tax_household = create(:tax_household)
+        _thh_member_1 = create(:tax_household_member, tax_filer_status: "tax_filer",
+                                                      tax_household: tax_household, relation_with_primary: "spouse",
+                                                      person: person_2)
+        thh_member_2 = create(:tax_household_member, tax_filer_status: "tax_filer", tax_household: tax_household,
+                                                     relation_with_primary: "child",
+                                                     person: person_1)
+
+        expect(tax_household.primary).to eq thh_member_2
+      end
+    end
+  end
+
+  context "UQHP" do
+    context "No tax_filers but has people with relation as self" do
+      it "should return relation with self" do
+        person = create(:people_person, hbx_id: "12345")
+        tax_household = create(:tax_household)
+        thh_member_1 = create(:tax_household_member, tax_filer_status: nil,
+                                                     tax_household: tax_household, relation_with_primary: "self",
+                                                     person: person)
+        expect(tax_household.primary).to eq thh_member_1
+      end
+    end
+
+    context "No tax_filers but no people with relation as self" do
+      it "should return relation with self" do
+        person = create(:people_person, hbx_id: "12345")
+        tax_household = create(:tax_household)
+        _thh_member_1 = create(:tax_household_member, tax_filer_status: nil,
+                                                     tax_household: tax_household, relation_with_primary: "spouse",
+                                                     person: person)
+        expect(tax_household.primary).to eq nil
+      end
+    end
+  end
 end

@@ -3,6 +3,8 @@
 FactoryBot.define do
   factory :tax_household_member, class: InsurancePolicies::AcaIndividuals::TaxHouseholdMember do
     sequence(:hbx_id)
+    tax_household
+    person
     is_subscriber { true }
     is_tax_filer { true }
     is_ia_eligible { true }
