@@ -194,7 +194,8 @@ module InsurancePolicies
 
         tax_filer = fetch_tax_filer(tax_household)
         enr_thh_for_month = enr_thhs.detect do |enr_thh|
-          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
+          enr_thh.tax_household.is_aqhp &&
+            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
         end
 
         return 0.0 if enr_thh_for_month.blank?
