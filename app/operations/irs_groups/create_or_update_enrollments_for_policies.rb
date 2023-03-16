@@ -196,6 +196,10 @@ module IrsGroups
               )
             if enrollment_hash.success?
               result = update_enrollment(enrollment)
+              if enrollment.tax_households_references.present?
+                ::IrsGroups::CreateOrUpdateEnrollmentsTaxHouseholds.new.call({ enrollment: enrollment,
+                                                                               family: @family })
+              end
               next result.value!
             end
 
