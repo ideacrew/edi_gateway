@@ -98,6 +98,8 @@ module InsurancePolicies
         end
 
         def construct_aptc_csr_tax_households(insurance_policy)
+          return Success([]) if insurance_policy.insurance_product.coverage_type == 'dental'
+
           enrollments = if insurance_policy.aasm_state == "canceled"
                           insurance_policy.enrollments
                         else
