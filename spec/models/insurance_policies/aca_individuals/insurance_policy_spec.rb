@@ -113,6 +113,31 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
         expect(result).to match_array([tax_household_1, tax_household_2])
       end
     end
+
+    context "UQHP and AQHP cases" do
+      let(:person) { FactoryBot.create(:person) }
+      let(:tax_household_1) { FactoryBot.create(:tax_household, is_aqhp: false) }
+      let(:tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
+      let(:tax_household_member_1) do
+        FactoryBot.create(:tax_household_member, tax_household: tax_household, person: subscriber_person,
+                                                 is_tax_filer: true)
+      end
+      let(:tax_household_member_2) do
+        FactoryBot.create(:tax_household_member, tax_household: tax_household, person: subscriber_person,
+                                                 is_tax_filer: true)
+      end
+      let!(:enrollment_tax_household_1) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: tax_household_1.id)
+      end
+      let!(:enrollment_tax_household_2) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: tax_household_2.id)
+      end
+
+      it "should return valid AQHP tax_households" do
+        result = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
+        expect(result).to include(tax_household_2)
+      end
+    end
   end
 
   context "#fetch_tax_filer" do
