@@ -114,7 +114,8 @@ module InsurancePolicies
         en_tax_households = enrollments_tax_households(enrollments_for_month)
         primary_person_id = tax_household.primary&.person_id || tax_household.tax_household_members.first.person_id
         enr_thhs_for_month = en_tax_households.select do |enr_thh|
-          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id)
+          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(primary_person_id) &&
+            enr_thh.tax_household.is_aqhp
         end
 
         return format('%<val>.2f', val: 0.0) if enr_thhs_for_month.none? do |en_tax_household|
@@ -193,7 +194,8 @@ module InsurancePolicies
 
         tax_filer = fetch_tax_filer(tax_household)
         enr_thh_for_month = enr_thhs.detect do |enr_thh|
-          enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
+          enr_thh.tax_household.is_aqhp &&
+            enr_thh.tax_household.tax_household_members.map(&:person_id).include?(tax_filer&.person_id)
         end
 
         return 0.0 if enr_thh_for_month.blank?
