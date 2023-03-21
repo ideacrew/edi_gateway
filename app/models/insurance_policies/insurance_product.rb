@@ -22,6 +22,7 @@ module InsurancePolicies
     field :rating_method, type: String
     field :primary_enrollee, type: Float
     field :primary_enrollee_one_dependent, type: Float
+    field :primary_enrollee_two_dependent, type: Float
     field :primary_enrollee_many_dependent, type: Float
 
     belongs_to :insurance_provider, class_name: 'InsurancePolicies::InsuranceProvider', index: true
