@@ -112,7 +112,7 @@ module IrsGroups
       when 2
         'primary_enrollee_one_dependent'
       else
-        'primary_enrollee_many_dependent'
+        'primary_enrollee_two_dependent'
       end
     end
 
