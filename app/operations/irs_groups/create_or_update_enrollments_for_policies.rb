@@ -108,6 +108,7 @@ module IrsGroups
             exchange_provided_code: product_reference.family_rated_premiums.exchange_provided_code,
             primary_enrollee: product_reference.family_rated_premiums.primary_enrollee,
             primary_enrollee_one_dependent: product_reference.family_rated_premiums.primary_enrollee_one_dependent,
+            primary_enrollee_two_dependent: product_reference.family_rated_premiums.primary_enrollee_two_dependents,
             primary_enrollee_many_dependent: product_reference.family_rated_premiums.primary_enrollee_many_dependent
           }
         )
@@ -135,6 +136,7 @@ module IrsGroups
         rating_method: enrollment.product_reference.rating_method,
         primary_enrollee: family_rated_premiums.primary_enrollee,
         primary_enrollee_one_dependent: family_rated_premiums.primary_enrollee_one_dependent,
+        primary_enrollee_two_dependent: family_rated_premiums.primary_enrollee_two_dependents,
         primary_enrollee_many_dependent: family_rated_premiums.primary_enrollee_many_dependent
       )
     end

@@ -92,6 +92,7 @@ module IrsGroups
     # rubocop:enable Metrics/AbcSize
     # rubocop:enable Metrics/MethodLength
 
+    # The maximum is for 3 children so we return premium for primary_enrollee_two_dependent.
     def family_premium(dental_product)
       case primary_tier_value
       when 'primary_enrollee'
@@ -99,10 +100,11 @@ module IrsGroups
       when 'primary_enrollee_one_dependent'
         dental_product.primary_enrollee_one_dependent
       else
-        dental_product.primary_enrollee_many_dependent
+        dental_product.primary_enrollee_two_dependent
       end
     end
 
+    # The maximum is for 3 children so we return premium for primary_enrollee_two_dependent.
     def primary_tier_value
       case @child_members.count
       when 1
