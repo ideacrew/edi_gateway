@@ -51,12 +51,13 @@ module InsurancePolicies
 
       def primary
         thh_members = tax_household_members.where(tax_filer_status: "tax_filer")
-        thh_member = if thh_members.count == 1
-                       thh_members.first
-                     elsif thh_members.count > 1
-                       fetch_valid_thh_member(thh_members)
-                     end
-        thh_member || tax_household_members.where(relation_with_primary: "self").first
+        if thh_members.count == 1
+          thh_members.first
+        elsif thh_members.count > 1
+          fetch_valid_thh_member(thh_members)
+        else
+          fetch_valid_thh_member(tax_household_members)
+        end
       end
 
       def fetch_valid_thh_member(thh_members)

@@ -3,6 +3,7 @@
 RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model, db_clean: :before do
   let(:subscriber_person) { FactoryBot.create(:people_person) }
   let(:dependent_person) { FactoryBot.create(:people_person) }
+  let(:another_dependent_person) { FactoryBot.create(:people_person) }
 
   let(:year) { Date.today.year }
   let(:insurance_policy) { FactoryBot.create(:insurance_policy, start_on: Date.new(year, 1, 1), end_on: Date.new(year, 12, 31)) }
@@ -111,6 +112,40 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       it "should return valid tax_households" do
         result = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
         expect(result).to match_array([tax_household_1, tax_household_2])
+      end
+    end
+
+    context "AQHP cases with assistance_eligible and medicaid eligible people in different tax_households" do
+      let(:tax_household_1) { FactoryBot.create(:tax_household, is_aqhp: true) }
+      let(:tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
+      let(:tax_household_3) { FactoryBot.create(:tax_household, is_aqhp: true) }
+      let!(:tax_household_member_1) do
+        FactoryBot.create(:tax_household_member, tax_household: tax_household_1, person: subscriber_person,
+                                                 is_tax_filer: true)
+      end
+      let!(:tax_household_member_2) do
+        FactoryBot.create(:tax_household_member, tax_household: tax_household_2, person: dependent_person,
+                                                 tax_filer_status: "non_filer",
+                                                 is_tax_filer: false)
+      end
+      let!(:tax_household_member_3) do
+        FactoryBot.create(:tax_household_member, tax_household: tax_household_3, person: another_dependent_person,
+                                                 tax_filer_status: "non_filer",
+                                                 is_tax_filer: false)
+      end
+      let!(:enrollment_tax_household_1) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: tax_household_1.id)
+      end
+      let!(:enrollment_tax_household_2) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: tax_household_2.id)
+      end
+      let!(:enrollment_tax_household_3) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: tax_household_3.id)
+      end
+
+      it "should return valid tax_households with uniq members as filers" do
+        result = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
+        expect(result).to match_array([tax_household_1, tax_household_2, tax_household_3])
       end
     end
 

@@ -90,6 +90,18 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
       end
     end
 
+    context "no tax filers and no primary person in a tax_household" do
+      it "should return the tax_filer" do
+        person = create(:people_person)
+        tax_household = create(:tax_household)
+        thh_member = create(:tax_household_member, tax_filer_status: "non_filer",
+                                                   tax_household: tax_household, relation_with_primary: "child",
+                                                   person: person)
+
+        expect(tax_household.primary).to eq thh_member
+      end
+    end
+
     context "multiple tax filers with spouse and child as tax_filers" do
       it "should return the tax_filer" do
         person_1 = create(:people_person, hbx_id: "12345")
@@ -123,10 +135,10 @@ RSpec.describe InsurancePolicies::AcaIndividuals::TaxHousehold, type: :model, db
       it "should return relation with self" do
         person = create(:people_person, hbx_id: "12345")
         tax_household = create(:tax_household)
-        _thh_member_1 = create(:tax_household_member, tax_filer_status: nil,
-                                                      tax_household: tax_household, relation_with_primary: "spouse",
-                                                      person: person)
-        expect(tax_household.primary).to eq nil
+        thh_member_1 = create(:tax_household_member, tax_filer_status: nil,
+                                                     tax_household: tax_household, relation_with_primary: "spouse",
+                                                     person: person)
+        expect(tax_household.primary).to eq thh_member_1
       end
     end
   end
