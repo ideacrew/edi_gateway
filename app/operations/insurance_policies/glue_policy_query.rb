@@ -22,7 +22,7 @@ module InsurancePolicies
         [
           {
             '$match' => {
-              eg_id: {
+              hbx_enrollment_ids: {
                 '$in' => inclusion_policies
               },
               responsible_party_id: {
@@ -71,7 +71,7 @@ module InsurancePolicies
         [
           {
             '$match' => {
-              eg_id: {
+              hbx_enrollment_ids: {
                 '$in' => inclusion_policies
               },
               responsible_party_id: {
