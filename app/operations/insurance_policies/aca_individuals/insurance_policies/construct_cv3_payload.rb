@@ -339,15 +339,58 @@ module InsurancePolicies
 
         def update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
           enrollments_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          valid_enr_thh = enrollments_thhs.detect { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household) }
+          valid_enr_thh = enrollments_thhs.select { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household) }.sort_by(&:created_at)&.last
           enrollment = valid_enr_thh.enrollment
           valid_covered_individuals = covered_individuals_from_tax_household(covered_individuals,
                                                                              valid_enr_thh.tax_household, enrollment)
           valid_covered_individuals.map! do |individual|
-            member_start_on = enrollment.insurance_policy.fetch_member_start_on(individual[:person][:hbx_id])
+            tax_household_for_individual =  @tax_households.detect do |tax_household|
+              tax_household.primary_tax_filer_hbx_id == individual[:person][:hbx_id]
+            end
+
+            member_start_on = if tax_household_for_individual.present? && tax_household_for_individual != tax_household
+                                fetch_member_start_on_for_non_primary(individual)
+                              elsif tax_household_for_individual.present? && tax_household_for_individual == tax_household
+                                fetch_member_start_on_for_primary(individual)
+                              else
+                                enrollment.insurance_policy.fetch_member_start_on(individual[:person][:hbx_id])
+                              end
+
             individual[:coverage_start_on] = member_start_on
             individual[:coverage_end_on] = enrollment.enrollment_end_on
             individual
+          end
+        end
+
+        def fetch_member_start_on_for_primary(individual)
+          tax_household_for_individual =  @tax_households.detect do |tax_household|
+            tax_household.primary_tax_filer_hbx_id == individual[:person][:hbx_id]
+          end
+
+          enrollments_thhs = fetch_enrollments_tax_households(@enrollments)
+          valid_enr_thhs = enrollments_thhs.select { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household_for_individual) }
+
+          if valid_enr_thhs.present?
+            valid_enr_thhs.flat_map(&:enrollment).map(&:start_on).min
+          else
+            individual[:coverage_start_on]
+          end
+        end
+
+
+        def fetch_member_start_on_for_non_primary(individual)
+          tax_household_for_individual =  @tax_households.detect do |tax_household|
+            tax_household.primary_tax_filer_hbx_id == individual[:person][:hbx_id]
+          end
+          enrollments_thhs = fetch_enrollments_tax_households(@enrollments)
+          valid_enr_thh = enrollments_thhs.select { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household_for_individual) }
+
+          enrollment = valid_enr_thh.first.enrollment
+
+          if enrollment.enrollment_end_on > individual[:coverage_start_on] && enrollment.enrollment_end_on != enrollment.enrollment_end_on.end_of_year
+            enrollment.enrollment_end_on.next_day
+          else
+            individual[:coverage_start_on]
           end
         end
 
