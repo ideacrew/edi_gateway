@@ -124,7 +124,37 @@ module InsurancePolicies
               }
             end.compact
 
+          tax_households_hash.each do |thh|
+            thh[:covered_individuals].each do |covered_member|
+              person_hbx_id = covered_member[:person][:hbx_id]
+              next covered_member if person_hbx_id == thh[:primary_tax_filer_hbx_id]
+
+              find_eligible_thhs(tax_households_hash, person_hbx_id).each do |eligible_thh_hash|
+                eligible_primary_individual_hash = eligible_thh_hash[:covered_individuals].detect do |individual|
+                  individual[:person][:hbx_id] == person_hbx_id
+                end
+
+                primary_coverage = eligible_primary_individual_hash[:coverage_start_on]..eligible_primary_individual_hash[:coverage_end_on]
+                non_primary_coverage = covered_member[:coverage_start_on]..covered_member[:coverage_end_on]
+                next unless non_primary_coverage.overlaps?(primary_coverage)
+
+                coverage_period = non_primary_coverage.to_a - primary_coverage.to_a
+                next if coverage_period.blank?
+
+                covered_member[:coverage_start_on] = coverage_period.min
+                covered_member[:coverage_end_on] = coverage_period.max
+              end
+            end
+          end
+
           Success(tax_households_hash)
+        end
+
+
+        def find_eligible_thhs(tax_households_hash, person_hbx_id)
+          tax_households_hash.select do |thh_hash|
+            thh_hash[:primary_tax_filer_hbx_id] == person_hbx_id
+          end
         end
 
         def construct_tax_household_members(tax_household)
