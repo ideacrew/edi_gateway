@@ -105,7 +105,10 @@ module InsurancePolicies
                         else
                           insurance_policy.enrollments.reject { |enr| enr.aasm_state == 'coverage_canceled' }
                         end
+          @enrollments = enrollments
           tax_households = insurance_policy.effectuated_aptc_tax_households_with_unique_composition
+          @tax_households = tax_households
+
           return Success([]) if tax_households.compact.blank?
 
           tax_households_hash =
