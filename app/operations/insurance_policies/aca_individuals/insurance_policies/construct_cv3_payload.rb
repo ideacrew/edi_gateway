@@ -491,7 +491,12 @@ module InsurancePolicies
 
         def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          valid_enr_thh = enrs_thhs.select { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household) }
+          valid_enr_thh = enrs_thhs.select do |enr_thh|
+            next if enr_thh.tax_household.is_aqhp != tax_household.is_aqhp
+
+            valid_enrollment_tax_household?(enr_thh, tax_household)
+          end
+
           enrolled_members = [
             enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)
           ].flatten
