@@ -209,4 +209,77 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       expect(result).not_to include([enrollment_2])
     end
   end
+
+  context "#applied_aptc_amount_for" do
+    let(:enrollment_1_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+    let(:enrollment_1_dependents) { FactoryBot.build(:enrolled_member, person: dependent_person) }
+
+    let(:enrollment_2_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+    let(:enrollment_2_dependents) { FactoryBot.build(:enrolled_member, person: dependent_person) }
+    let!(:enrollment_1) do
+      FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
+                        effectuated_on: Date.new(year, 1, 1),
+                        end_on: Date.new(year, 5, 31), insurance_policy: insurance_policy,
+                        subscriber: enrollment_1_subscriber,
+                        dependents: [enrollment_1_dependents])
+    end
+
+    let!(:enrollment_2) do
+      FactoryBot.create(:enrollment, start_on: Date.new(year, 6, 1),
+                        effectuated_on: Date.new(year, 6, 1),
+                        end_on: Date.new(year, 12, 31), insurance_policy: insurance_policy,
+                        subscriber: enrollment_2_subscriber,
+                        dependents: [enrollment_2_dependents])
+    end
+    let!(:premium_schedule_1_enrollment_1) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.subscriber) }
+    let!(:premium_schedule_2_enrollment_1) do
+      FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.dependents.first)
+    end
+    let!(:premium_schedule_1_enrollment_2) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_2.subscriber) }
+    let!(:premium_schedule_2_enrollment_2) do
+      FactoryBot.create(:premium_schedule, enrolled_member: enrollment_2.dependents.first)
+    end
+    let!(:aqhp_tax_household_1) { FactoryBot.create(:tax_household, is_aqhp: true) }
+    let!(:aqhp_tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
+    let!(:aqhp_tax_household_3) { FactoryBot.create(:tax_household, is_aqhp: true) }
+
+    let!(:aqhp_thh_1_sub_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_1, person: subscriber_person,
+                        is_tax_filer: true)
+    end
+    let!(:aqhp_thh_1_dep_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_1, person: dependent_person,
+                        is_tax_filer: false)
+    end
+
+    let!(:aqhp_thh_2_sub_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_2, person: subscriber_person,
+                        is_tax_filer: true)
+    end
+
+    let!(:aqhp_thh_3_dep_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_3, person: dependent_person,
+                        is_tax_filer: true)
+    end
+
+    let!(:aqhp_enrollment_tax_household_1) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: aqhp_tax_household_1.id)
+    end
+
+    let!(:aqhp_enrollment_tax_household_2) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_2.id, tax_household_id: aqhp_tax_household_2.id)
+    end
+
+    let!(:aqhp_enrollment_tax_household_3) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_2.id, tax_household_id: aqhp_tax_household_3.id,
+                        applied_aptc: "0.00")
+    end
+
+    it "should return premium amount for the people in the tax_household" do
+      calendar_month = 6
+      enrollments_for_month = insurance_policy.enrollments_for_month(calendar_month, year)
+      result = insurance_policy.applied_aptc_amount_for(enrollments_for_month, calendar_month, aqhp_tax_household_3)
+      expect(result).to eq "0.00"
+    end
+  end
 end

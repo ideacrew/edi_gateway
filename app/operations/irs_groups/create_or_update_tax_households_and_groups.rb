@@ -117,7 +117,11 @@ module IrsGroups
           InsurancePolicies::AcaIndividuals::TaxHouseholdGroups::Find.new.call(
             { scope_name: :by_hbx_id, criterion: tax_hh_group.hbx_id }
           )
-        next insurance_thh_group if insurance_thh_group.success?
+
+        if insurance_thh_group.success?
+          persist_tax_households(tax_hh_group.tax_households, insurance_thh_group.value!)
+          next
+        end
 
         thh_and_members_params =
           tax_hh_group.tax_households.collect { |tax_household| build_tax_household_and_members(tax_household) }
