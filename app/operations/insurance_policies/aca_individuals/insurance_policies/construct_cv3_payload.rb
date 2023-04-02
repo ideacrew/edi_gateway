@@ -434,7 +434,7 @@ module InsurancePolicies
                 update_covered_individuals_end_date(covered_individuals, enrollments_for_month, tax_household)
               end
 
-              thh_members = fetch_tax_household_members(enrollments_for_month)
+              thh_members = fetch_tax_household_members(enrollments_for_month, tax_household)
               pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members, month)
               pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
               aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
@@ -491,15 +491,27 @@ module InsurancePolicies
 
         def get_enrolled_members_by_tax_household_for(enrollments_for_month, tax_household)
           enrs_thhs = fetch_enrollments_tax_households(enrollments_for_month)
-          valid_enr_thh = enrs_thhs.select do |enr_thh|
-            next if enr_thh.tax_household.is_aqhp != tax_household.is_aqhp
+          valid_enr_thh = if enrs_thhs.size > 1
+                            enrs_thhs.select do |enr_thh|
+                              valid_enrollment_tax_household?(enr_thh, tax_household) && enr_thh.tax_household.is_aqhp
+                            end
+                          else
+                            enrs_thhs.to_a
+                          end
 
-            valid_enrollment_tax_household?(enr_thh, tax_household)
-          end
-
-          enrolled_members = [
+          all_enrolled_members = [
             enrollments_for_month.flat_map(&:subscriber) + enrollments_for_month.flat_map(&:dependents)
           ].flatten
+
+          enrolled_members = all_enrolled_members.select do |member|
+            thh_primary_tax_filer_hbx_id = member.aca_individuals_enrollment.enrollments_tax_households.detect do |enr_thh|
+              enr_thh.tax_household.tax_household_members.where(person_id: member.person_id).first.present?
+            end.tax_household.primary_tax_filer_hbx_id
+
+            # select member only if they are in the same composition as the given tax_household
+            tax_household.primary_tax_filer_hbx_id == thh_primary_tax_filer_hbx_id
+          end
+
           thh_members = fetch_thh_members_from_enr_thhs(valid_enr_thh, tax_household)
           enrolled_members.select { |enr_member| thh_members.map(&:person_id).include?(enr_member.person_id) }
         end
@@ -515,14 +527,16 @@ module InsurancePolicies
           enrolled_members.select { |enr_member| thh_members.map(&:person_id).include?(enr_member.person_id) }
         end
 
-        def fetch_tax_household_members(enrollments)
+        def fetch_tax_household_members(enrollments, tax_household)
           enrs_thhs =
             ::InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(
               :enrollment_id.in => enrollments.map(&:id)
             )
           thhs = ::InsurancePolicies::AcaIndividuals::TaxHousehold.where(:id.in => enrs_thhs.map(&:tax_household_id))
 
-          thhs&.map(&:tax_household_members)&.flatten&.uniq(&:person_id)
+          thhs.select do |thh|
+            thh.primary_tax_filer_hbx_id == tax_household.primary_tax_filer_hbx_id
+          end.map(&:tax_household_members)&.flatten&.uniq(&:person_id)
         end
 
         def fetch_enrollments_tax_households(enrollments)

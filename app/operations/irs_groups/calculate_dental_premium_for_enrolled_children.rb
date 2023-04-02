@@ -34,7 +34,8 @@ module IrsGroups
                                                                            validated_params[:enrolled_people],
                                                                            validated_params[:month])
 
-      @child_members = fetch_children_from_dental_enrollment(dental_policy, validated_params[:month])
+      @child_members = fetch_children_from_dental_enrollment(dental_policy, validated_params[:enrolled_people],
+                                                             validated_params[:month])
       return Success(0.0) if @child_members.blank?
 
       Success(group_ehb_premium(dental_policy.insurance_product))
@@ -130,14 +131,15 @@ module IrsGroups
       insurance_policy.enrollments_for_month(month, insurance_policy.start_on.year)&.first
     end
 
-    def fetch_children_from_dental_enrollment(insurance_policy, month)
+    def fetch_children_from_dental_enrollment(insurance_policy, enrolled_people, month)
       dental_enrollment = dental_enrollment_for(insurance_policy, month)
+      enrolled_people_hbx_ids = enrolled_people.flat_map(&:person).flat_map(&:hbx_id).uniq
       return [] if dental_enrollment.blank?
 
       enrolled_members = [[dental_enrollment.subscriber] + dental_enrollment.dependents].flatten
       enrolled_members.select do |member|
         age_function = AcaEntities::Functions::AgeOn.new(on_date: @enrollment.effectuated_on)
-        age_function.call(member.dob) < 21
+        age_function.call(member.dob) < 21 && enrolled_people_hbx_ids.include?(member.person.hbx_id)
       end
     end
   end

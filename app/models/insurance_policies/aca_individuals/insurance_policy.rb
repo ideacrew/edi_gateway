@@ -122,7 +122,7 @@ module InsurancePolicies
       def applied_aptc_amount_for(enrollments_for_month, calender_month, tax_household)
         en_tax_households = enrollments_tax_households(enrollments_for_month)
         enr_thhs_for_month = en_tax_households.select do |enr_thh|
-          valid_enrollment_tax_household?(enr_thh, tax_household)
+          valid_enrollment_tax_household?(enr_thh, tax_household) && enr_thh.tax_household.is_aqhp
         end
 
         return format('%<val>.2f', val: 0.0) if enr_thhs_for_month.none? do |en_tax_household|
