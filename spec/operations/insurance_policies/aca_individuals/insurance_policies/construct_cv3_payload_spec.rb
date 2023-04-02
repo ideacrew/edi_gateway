@@ -5,7 +5,11 @@ require './spec/shared_examples/insurance_policies/shared_insurance_policies'
 RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv3Payload do
   include_context 'shared_insurance_policies'
 
-  before do
+  before :each do
+    DatabaseCleaner.clean
+  end
+
+  after :each do
     DatabaseCleaner.clean
   end
 

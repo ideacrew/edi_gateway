@@ -504,16 +504,18 @@ module InsurancePolicies
           ].flatten
 
           enrolled_members = all_enrolled_members.select do |member|
-            thh_primary_tax_filer_hbx_id = member.aca_individuals_enrollment.enrollments_tax_households.detect do |enr_thh|
-              enr_thh.tax_household.tax_household_members.where(person_id: member.person_id).first.present?
-            end.tax_household.primary_tax_filer_hbx_id
-
-            # select member only if they are in the same composition as the given tax_household
-            tax_household.primary_tax_filer_hbx_id == thh_primary_tax_filer_hbx_id
+            thh_primary_tax_filer_hbx_id = fetch_thh_primary_tax_filer_hbx_id_for_enrollment_member(member)
+            thh_primary_tax_filer_hbx_id.present? ? tax_household.primary_tax_filer_hbx_id == thh_primary_tax_filer_hbx_id : true
           end
 
           thh_members = fetch_thh_members_from_enr_thhs(valid_enr_thh, tax_household)
           enrolled_members.select { |enr_member| thh_members.map(&:person_id).include?(enr_member.person_id) }
+        end
+
+        def fetch_thh_primary_tax_filer_hbx_id_for_enrollment_member(member)
+          member.aca_individuals_enrollment.enrollments_tax_households.detect do |enr_thh|
+            enr_thh.tax_household.tax_household_members.where(person_id: member.person_id).first.present?
+          end&.tax_household&.primary_tax_filer_hbx_id
         end
 
         def fetch_enrolled_enrollment_members_per_thh_for_month(enrollments_for_month, tax_household)
