@@ -514,7 +514,8 @@ module InsurancePolicies
 
         def fetch_thh_primary_tax_filer_hbx_id_for_enrollment_member(member)
           member.aca_individuals_enrollment.enrollments_tax_households.detect do |enr_thh|
-            enr_thh.tax_household.tax_household_members.where(person_id: member.person_id).first.present?
+            enr_thh.tax_household.tax_household_members.where(person_id: member.person_id).first.present? &&
+              enr_thh.tax_household.is_aqhp
           end&.tax_household&.primary_tax_filer_hbx_id
         end
 
