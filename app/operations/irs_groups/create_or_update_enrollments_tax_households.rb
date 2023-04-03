@@ -21,8 +21,8 @@ module IrsGroups
     private
 
     def validate(params)
-      return Failure('Family should not be blank') if params[:family].blank?
-      return Failure('enrollment should not be blank') if params[:enrollment].blank?
+      return Failure('Please pass in family entity') if params[:family].blank?
+      return Failure('Enrollment should not be blank') if params[:enrollment].blank?
 
       Success(params)
     end
@@ -151,6 +151,38 @@ module IrsGroups
         end
     end
 
+    def update_enrollment_tax_household(enrollment, tax_household, enr_thh_reference)
+      enr_thh = InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(
+        enrollment_id: enrollment.value![:id],
+        tax_household_id: tax_household.value![:id]).first
+
+      return if enr_thh.blank?
+
+      enr_thh.update!(
+        household_benchmark_ehb_premium: {
+        cents: enr_thh_reference.household_benchmark_ehb_premium&.cents,
+        currency_iso: enr_thh_reference.household_benchmark_ehb_premium&.currency_iso
+        },
+        household_health_benchmark_ehb_premium: {
+          cents: enr_thh_reference.household_health_benchmark_ehb_premium&.cents,
+          currency_iso: enr_thh_reference.household_health_benchmark_ehb_premium&.currency_iso
+        },
+        household_dental_benchmark_ehb_premium: {
+          cents: enr_thh_reference.household_dental_benchmark_ehb_premium&.cents,
+          currency_iso: enr_thh_reference.household_dental_benchmark_ehb_premium&.currency_iso
+        },
+        applied_aptc: {
+          cents: enr_thh_reference.applied_aptc&.cents,
+          currency_iso: enr_thh_reference.applied_aptc&.currency_iso
+        },
+        available_max_aptc: {
+          cents: enr_thh_reference.available_max_aptc&.cents,
+          currency_iso: enr_thh_reference.available_max_aptc&.currency_iso
+        })
+
+      Success(enr_thh.as_json(include: [:enrolled_members_tax_household_members]).deep_symbolize_keys)
+    end
+
     # rubocop:disable Metrics/MethodLength
     def persist(enrollment)
       return if enrollment.tax_households_references.blank?
@@ -168,7 +200,17 @@ module IrsGroups
               tax_household_id: tax_household.value![:id]
             }
           )
-        next enrollment_tax_household_hash.value! if enrollment_tax_household_hash.success?
+        if enrollment_tax_household_hash.success?
+          result = update_enrollment_tax_household(enrollment, tax_household, enr_thh_reference)
+
+          if result.success?
+            result.value!
+            next
+          else
+            enrollment_tax_household_hash
+            next
+          end
+        end
 
         enr_thh_params_hash = build_enrollments_thh_hash(enr_thh_reference)
         enr_thh_params_hash.merge!(tax_household: tax_household.value!, enrollment: enrollment.value!)
