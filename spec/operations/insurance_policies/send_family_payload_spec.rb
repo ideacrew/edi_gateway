@@ -14,7 +14,7 @@ RSpec.describe InsurancePolicies::SendFamilyPayload do
   end
 
   context 'with valid params' do
-    let(:contract_holder_sync_job) { create(:contract_holder_sync_job) }
+    let(:contract_holder_sync_job) { create(:contract_holder_sync) }
 
     let!(:ch_person) do
       lookup_id = '1000595'
