@@ -56,7 +56,9 @@ RSpec.describe DataStores::ContractHolderSubject, type: :model, db_clean: :befor
     end
 
     context 'with current responsible_party_policies' do
-      let(:output_responsible_party_policy_eg_ids) { (given_responsible_party_policy_eg_ids + responsible_party_policy_eg_ids).uniq }
+      let(:output_responsible_party_policy_eg_ids) do
+        (given_responsible_party_policy_eg_ids + responsible_party_policy_eg_ids).uniq
+      end
 
       it "updates subject's responsible_party_policies" do
         ch_subject_with_policies.responsible_party_policies = responsible_party_policy_eg_ids
