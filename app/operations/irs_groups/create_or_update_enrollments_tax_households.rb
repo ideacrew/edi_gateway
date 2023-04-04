@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 # rubocop:disable Metrics/AbcSize
-# rubocop:disable Metrics/ClassLength
 
 module IrsGroups
   # Parse CV3 family payload and store necessary information
@@ -21,8 +20,8 @@ module IrsGroups
     private
 
     def validate(params)
-      return Failure('Family should not be blank') if params[:family].blank?
-      return Failure('enrollment should not be blank') if params[:enrollment].blank?
+      return Failure('Please pass in family entity') if params[:family].blank?
+      return Failure('Enrollment should not be blank') if params[:enrollment].blank?
 
       Success(params)
     end
@@ -47,11 +46,10 @@ module IrsGroups
       result
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/MethodLength
     # rubocop:disable Metrics/CyclomaticComplexity
     def build_enrollments_thh_hash(enr_thh_reference)
-      {
+      result = {
         tax_household_reference: {
           hbx_id: enr_thh_reference.tax_household_reference.hbx_id,
           max_aptc: {
@@ -72,32 +70,13 @@ module IrsGroups
           enrollment_period_kind: enr_thh_reference.hbx_enrollment_reference.enrollment_period_kind,
           product_kind: enr_thh_reference.hbx_enrollment_reference.product_kind
         },
-        household_benchmark_ehb_premium: {
-          cents: enr_thh_reference.household_benchmark_ehb_premium&.cents,
-          currency_iso: enr_thh_reference.household_benchmark_ehb_premium&.currency_iso
-        },
-        household_health_benchmark_ehb_premium: {
-          cents: enr_thh_reference.household_health_benchmark_ehb_premium&.cents,
-          currency_iso: enr_thh_reference.household_health_benchmark_ehb_premium&.currency_iso
-        },
-        household_dental_benchmark_ehb_premium: {
-          cents: enr_thh_reference.household_dental_benchmark_ehb_premium&.cents,
-          currency_iso: enr_thh_reference.household_dental_benchmark_ehb_premium&.currency_iso
-        },
-        applied_aptc: {
-          cents: enr_thh_reference.applied_aptc&.cents,
-          currency_iso: enr_thh_reference.applied_aptc&.currency_iso
-        },
-        available_max_aptc: {
-          cents: enr_thh_reference.available_max_aptc&.cents,
-          currency_iso: enr_thh_reference.available_max_aptc&.currency_iso
-        },
         tax_household_members_enrollment_members:
           build_enrollment_thh_members_hash(enr_thh_reference.tax_household_members_enrollment_members)
       }
+      result.merge!(enrollment_tax_household_aptc_benchmark_hash(enr_thh_reference))
+      result
     end
 
-    # rubocop:enable Metrics/PerceivedComplexity
     # rubocop:enable Metrics/MethodLength
     # rubocop:enable Metrics/CyclomaticComplexity
 
@@ -151,7 +130,45 @@ module IrsGroups
         end
     end
 
-    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/CyclomaticComplexity
+    def enrollment_tax_household_aptc_benchmark_hash(enr_thh_reference)
+      {
+        household_benchmark_ehb_premium: {
+          cents: enr_thh_reference.household_benchmark_ehb_premium&.cents,
+          currency_iso: enr_thh_reference.household_benchmark_ehb_premium&.currency_iso
+        },
+        household_health_benchmark_ehb_premium: {
+          cents: enr_thh_reference.household_health_benchmark_ehb_premium&.cents,
+          currency_iso: enr_thh_reference.household_health_benchmark_ehb_premium&.currency_iso
+        },
+        household_dental_benchmark_ehb_premium: {
+          cents: enr_thh_reference.household_dental_benchmark_ehb_premium&.cents,
+          currency_iso: enr_thh_reference.household_dental_benchmark_ehb_premium&.currency_iso
+        },
+        applied_aptc: {
+          cents: enr_thh_reference.applied_aptc&.cents,
+          currency_iso: enr_thh_reference.applied_aptc&.currency_iso
+        },
+        available_max_aptc: {
+          cents: enr_thh_reference.available_max_aptc&.cents,
+          currency_iso: enr_thh_reference.available_max_aptc&.currency_iso
+        }
+      }
+    end
+    # rubocop:enable Metrics/CyclomaticComplexity
+
+    def update_enrollment_tax_household(enrollment, tax_household, enr_thh_reference)
+      enr_thh = InsurancePolicies::AcaIndividuals::EnrollmentsTaxHouseholds.where(
+        enrollment_id: enrollment.value![:id],
+        tax_household_id: tax_household.value![:id]
+      ).first
+
+      return if enr_thh.blank?
+
+      enr_thh.update!(enrollment_tax_household_aptc_benchmark_hash(enr_thh_reference))
+      Success(enr_thh.as_json(include: [:enrolled_members_tax_household_members]).deep_symbolize_keys)
+    end
+
     def persist(enrollment)
       return if enrollment.tax_households_references.blank?
 
@@ -168,7 +185,16 @@ module IrsGroups
               tax_household_id: tax_household.value![:id]
             }
           )
-        next enrollment_tax_household_hash.value! if enrollment_tax_household_hash.success?
+        if enrollment_tax_household_hash.success?
+          result = update_enrollment_tax_household(enrollment, tax_household, enr_thh_reference)
+
+          if result.success?
+            result.value!
+          else
+            enrollment_tax_household_hash
+          end
+          next
+        end
 
         enr_thh_params_hash = build_enrollments_thh_hash(enr_thh_reference)
         enr_thh_params_hash.merge!(tax_household: tax_household.value!, enrollment: enrollment.value!)
@@ -180,8 +206,6 @@ module IrsGroups
       end
       Success(true)
     end
-
-    # rubocop:enable Metrics/MethodLength
 
     def persist_enrolled_members_tax_household_members(thh_enr_reference, enrollment_tax_household_hash)
       thh_enr_reference.tax_household_members_enrollment_members.each do |thh_member_enr_member|
@@ -220,4 +244,3 @@ module IrsGroups
   end
 end
 # rubocop:enable Metrics/AbcSize
-# rubocop:enable Metrics/ClassLength
