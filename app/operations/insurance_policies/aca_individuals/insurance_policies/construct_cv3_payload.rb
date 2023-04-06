@@ -564,15 +564,10 @@ module InsurancePolicies
         # rubocop:enable Metrics/CyclomaticComplexity
         def fetch_enrolled_thh_members(enrollments, tax_household)
           enr_thhs = fetch_enrollments_tax_households(enrollments)
-          valid_enr_thhs = if tax_household.is_aqhp
-                             enr_thhs.select { |enr_thh| enr_thh.tax_household.is_aqhp }
-                           else
-                             enr_thhs
-                           end
           all_enrolled_members =
             [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)].flatten.uniq(&:person_id)
 
-          thh_members = fetch_thh_members_from_enr_thhs(valid_enr_thhs, tax_household)
+          thh_members = fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
           all_enrolled_members.select { |member| thh_members.map(&:person_id).include?(member.person_id) }
         end
 
