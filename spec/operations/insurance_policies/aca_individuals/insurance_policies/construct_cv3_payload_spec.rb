@@ -25,15 +25,6 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
   let(:dependents) { FactoryBot.build(:enrolled_member, person: dependent_person) }
 
   context "with valid input params" do
-    let!(:uqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: false) }
-    let!(:uqhp_tax_household_member_1) do
-      FactoryBot.create(:tax_household_member, tax_household: uqhp_tax_household, person: subscriber_person,
-                                               is_tax_filer: true)
-    end
-    let!(:uqhp_tax_household_member_2) do
-      FactoryBot.create(:tax_household_member, tax_household: uqhp_tax_household, person: dependent_person,
-                                               is_tax_filer: true)
-    end
     let!(:aqhp_tax_household_1) { FactoryBot.create(:tax_household, is_aqhp: true) }
     let!(:aqhp_tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
 
@@ -55,9 +46,6 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
     end
     let!(:premium_schedule_1) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.subscriber) }
     let!(:premium_schedule_2) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.dependents.first) }
-    let!(:uqhp_enrollment_tax_household) do
-      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: uqhp_tax_household.id)
-    end
 
     let!(:aqhp_enrollment_tax_household_1) do
       FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: aqhp_tax_household_1.id)
