@@ -15,7 +15,27 @@ module Subscribers
         payload = JSON.parse(response, symbolize_names: true)
 
         if payload[:sync_job_id]
-          ::InsurancePolicies::SendFamilyPayload.new.call(payload)
+          result = ::InsurancePolicies::SendFamilyPayload.new.call(payload)
+
+          if result.success?
+            subscriber_logger.info(
+              "OK: :Published successfully and acked for sync_job_id: #{
+                payload[:sync_job_id]} primary_person_hbx_id #{payload[:primary_person_hbx_id]}"
+            )
+          else
+            errors = if result.is_a?(String)
+                       result
+                     elsif result.failure.is_a?(String)
+                       result.failure
+                     else
+                       result.failure.errors.to_h
+                     end
+
+            subscriber_logger.error(
+              "Failure: Unable to publish message due to errors #{errors} for sync_job_id: #{
+                payload[:sync_job_id]} primary_person_hbx_id #{payload[:primary_person_hbx_id]}"
+            )
+          end
         else
           process_irs_group(payload, subscriber_logger, routing_key)
         end
