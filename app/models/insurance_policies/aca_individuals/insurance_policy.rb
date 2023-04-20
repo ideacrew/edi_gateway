@@ -185,7 +185,8 @@ module InsurancePolicies
           .where(:enrollment_id.in => enrs_for_month.pluck(:id))
       end
 
-      def fetch_slcsp_premium(enrs_for_month, calendar_month, tax_household = nil)
+      def fetch_slcsp_premium(enrs_for_month, calendar_month, tax_household = nil, aptc_tax_credit = nil)
+        return format('%.2f', 0.0) if aptc_tax_credit.blank? || aptc_tax_credit.to_f.zero?
         return format('%.2f', 0.0) if term_for_np && policy_end_on.month == calendar_month
 
         enr_thhs = fetch_enrollments_tax_households(enrs_for_month)
