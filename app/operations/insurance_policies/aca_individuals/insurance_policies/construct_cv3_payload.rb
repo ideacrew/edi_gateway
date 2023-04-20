@@ -439,7 +439,7 @@ module InsurancePolicies
               pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
               aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 
-              slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
+              slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household, aptc_tax_credit)
               total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
               {
                 month: Date::MONTHNAMES[month],

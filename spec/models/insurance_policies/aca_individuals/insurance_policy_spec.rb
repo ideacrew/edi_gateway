@@ -282,4 +282,58 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       expect(result).to eq "0.00"
     end
   end
+
+  context "#fetch_slcsp_premium" do
+    context "when aptc is zero" do
+      let(:enrollment_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+      let!(:enrollment) do
+        FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
+                          effectuated_on: Date.new(year, 1, 1),
+                          end_on: Date.new(year, 12, 31),
+                          insurance_policy: insurance_policy,
+                          subscriber: enrollment_subscriber)
+      end
+      let!(:premium_schedule_enrollment) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment.subscriber) }
+      let!(:aqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: true) }
+      let!(:aqhp_thh_sub_tax_household_member) do
+        FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household, person: subscriber_person,
+                          is_tax_filer: true)
+      end
+      let!(:aqhp_enrollment_tax_household) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment.id,
+                          tax_household_id: aqhp_tax_household.id, applied_aptc: 0.0)
+      end
+
+      it "should return 0 if aptc amount is 0" do
+        expect(insurance_policy.fetch_slcsp_premium([enrollment], 1, aqhp_tax_household,
+                                                    aqhp_enrollment_tax_household.applied_aptc)).to eq "0.00"
+      end
+    end
+
+    context "when aptc is non zero" do
+      let(:enrollment_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+      let!(:enrollment) do
+        FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
+                          effectuated_on: Date.new(year, 1, 1),
+                          end_on: Date.new(year, 12, 31),
+                          insurance_policy: insurance_policy,
+                          subscriber: enrollment_subscriber)
+      end
+      let!(:premium_schedule_enrollment) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment.subscriber) }
+      let!(:aqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: true) }
+      let!(:aqhp_thh_sub_tax_household_member) do
+        FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household, person: subscriber_person,
+                          is_tax_filer: true)
+      end
+      let!(:aqhp_enrollment_tax_household) do
+        FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment.id,
+                          tax_household_id: aqhp_tax_household.id)
+      end
+
+      it "should return 0 if aptc amount is 0" do
+        expect(insurance_policy.fetch_slcsp_premium([enrollment], 1, aqhp_tax_household,
+                                                    aqhp_enrollment_tax_household.applied_aptc)).to eq "400.00"
+      end
+    end
+  end
 end
