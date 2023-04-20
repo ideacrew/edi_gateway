@@ -288,20 +288,20 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       let(:enrollment_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
       let!(:enrollment) do
         FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
-                          effectuated_on: Date.new(year, 1, 1),
-                          end_on: Date.new(year, 12, 31),
-                          insurance_policy: insurance_policy,
-                          subscriber: enrollment_subscriber)
+                                       effectuated_on: Date.new(year, 1, 1),
+                                       end_on: Date.new(year, 12, 31),
+                                       insurance_policy: insurance_policy,
+                                       subscriber: enrollment_subscriber)
       end
       let!(:premium_schedule_enrollment) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment.subscriber) }
       let!(:aqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: true) }
       let!(:aqhp_thh_sub_tax_household_member) do
         FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household, person: subscriber_person,
-                          is_tax_filer: true)
+                                                 is_tax_filer: true)
       end
       let!(:aqhp_enrollment_tax_household) do
         FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment.id,
-                          tax_household_id: aqhp_tax_household.id, applied_aptc: 0.0)
+                                                       tax_household_id: aqhp_tax_household.id, applied_aptc: 0.0)
       end
 
       it "should return 0 if aptc amount is 0" do
@@ -314,20 +314,20 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       let(:enrollment_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
       let!(:enrollment) do
         FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
-                          effectuated_on: Date.new(year, 1, 1),
-                          end_on: Date.new(year, 12, 31),
-                          insurance_policy: insurance_policy,
-                          subscriber: enrollment_subscriber)
+                                       effectuated_on: Date.new(year, 1, 1),
+                                       end_on: Date.new(year, 12, 31),
+                                       insurance_policy: insurance_policy,
+                                       subscriber: enrollment_subscriber)
       end
       let!(:premium_schedule_enrollment) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment.subscriber) }
       let!(:aqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: true) }
       let!(:aqhp_thh_sub_tax_household_member) do
         FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household, person: subscriber_person,
-                          is_tax_filer: true)
+                                                 is_tax_filer: true)
       end
       let!(:aqhp_enrollment_tax_household) do
         FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment.id,
-                          tax_household_id: aqhp_tax_household.id)
+                                                       tax_household_id: aqhp_tax_household.id)
       end
 
       it "should return 0 if aptc amount is 0" do
