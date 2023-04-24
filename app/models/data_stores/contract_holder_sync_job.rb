@@ -63,7 +63,7 @@ module DataStores
     end
 
     def validate_timespan
-      return true if source_job_id.present?
+      return true if source_job_id.present? || self.persisted?
 
       validate_time_span_start
       validate_time_span_end
