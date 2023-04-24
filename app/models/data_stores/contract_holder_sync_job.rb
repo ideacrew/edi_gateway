@@ -48,7 +48,8 @@ module DataStores
 
     # Guard for start dates in the future and those that precede a prior sync operation
     def validate_time_span_start
-      start_time = [time_span_start, Time.now, latest_time_span_end].compact.min
+      start_time = latest_time_span_end
+      start_time ||= [time_span_start, Time.now].compact.min
 
       write_attribute(:time_span_start, start_time)
     end
@@ -56,7 +57,7 @@ module DataStores
     # Guard for end dates in the future that if persisted will result in time gaps due to
     # time_span_start validation
     def validate_time_span_end
-      end_time = [[time_span_end, Time.now].min, time_span_start].max
+      end_time = [[time_span_end, Time.now].compact.min, time_span_start].max
 
       write_attribute(:time_span_end, end_time)
     end
@@ -66,7 +67,7 @@ module DataStores
 
       validate_time_span_start
       validate_time_span_end
-      return true unless time_span_start == time_span_end
+      return true unless time_span_start.to_s == time_span_end.to_s
 
       self.end_at = start_at
       write_attribute(:status, :noop)
