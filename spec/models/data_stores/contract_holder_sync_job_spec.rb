@@ -7,11 +7,11 @@ RSpec.describe DataStores::ContractHolderSyncJob, type: :model, db_clean: :befor
 
   describe 'validate_timespan' do
     let!(:previous_jobs) do
-      create(:contract_holder_sync_job,
+      create(:contract_holder_sync,
              time_span_start: (Date.today - 3.days).beginning_of_day,
              time_span_end: (Date.today - 3.days).end_of_day)
 
-      create(:contract_holder_sync_job,
+      create(:contract_holder_sync,
              time_span_start: (Date.today - 2.days).beginning_of_day,
              time_span_end: (Date.today - 2.days).end_of_day)
     end
