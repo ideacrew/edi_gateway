@@ -19,15 +19,17 @@ module DataStores
     scope :by_primary_hbx_id, ->(hbx_id) { where(primary_person_hbx_id: hbx_id) }
 
     def subscriber_policies=(policies)
-      return if subscriber_policies.present? || policies.blank?
+      return if policies.blank?
 
-      write_attribute(:subscriber_policies, policies.uniq)
+      all_policies = subscriber_policies.present? ? (subscriber_policies + policies) : policies
+      write_attribute(:subscriber_policies, all_policies.uniq)
     end
 
     def responsible_party_policies=(policies)
-      return if responsible_party_policies.present? || policies.blank?
+      return if policies.blank?
 
-      write_attribute(:responsible_party_policies, policies.uniq)
+      all_policies = responsible_party_policies.present? ? (responsible_party_policies + policies) : policies
+      write_attribute(:responsible_party_policies, all_policies.uniq)
     end
   end
 end

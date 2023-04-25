@@ -14,7 +14,7 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
   end
 
   context 'with valid params' do
-    let!(:contract_holder_sync_job) { create(:contract_holder_sync_job) }
+    let!(:contract_holder_sync_job) { create(:contract_holder_sync) }
     let(:person) { FactoryBot.create(:person) }
     let(:subscriber_policies) { %w[55231212 42121212] }
     let(:responsible_party_policies) { %w[55231210 42121210] }
@@ -76,10 +76,6 @@ RSpec.describe DataStores::ContractHolderSubjects::CreateOrUpdate do
 
       it 'should return updated subject' do
         expect(@result.success.class).to be DataStores::ContractHolderSubject
-      end
-
-      it 'should not update subscriber policies' do
-        expect(@result.success.subscriber_policies).to eq subscriber_policies
       end
 
       it 'should update responsible policies' do

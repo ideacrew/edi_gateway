@@ -439,7 +439,7 @@ module InsurancePolicies
               pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
               aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 
-              slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household)
+              slcsp = insurance_policy.fetch_slcsp_premium(enrollments_for_month, month, tax_household, aptc_tax_credit)
               total_premium = format('%.2f', (pre_amt_tot.to_f + pediatric_dental_pre))
               {
                 month: Date::MONTHNAMES[month],
@@ -564,15 +564,10 @@ module InsurancePolicies
         # rubocop:enable Metrics/CyclomaticComplexity
         def fetch_enrolled_thh_members(enrollments, tax_household)
           enr_thhs = fetch_enrollments_tax_households(enrollments)
-          valid_enr_thhs = if tax_household.is_aqhp
-                             enr_thhs.select { |enr_thh| enr_thh.tax_household.is_aqhp }
-                           else
-                             enr_thhs
-                           end
           all_enrolled_members =
             [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)].flatten.uniq(&:person_id)
 
-          thh_members = fetch_thh_members_from_enr_thhs(valid_enr_thhs, tax_household)
+          thh_members = fetch_thh_members_from_enr_thhs(enr_thhs, tax_household)
           all_enrolled_members.select { |member| thh_members.map(&:person_id).include?(member.person_id) }
         end
 

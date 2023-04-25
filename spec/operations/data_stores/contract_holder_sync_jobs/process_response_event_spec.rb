@@ -15,7 +15,7 @@ RSpec.describe DataStores::ContractHolderSyncJobs::ProcessResponseEvent do
   end
 
   context 'with valid params' do
-    let!(:contract_holder_sync_job) { create(:contract_holder_sync_job) }
+    let!(:contract_holder_sync_job) { create(:contract_holder_sync) }
     let!(:contract_holder_subject) do
       create(
         :contract_holder_subject,
