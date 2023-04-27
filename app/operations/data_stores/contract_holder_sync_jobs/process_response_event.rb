@@ -50,6 +50,7 @@ module DataStores
         response_event =
           Integrations::Events::Build.new.call(
             {
+              error_messages: values[:errors],
               name: values[:event_name],
               body: values[:family].to_json,
               headers: { correlation_id: values[:correlation_id] }.to_json
@@ -58,6 +59,13 @@ module DataStores
         return Failure("unable to create response event #{response_event.failure}") if response_event.failure?
 
         subject.update(response_event: response_event.success)
+
+        if values[:errors].present?
+          return Failure("Errors #{
+            values[:errors]} in generating Family CV in Enroll for subject with primary_person_hbx_id: #{
+              subject.primary_person_hbx_id}")
+        end
+
         Success(subject)
       end
 

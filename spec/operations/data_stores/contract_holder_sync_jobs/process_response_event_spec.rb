@@ -74,18 +74,48 @@ RSpec.describe DataStores::ContractHolderSyncJobs::ProcessResponseEvent do
         @result = subject.call(params)
       end
 
-      it 'return failure' do
-        expect(@result.failure?).to be_truthy
+      context 'with failed contract_holder_update' do
+        it 'return failure' do
+          expect(@result.failure?).to be_truthy
+        end
+
+        it 'should create response event with errors' do
+          expect(@result.failure.class).to be Integrations::Event
+          response_event = contract_holder_subject.reload.response_event
+
+          expect(response_event).to be_present
+          expect(response_event.errored?).to be_truthy
+          expect(response_event.error_messages).to eq failure_double.failure.errors
+          expect(response_event.name).to eq 'events.enroll.families.found_by'
+        end
       end
 
-      it 'should create response event with errors' do
-        expect(@result.failure.class).to be Integrations::Event
-        response_event = contract_holder_subject.reload.response_event
+      context 'with family CV errors' do
+        let(:params) do
+          {
+            correlation_id: contract_holder_sync_job.job_id,
+            errors: ['Unable to find person with hbx_id: person_hbx_id'],
+            event_name: 'events.enroll.families.found_by',
+            family: {},
+            primary_person_hbx_id: person.authority_member_id
+          }
+        end
+        let(:response_event) { contract_holder_subject.reload.response_event }
 
-        expect(response_event).to be_present
-        expect(response_event.errored?).to be_truthy
-        expect(response_event.error_messages).to eq failure_double.failure.errors
-        expect(response_event.name).to eq 'events.enroll.families.found_by'
+        it 'return failure' do
+          expect(@result.failure?).to be_truthy
+        end
+
+        it 'should create response event with errors' do
+          expect(@result.failure).to eq(
+            "Errors #{params[:errors]} in generating Family CV in Enroll for subject with primary_person_hbx_id: #{
+              response_event.eventable.primary_person_hbx_id}"
+          )
+          expect(response_event).to be_present
+          expect(response_event.errored?).to be_truthy
+          expect(response_event.error_messages).to eq(params[:errors])
+          expect(response_event.name).to eq 'events.enroll.families.found_by'
+        end
       end
     end
   end
