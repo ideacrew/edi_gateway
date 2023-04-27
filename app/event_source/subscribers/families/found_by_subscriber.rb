@@ -15,6 +15,7 @@ module Subscribers
         result =
           DataStores::ContractHolderSyncJobs::ProcessResponseEvent.new.call(
             correlation_id: properties.correlation_id,
+            errors: response[:errors],
             family: response[:family],
             primary_person_hbx_id: response[:primary_person_hbx_id],
             event_name: 'events.enroll.families.found_by'
