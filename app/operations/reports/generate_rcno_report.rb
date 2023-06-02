@@ -52,7 +52,6 @@ module Reports
         File.readlines(rcni_file_path, chomp: true).each do |line|
           @overall_flag = "M"
           @rcni_row = line.split("|")
-
           next unless @rcni_row[0] == "01"
 
           # mark over flag to U unprocessable if subscriber_id, member_id, policy_id, or benefit_start_date are blank?
@@ -119,7 +118,7 @@ module Reports
     end
 
     def fetch_rcni_file_path(hios_id)
-      return Success("#{Rails.root}/spec/test_data/RCNI_33653.txt") if Rails.env.test?
+      return Success("#{Rails.root}/spec/test_payloads/RCNI_33653.txt") if Rails.env.test?
 
       if File.exist?("#{Rails.root}/RCNI_#{hios_id}.txt")
         Success("#{Rails.root}/RCNI_#{hios_id}.txt")
@@ -930,7 +929,7 @@ module Reports
                                        year: year,
                                        status: "completed",
                                        report_type: "pre_audit",
-                                       :'policies.rcno_processed' => false)
+                                       :'ard_policies.rcno_processed' => false)
       records.each do |record|
         policies = record.ard_policies
         policies.each do |policy|

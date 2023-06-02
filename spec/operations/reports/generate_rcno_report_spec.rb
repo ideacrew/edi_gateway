@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
-require 'webmock/rspec'
-
-RSpec.describe Reports::GenerateRcnoReport do
+RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
   include Dry::Monads[:result, :do]
 
   let!(:audit_report_datum) do
@@ -172,7 +169,7 @@ RSpec.describe Reports::GenerateRcnoReport do
     before do
       policies = JSON.parse(audit_report_datum.payload)
       policies.each do |policy|
-        audit_report_datum.ard_policies << Policy.new(payload: policy.to_json, policy_eg_id: policy["enrollment_group_id"])
+        audit_report_datum.ard_policies << ArdPolicy.new(payload: policy.to_json, policy_eg_id: policy["enrollment_group_id"])
       end
     end
 

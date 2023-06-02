@@ -40,10 +40,8 @@ module Reports
       begin
         person = Person.find_for_member_id(member_id)
         response = SubscriberInventory.coverage_inventory_for(person, read_show_filter(params))
-        if @logger.present?
-          @logger.info "Response from glue for subscriber #{audit_datum.subscriber_id} payload #{response.to_json}"
-        end
-        Success(response.to_json)
+        @logger.info "Response from glue for subscriber #{audit_datum.subscriber_id} payload #{response}" if @logger.present?
+        Success(response)
       rescue StandardError => e
         Rails.logger.error e.message
         Failure("Unable to fetch coverage history due to #{e.message}")
@@ -52,7 +50,7 @@ module Reports
 
     def store_coverage_history(coverage_history_response, audit_datum)
       status = audit_datum.update_attributes(payload: coverage_history_response, status: "completed")
-      policies_response = JSON.parse(coverage_history_response)
+      policies_response = coverage_history_response
       policies_response.each do |policy|
         audit_datum.ard_policies << ArdPolicy.new(payload: policy.to_json, policy_eg_id: policy["enrollment_group_id"])
       end

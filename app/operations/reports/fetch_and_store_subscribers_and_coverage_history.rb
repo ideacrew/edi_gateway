@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require 'faraday'
-
 module Reports
-  # make an http call to glue to fetch subscriber list and coverage info
+  # making a call to glue models to fetch subscriber list and coverage info
   class FetchAndStoreSubscribersAndCoverageHistory
     send(:include, Dry::Monads[:result, :do])
     send(:include, Dry::Monads[:try])
