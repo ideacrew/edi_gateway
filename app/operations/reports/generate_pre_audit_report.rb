@@ -42,7 +42,7 @@ module Reports
 
       CSV.open(file_name, "w", col_sep: "|") do |csv|
         audit_datum.where(status: "completed").each do |audit_data|
-          policies = eval(audit_data.payload)
+          policies = JSON.parse(audit_data.payload)
           policies.each do |policy|
             policy_contract_result = AcaEntities::Contracts::Policies::PolicyContract.new.call(policy)
             if policy_contract_result.errors.present?

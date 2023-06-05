@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rails_helper'
+
 RSpec.describe Reports::RequestCoverageHistoryForSubscriber, dbclean: :before_each do
   describe 'with valid arguments' do
     let(:plan)           { create(:plan, ehb: "0.997144") }
@@ -49,7 +51,7 @@ RSpec.describe Reports::RequestCoverageHistoryForSubscriber, dbclean: :before_ea
 
       it 'returns success' do
         expect(subject.success?).to be_truthy
-        expect(audit_report_datum.payload).to eq payload_response.to_s
+        expect(audit_report_datum.payload).to eq payload_response.to_json
       end
     end
   end

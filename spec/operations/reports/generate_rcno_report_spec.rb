@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'rails_helper'
+
 RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
   include Dry::Monads[:result, :do]
 
