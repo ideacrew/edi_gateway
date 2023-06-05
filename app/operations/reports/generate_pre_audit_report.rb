@@ -182,7 +182,10 @@ module Reports
     end
 
     def fetch_file_name(carrier_hios_id, year)
-      "#{Rails.root}/carrier_hios_id_#{carrier_hios_id}_for_year_#{year}.csv"
+      current_time = Time.now
+      formatted_string = current_time.strftime("%Y%m%d%H%M%S")
+      last_digit = year % 10
+      "#{Rails.root}/AUD#{last_digit}_#{formatted_string}000Z_#{carrier_hios_id}_I"
     end
 
     def segment_id(id, policy_entity)
