@@ -351,6 +351,7 @@ module Reports
 
       issuer_subscriber_id = @rcni_row[16]
       match_data = ffm_subscriber_id == issuer_subscriber_id ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
       [ffm_subscriber_id, issuer_subscriber_id, match_data]
     end
 
@@ -368,6 +369,7 @@ module Reports
 
       issuer_member_id = @rcni_row[17]
       match_data = ffm_member_id == issuer_member_id ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
       [ffm_member_id, issuer_member_id, match_data]
     end
 
@@ -550,7 +552,7 @@ module Reports
 
       if ffm_benefit_end != issuer_benefit_end
         @overall_flag = "N"
-        fti_flag = @policy.term_for_np ? "K" : "I"
+        fti_flag = @policy.term_for_np ? "G" : "I"
         return [ffm_benefit_end, issuer_benefit_end, fti_flag]
       end
 
