@@ -163,8 +163,13 @@ RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
     [result_1.to_h, result_2.to_h].to_json
   end
 
+  let(:current_time) { Time.now }
+  let(:formatted_string) { current_time.strftime("%Y%m%d%H%M%S") }
+  let(:last_digit) { 2 }
+  let(:filename) { "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{audit_report_datum&.hios_id}_I" }
+
   after :each do
-    FileUtils.rm_rf("#{Rails.root}/rcno_carrier_hios_id_#{audit_report_datum.hios_id}_for_year_2022.csv")
+    FileUtils.rm_rf(filename)
   end
 
   describe "with valid arguments" do
@@ -175,7 +180,7 @@ RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
       end
     end
 
-    let(:output_file) { "#{Rails.root}/rcno_carrier_hios_id_#{audit_report_datum&.hios_id}_for_year_2022.csv" }
+    let(:output_file) { filename }
 
     it "should be success" do
       subject = described_class.new
