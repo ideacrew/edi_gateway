@@ -56,7 +56,7 @@ module Reports
 
             policy_entity.enrollees.each do |enrollee|
               enrollee.segments.each do |segment|
-                csv << insert_data(carrier_hios_id, policy_entity, segment, enrollee)
+                csv << insert_data(carrier_hios_id, policy_entity, segment, enrollee, audit_data)
               end
             end
           end
@@ -200,9 +200,9 @@ module Reports
     # rubocop:disable Metrics/PerceivedComplexity
     # rubocop:disable Metrics/MethodLength
 
-    def insert_data(carrier_hios_id, policy_entity, segment, enrollee)
-      [carrier_hios_id, nil, "ME0", carrier_hios_id, policy_entity.qhp_id[0, 10], Date.today.strftime("%Y%m%d"),
-       DateTime.now.strftime("%H%M%S%L"),
+    def insert_data(carrier_hios_id, policy_entity, segment, enrollee, audit_data)
+      [carrier_hios_id, nil, "ME0", carrier_hios_id, policy_entity.qhp_id[0, 10],
+       audit_data.created_at.strftime("%Y%m%d"), audit_data.created_at.strftime("%H%M%S%L"),
        policy_entity.last_maintenance_date.strftime("%Y%m%d"), policy_entity.last_maintenance_time,
        policy_entity.primary_subscriber&.hbx_member_id, transaction_code_type(enrollee), nil, nil,
        nil, nil, nil,
