@@ -69,7 +69,7 @@ module Reports
               @policy, @member, @segments = fetch_policy_member_and_segments
               segment = fetch_segment(@rcni_row[37])
               # If segment(RCNI benefit_start_date) is blank then set @overall_flag is 'B'.
-              @overall_flag = "B" if segment.blank?
+              segment.blank? ? @overall_flag = "B" : update_processed_segment(segment)
             end
           end
           csv << insert_data
@@ -94,10 +94,6 @@ module Reports
     def fetch_policy_member_and_segments
       policies = @audit_record.ard_policies
       fetched_policy = policies.detect { |policy| (policy.policy_eg_id == @rcni_row[20]) }
-      if fetched_policy.present?
-        fetched_policies = policies.select { |policy| policy.policy_eg_id == @rcni_row[20] }
-        fetched_policies.each { |pol| pol.update_attributes!(rcno_processed: true) }
-      end
       if fetched_policy.blank?
         @overall_flag = "R"
         return [nil, nil, nil]
@@ -1043,6 +1039,24 @@ module Reports
       @overall_flag
     end
 
+    def update_processed_segment(segment)
+      ard_policy_eg_id = @policy.enrollment_group_id
+      ard_hbx_member_id = @member.hbx_member_id
+      ard_segment = @audit_record.ard_segments.where(segment_id: segment.id).first
+      ard_segment.update_attributes!(rcno_processed: true) if ard_segment.present?
+      ard_segments = @audit_record.ard_segments.where(policy_eg_id: ard_policy_eg_id,
+                                                      en_hbx_id: ard_hbx_member_id)
+      unprocessed_ard_segs = ard_segments.map(&:rcno_processed).include?(false)
+      return unless unprocessed_ard_segs
+
+      update_processed_policy(ard_policy_eg_id)
+    end
+
+    def update_processed_policy(ard_policy_eg_id)
+      fetched_policy = @audit_record.ard_policies.where(policy_eg_id: ard_policy_eg_id).first
+      fetched_policy.update_attributes!(rcno_processed: true)
+    end
+
     def insert_missing_policy_data(csv, valid_params, rcni_file_path)
       carrier_hios_id = valid_params[:payload][:carrier_hios_id]
       year = valid_params[:payload][:year]
@@ -1068,14 +1082,22 @@ module Reports
           rcni_first_row = File.readlines(rcni_file_path, chomp: true).first.split("|")
           @rcni_row = [rcni_first_row[0], rcni_first_row[1], rcni_first_row[2], rcni_first_row[3],
                        rcni_first_row[4], rcni_first_row[5], rcni_first_row[6]] + ([""] * 56)
-
+          unprocessed_ard_segs = record.ard_segments.where(policy_eg_id: policy.policy_eg_id, rcno_processed: false)
+          en_hbx_ids = unprocessed_ard_segs.map(&:en_hbx_id)
+          unprocessed_ard_seg_ids = unprocessed_ard_segs.map(&:segment_id)
           policy_entity.enrollees.each do |enrollee|
-            @policy = policy_entity
-            @member = enrollee
-            @segments = enrollee.segments
-            @overall_flag = "G"
-            csv << insert_data
-            @total_number_of_issuer_records += 1
+            next unless en_hbx_ids.include?(enrollee.hbx_member_id)
+
+            enrollee.segments.each do |segment|
+              next unless unprocessed_ard_seg_ids.include?(segment.id)
+
+              @policy = policy_entity
+              @member = enrollee
+              @segments = [segment]
+              @overall_flag = "G"
+              csv << insert_data
+              @total_number_of_issuer_records += 1
+            end
           end
         end
       end

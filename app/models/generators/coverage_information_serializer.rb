@@ -114,21 +114,21 @@ module Generators
     def append_financial_information(enrollee, financial_dates = nil)
       start_date = financial_dates[0].strftime("%Y%m%d")
       subscriber_m_id = @policy.subscriber.m_id
-      policy_id = @policy.id
+      policy_eg_id = @policy.eg_id
       enrollee_coverage_start = enrollee.coverage_start
       enrollee_coverage_end = enrollee.coverage_end.blank? ? @policy.policy_start.end_of_year : enrollee.coverage_end
       return unless (enrollee_coverage_start..enrollee_coverage_end).cover?(financial_dates[0])
 
       params = if enrollee_coverage_start == enrollee_coverage_end
                  {
-                   id: "#{subscriber_m_id}-#{policy_id}-#{start_date}",
+                   id: "#{subscriber_m_id}-#{policy_eg_id}-#{start_date}",
                    effective_start_date: format_date(enrollee_coverage_start),
                    effective_end_date: format_date(enrollee_coverage_end),
                    individual_premium_amount: enrollee.premium_amount.to_f
                  }
                else
                  {
-                   id: "#{subscriber_m_id}-#{policy_id}-#{start_date}",
+                   id: "#{subscriber_m_id}-#{policy_eg_id}-#{start_date}",
                    effective_start_date: format_date(financial_dates[0]),
                    effective_end_date: format_date(financial_dates[1]),
                    individual_premium_amount: enrollee.premium_amount.to_f
