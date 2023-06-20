@@ -13,5 +13,4 @@ class ArdPolicy
   embedded_in :audit_report_datum
 
   index({ rcno_processed: 1 })
-  index({ ard_policy_id: 1, rcno_processed: 1 })
 end

@@ -20,34 +20,10 @@ class RequestSubscriberCoverageHistoryJob < ApplicationJob
                                                                      logger: @logger
                                                                    })
     if result.success?
-      generate_pre_audit_report(ard_record&.hios_id)
+      Success("Successfully generated AuditReportDatum policies")
     else
       @logger.info "Failed due to #{result.failure}, and retrying #{attempt} time for subscriber #{ard_record&.subscriber_id}"
       RequestSubscriberCoverageHistoryJob.perform_later(audit_report_datum_id, attempt + 1)
     end
-  end
-
-  private
-
-  def generate_pre_audit_report(hios_id)
-    total_records = AuditReportDatum.where(hios_id: hios_id, report_type: "pre_audit").count
-    completed_records = AuditReportDatum.where({ hios_id: hios_id,
-                                                 report_type: "pre_audit",
-                                                 status: "completed" }).count
-    return unless completed_records >= total_records
-
-    payload = { carrier_hios_id: hios_id, report_type: "pre_audit" }
-    event =   event("events.reports.generate_pre_audit_report",
-                    attributes: { payload: payload }).success
-    unless Rails.env.test?
-      logger.info('-' * 100)
-      logger.info(
-        "Polypress to generate pre audit report, attributes: #{payload.to_h}"
-      )
-      logger.info('-' * 100)
-    end
-
-    event.publish
-    Success("Successfully published event to polypress to generate ")
   end
 end

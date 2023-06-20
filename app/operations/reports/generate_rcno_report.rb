@@ -68,7 +68,8 @@ module Reports
             else
               @policy, @member, @segments = fetch_policy_member_and_segments
               segment = fetch_segment(@rcni_row[37])
-              @overall_flag = "R" if segment.blank?
+              # If segment(RCNI benefit_start_date) is blank then set @overall_flag is 'B'.
+              @overall_flag = "B" if segment.blank?
             end
           end
           csv << insert_data
@@ -130,7 +131,10 @@ module Reports
     def fetch_rcno_file_name(valid_params)
       hios_id = valid_params[:payload][:carrier_hios_id]
       year = valid_params[:payload][:year]
-      "#{Rails.root}/rcno_carrier_hios_id_#{hios_id}_for_year_#{year}.csv"
+      current_time = Time.now
+      formatted_string = current_time.strftime("%Y%m%d%H%M%S")
+      last_digit = year % 10
+      "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{hios_id}_I"
     end
 
     def fetch_relationship_code(code)
@@ -209,7 +213,7 @@ module Reports
       # If overall flag is R then we need to put ME data blank, carrier data from RCNI, and field level disposition to D
       # If overall flag is not a R then we do normal data population for ME and carrier and field level disposition
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[8], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[8], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[8], "U"] if @member.blank?
       ffm_first_name = @member.first_name&.gsub("|", "")
@@ -225,7 +229,7 @@ module Reports
 
     def compare_middle_name
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[9], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[9], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[9], "U"] if @member.blank?
 
@@ -243,7 +247,7 @@ module Reports
 
     def compare_last_name
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[10], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[10], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[10], "U"] if @member.blank?
 
@@ -260,7 +264,7 @@ module Reports
 
     def compare_dob
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[11], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[11], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[11], "U"] if @member.blank?
 
@@ -277,7 +281,7 @@ module Reports
 
     def compare_gender
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[12], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[12], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[12], "U"] if @member.blank?
 
@@ -292,7 +296,7 @@ module Reports
 
     def compare_ssn
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[13], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[13], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[13], "U"] if @member.blank?
 
@@ -307,7 +311,7 @@ module Reports
 
     def subscriber_indicator
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[14], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[14], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       status = @member&.is_subscriber ? 'Y' : 'N'
       members_count(status)
@@ -326,7 +330,7 @@ module Reports
 
     def relation_to_subscriber_indicator
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[15], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[15], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[15], "U"] if @member.blank?
 
@@ -346,6 +350,9 @@ module Reports
 
       ffm_subscriber_id = @policy.primary_subscriber&.hbx_member_id
 
+      # If Subscriber, Member and Policy are found but no segment, echo match for subscriberID
+      return [ffm_subscriber_id, @rcni_row[16], "M"] if @overall_flag == "B"
+
       # unprocessed policy
       return [ffm_subscriber_id, nil, "D"] if @overall_flag == "G"
 
@@ -360,8 +367,10 @@ module Reports
       return [nil, @rcni_row[17], "D"] if @overall_flag == "R"
 
       # return [nil, @rcni_row[17], "U"] if @member.blank?
-
       ffm_member_id = @member.hbx_member_id
+
+      # If Subscriber, Member and Policy are found but no segment, echo match for member_id
+      return [ffm_member_id, @rcni_row[17], "M"] if @overall_flag == "B"
 
       # unprocessed policy
       return [ffm_member_id, nil, "D"] if @overall_flag == "G"
@@ -373,7 +382,7 @@ module Reports
 
     def issuer_assigned_subscriber_id
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[18], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[18], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[18], "U"] if @policy.blank?
 
@@ -403,7 +412,7 @@ module Reports
 
     def issuer_assigned_member_id
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[19], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[19], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[19], "U"] if @member.blank?
 
@@ -438,6 +447,9 @@ module Reports
 
       ffm_exchange_policy_number = @policy.enrollment_group_id
 
+      # If Subscriber, Member and Policy are found but no segment, echo match for policy number
+      return [ffm_exchange_policy_number, @rcni_row[20], "M"] if @overall_flag == "B"
+
       # unprocessed policy
       return [ffm_exchange_policy_number, nil, "D"] if @overall_flag == "G"
 
@@ -449,7 +461,7 @@ module Reports
 
     def issuer_assigned_policy_number
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[21], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[21], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[21], "U"] if @member.blank?
 
@@ -581,7 +593,7 @@ module Reports
 
     def qhp_id_match
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[36], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[36], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[36], "U"] if @policy.blank?
       # unprocessed policy
@@ -601,6 +613,9 @@ module Reports
 
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[37], "D"] if @overall_flag == "R"
+
+      # If Subscriber, Member and Policy are found but no segment for the start date
+      return [nil, @rcni_row[37], "I"] if @overall_flag == "B"
 
       # return [nil, @rcni_row[37], "U"] if @member.blank?
       # unprocessed policy
@@ -624,9 +639,10 @@ module Reports
       [ffm_benefit_start, issuer_benefit_start, match_data]
     end
 
+    # rubocop:disable Metrics/PerceivedComplexity
     def benefit_end_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[38], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[38], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # unprocessed policy
       if @overall_flag == "G"
@@ -661,7 +677,7 @@ module Reports
 
     def applied_aptc_value
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[39], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[39], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
       return [nil, @rcni_row[39], "U"] if @member.blank?
       return ["0.00", @rcni_row[39], "D"] unless @member.is_subscriber
 
@@ -695,7 +711,7 @@ module Reports
 
     def applied_aptc_start_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[40], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[40], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
       return [nil, @rcni_row[40], "U"] if @member.blank?
 
       # unprocessed policy
@@ -724,10 +740,9 @@ module Reports
       [ffm_applied_aptc_start_date, issuer_applied_start_date, match_data]
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     def applied_aptc_end_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[41], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[41], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
       return [nil, @rcni_row[41], "U"] if @member.blank?
 
       # unprocessed policy
@@ -765,7 +780,7 @@ module Reports
     # rubocop:disable Metrics/MethodLength
     def total_premium_amount
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[45], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[45], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
       # return [nil, @rcni_row[45], "U"] if @member.blank?
       return [nil, @rcni_row[45], "D"] unless @member.is_subscriber
 
@@ -802,7 +817,7 @@ module Reports
 
     def total_premium_start_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[46], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[46], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
       return [nil, @rcni_row[46], "U"] if @member.blank?
 
       # unprocessed policy
@@ -831,7 +846,7 @@ module Reports
 
     def total_premium_end_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[47], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[47], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
       return [nil, @rcni_row[47], "U"] if @member.blank?
 
       # unprocessed policy
@@ -865,7 +880,7 @@ module Reports
 
     def individual_premium_amount
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[48], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[48], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[48], "U"] if @member.blank?
 
@@ -901,7 +916,7 @@ module Reports
 
     def individual_premium_start_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[49], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[49], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[49], "U"] if @member.blank?
 
@@ -932,7 +947,7 @@ module Reports
 
     def individual_premium_end_date
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[50], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[50], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[50], "U"] if @member.blank?
       # unprocessed policy
@@ -967,7 +982,7 @@ module Reports
 
     def premium_paid_status
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[51], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[51], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # Next line likely unnecessary
       # return [nil, @rcni_row[51], "U"] if @policy.blank?
@@ -986,7 +1001,7 @@ module Reports
 
     def coverage_year
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[53], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[53], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[53], "U"] if @policy.blank?
 
@@ -1003,7 +1018,7 @@ module Reports
 
     def market_place_segment_id
       # If Subscriber, Member, or Policy are not found
-      return nil if @overall_flag == "R" || @overall_flag == "U"
+      return nil if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return nil if @member.blank?
       # return nil if @policy.blank?
@@ -1016,6 +1031,8 @@ module Reports
     def overall_indicator
       # If Subscriber, Member, or Policy are not found
       return "R" if @overall_flag == "R"
+      # If Subscriber, Member, and Policy are found but no segment start date matches issuer benefit start date
+      return "N" if @overall_flag == "B"
       return "U" if @overall_flag == "U"
       # return "G" if @rcni_row[8].blank?
       # unprocessed policy
