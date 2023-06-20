@@ -489,6 +489,108 @@ module Reports
       [ffm_issuer_policy_number, issuer_issuer_policy_number, match_data]
     end
 
+    def residential_address_state
+      # If Subscriber, Member, or Policy are not found
+      return [nil, @rcni_row[25], "D"] if @overall_flag == "R" || @overall_flag == "U"
+
+      # return [nil, @rcni_row[25], "U"] if @member.blank?
+
+      ffm_residential_address_state = @member&.residential_address&.state&.gsub("|", "")
+
+      # unprocessed policy
+      return [ffm_residential_address_state, nil, "D"] if @overall_flag == "G"
+
+      issuer_residential_address_state = @rcni_row[25]
+      match_data = ffm_residential_address_state == issuer_residential_address_state ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
+      [ffm_residential_address_state, issuer_residential_address_state, match_data]
+    end
+
+    def residential_address_zip
+      # If Subscriber, Member, or Policy are not found
+      return [nil, @rcni_row[26]&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
+
+      # return [nil, @rcni_row[26]&.first(9), "U"] if @member.blank?
+
+      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.first(9)
+
+      # unprocessed policy
+      return [ffm_residential_address_zip, nil, "D"] if @overall_flag == "G"
+
+      issuer_residential_address_zip = @rcni_row[26]&.first(9)
+      match_data = ffm_residential_address_zip == issuer_residential_address_zip ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
+      [ffm_residential_address_zip, issuer_residential_address_zip, match_data]
+    end
+
+    def mailing_address_state
+      # If Subscriber, Member, or Policy are not found
+      return [nil, @rcni_row[30], "D"] if @overall_flag == "R" || @overall_flag == "U"
+
+      # return [nil, @rcni_row[30], "U"] if @member.blank?
+
+      ffm_mailing_address_state = @member&.mailing_address&.state&.gsub("|", "")
+
+      # unprocessed policy
+      return [ffm_mailing_address_state, nil, "D"] if @overall_flag == "G"
+
+      issuer_mailing_address_state = @rcni_row[30]
+      match_data = ffm_mailing_address_state == issuer_mailing_address_state ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
+      [ffm_mailing_address_state, issuer_mailing_address_state, match_data]
+    end
+
+    def mailing_address_zip
+      # If Subscriber, Member, or Policy are not found
+      return [nil, @rcni_row[31], "D"] if @overall_flag == "R" || @overall_flag == "U"
+
+      # return [nil, @rcni_row[31], "U"] if @member.blank?
+
+      ffm_mailing_address_zip = @member&.mailing_address&.zip&.gsub("|", "")
+
+      # unprocessed policy
+      return [ffm_mailing_address_zip, nil, "D"] if @overall_flag == "G"
+
+      issuer_mailing_address_zip = @rcni_row[31]
+      match_data = ffm_mailing_address_zip == issuer_mailing_address_zip ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
+      [ffm_mailing_address_zip, issuer_mailing_address_zip, match_data]
+    end
+
+    def residential_address_county
+      # If Subscriber, Member, or Policy are not found
+      return [nil, @rcni_row[32]&.first(5), "D"] if @overall_flag == "R" || @overall_flag == "U"
+
+      # return [nil, @rcni_row[32]&.first(5), "U"] if @member.blank?
+
+      ffm_residential_address_county = @member&.residential_address&.county&.gsub("|", "")&.first(5)
+
+      # unprocessed policy
+      return [ffm_residential_address_county, nil, "D"] if @overall_flag == "G"
+
+      issuer_residential_address_county = @rcni_row[32]&.first(5)
+      match_data = ffm_residential_address_county == issuer_residential_address_county ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
+      [ffm_residential_address_county, issuer_residential_address_county, match_data]
+    end
+
+    def rating_area
+      # If Subscriber, Member, or Policy are not found
+      return [nil, @rcni_row[33], "D"] if @overall_flag == "R" || @overall_flag == "U"
+
+      # return [nil, @rcni_row[33], "U"] if @policy.blank?
+
+      ffm_rating_area = @policy&.rating_area
+
+      # unprocessed policy
+      return [ffm_rating_area, nil, "D"] if @overall_flag == "G"
+
+      issuer_rating_area = @rcni_row[33]
+      match_data = ffm_rating_area == issuer_rating_area ? "M" : "I"
+      @overall_flag = "N" if match_data == "I"
+      [ffm_rating_area, issuer_rating_area, match_data]
+    end
+
     def qhp_id_match
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[36], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
@@ -1014,15 +1116,15 @@ module Reports
        @member&.residential_address&.address_1&.gsub("|", "")&.first(55), @rcni_row[22]&.first(55), 'D',
        @member&.residential_address&.address_2&.gsub("|", "")&.first(55), @rcni_row[23]&.first(55), 'D',
        @member&.residential_address&.city&.gsub("|", "")&.first(30), @rcni_row[24]&.first(30), 'D',
-       @member&.residential_address&.state&.gsub("|", ""), @rcni_row[25], 'D',
-       @member&.residential_address&.zip&.gsub("|", "")&.first(9), @rcni_row[26]&.first(9), 'D',
+       residential_address_state[0], residential_address_state[1], residential_address_state[2],
+       residential_address_zip[0], residential_address_zip[1], residential_address_zip[2],
        @member&.mailing_address&.address_1&.gsub("|", "")&.first(55), @rcni_row[27]&.first(55),  'D',
        @member&.mailing_address&.address_2&.gsub("|", "")&.first(55), @rcni_row[28]&.first(55),  'D',
        @member&.mailing_address&.city&.gsub("|", "")&.first(30), @rcni_row[29]&.first(30), 'D',
-       @member&.mailing_address&.state&.gsub("|", ""), @rcni_row[30], 'D',
-       @member&.mailing_address&.zip&.gsub("|", ""), @rcni_row[31], 'D',
-       @member&.residential_address&.county&.gsub("|", "")&.first(5), @rcni_row[32]&.first(5), 'D',
-       @policy&.rating_area, @rcni_row[33], 'D',
+       mailing_address_state[0], mailing_address_state[1], mailing_address_state[2],
+       mailing_address_zip[0], mailing_address_zip[1], mailing_address_zip[2],
+       residential_address_county[0], residential_address_county[1], residential_address_county[2],
+       rating_area[0], rating_area[1], rating_area[2],
        phone_number, @rcni_row[34], 'D',
        tobacco_use_code(@member&.enrollee_demographics&.tobacco_use_code), @rcni_row[35], 'D',
        qhp_id_match[0], qhp_id_match[1], qhp_id_match[2],
