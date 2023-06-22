@@ -207,7 +207,7 @@ module Generators
           address_3: address.address_3,
           city: address.city,
           county: address.county,
-          county_code: nil,
+          county_code: address.location_county_code,
           state: address.state,
           zip: address.zip,
           country_name: address.country_name

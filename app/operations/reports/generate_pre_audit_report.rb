@@ -213,7 +213,7 @@ module Reports
        enrollee.middle_name, nil, enrollee.residential_address&.address_1, enrollee.residential_address&.address_2,
        enrollee.residential_address&.city, enrollee.residential_address&.state,
        enrollee.residential_address&.zip&.to_s&.rjust(5, "0"),
-       enrollee.residential_address&.county, phone_number(enrollee),
+       enrollee.residential_address&.location_county_code, phone_number(enrollee),
        enrollee.enrollee_demographics&.ssn&.to_s&.rjust(9, "0"),
        enrollee.enrollee_demographics&.dob&.strftime("%Y%m%d"), gender_code(enrollee),
        tobacco_use_code(enrollee), nil, nil, nil, nil, email_address(enrollee),

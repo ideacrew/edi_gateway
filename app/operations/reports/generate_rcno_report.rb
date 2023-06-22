@@ -59,7 +59,7 @@ module Reports
             @overall_flag = "U"
           else
             @audit_record = audit_datum.where(subscriber_id: @rcni_row[16]).first
-            if @audit_record.blank?
+            if @audit_record.blank? || JSON.parse(@audit_record.payload).blank?
               # Create a row in RCNO with blank maine data and RCNI eched out carrier data
               # Every field level disposition should be D which is did not compare
               # Overall record level disposition should be R
@@ -212,7 +212,7 @@ module Reports
       return [nil, @rcni_row[8], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
       # return [nil, @rcni_row[8], "U"] if @member.blank?
-      ffm_first_name = @member.first_name&.gsub("|", "")
+      ffm_first_name = @member.first_name&.gsub("|", "") || ""
 
       # unprocessed policy
       return [ffm_first_name, nil, "D"] if @overall_flag == "G"
@@ -247,7 +247,7 @@ module Reports
 
       # return [nil, @rcni_row[10], "U"] if @member.blank?
 
-      ffm_last_name = @member.last_name&.gsub("|", "")
+      ffm_last_name = @member.last_name&.gsub("|", "") || ""
 
       # unprocessed policy
       return [ffm_last_name, nil, "D"] if @overall_flag == "G"
@@ -264,7 +264,7 @@ module Reports
 
       # return [nil, @rcni_row[11], "U"] if @member.blank?
 
-      ffm_dob = @member.enrollee_demographics.dob.strftime("%Y%m%d")
+      ffm_dob = @member.enrollee_demographics.dob.strftime("%Y%m%d") || ""
 
       # unprocessed policy
       return [ffm_dob, nil, "D"] if @overall_flag == "G"
@@ -493,7 +493,7 @@ module Reports
 
       # return [nil, @rcni_row[25], "U"] if @member.blank?
 
-      ffm_residential_address_state = @member&.residential_address&.state&.gsub("|", "")
+      ffm_residential_address_state = @member&.residential_address&.state&.gsub("|", "") || ""
 
       # unprocessed policy
       return [ffm_residential_address_state, nil, "D"] if @overall_flag == "G"
@@ -510,7 +510,7 @@ module Reports
 
       # return [nil, @rcni_row[26]&.first(9), "U"] if @member.blank?
 
-      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.first(9)
+      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.first(9) || ""
 
       # unprocessed policy
       return [ffm_residential_address_zip, nil, "D"] if @overall_flag == "G"
@@ -521,19 +521,27 @@ module Reports
       [ffm_residential_address_zip, issuer_residential_address_zip, match_data]
     end
 
+    # rubocop:disable Metrics/PerceivedComplexity
     def mailing_address_state
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[30], "D"] if @overall_flag == "R" || @overall_flag == "U"
 
       # return [nil, @rcni_row[30], "U"] if @member.blank?
 
-      ffm_mailing_address_state = @member&.mailing_address&.state&.gsub("|", "")
+      ffm_mailing_address_state = @member&.mailing_address&.state&.gsub("|", "") || ""
+      ffm_mailing_address_state = ffm_mailing_address_state.delete(" ")
 
       # unprocessed policy
       return [ffm_mailing_address_state, nil, "D"] if @overall_flag == "G"
 
-      issuer_mailing_address_state = @rcni_row[30]
-      match_data = ffm_mailing_address_state == issuer_mailing_address_state ? "M" : "I"
+      issuer_mailing_address_state = @rcni_row[30].delete(" ")
+      if issuer_mailing_address_state.empty? && !ffm_mailing_address_state.empty?
+        residential_state = @member&.residential_address&.state&.gsub("|", "") || ""
+        residential_state = residential_state.delete(" ")
+        match_data = ffm_mailing_address_state == residential_state ? "D" : "I"
+      else
+        match_data = ffm_mailing_address_state == issuer_mailing_address_state ? "M" : "I"
+      end
       @overall_flag = "N" if match_data == "I"
       [ffm_mailing_address_state, issuer_mailing_address_state, match_data]
     end
@@ -544,13 +552,20 @@ module Reports
 
       # return [nil, @rcni_row[31], "U"] if @member.blank?
 
-      ffm_mailing_address_zip = @member&.mailing_address&.zip&.gsub("|", "")
+      ffm_mailing_address_zip = @member&.mailing_address&.zip&.gsub("|", "") || ""
+      ffm_mailing_address_zip = ffm_mailing_address_zip.delete(" ")
 
       # unprocessed policy
       return [ffm_mailing_address_zip, nil, "D"] if @overall_flag == "G"
 
-      issuer_mailing_address_zip = @rcni_row[31]
-      match_data = ffm_mailing_address_zip == issuer_mailing_address_zip ? "M" : "I"
+      issuer_mailing_address_zip = @rcni_row[31]&.first(5)&.delete(" ")
+      if issuer_mailing_address_zip.empty? && !ffm_mailing_address_zip.empty?
+        residential_zip = @member&.residential_address&.zip&.gsub("|", "") || ""
+        residential_zip = residential_zip.delete(" ")
+        match_data = ffm_mailing_address_zip == residential_zip ? "D" : "I"
+      else
+        match_data = ffm_mailing_address_zip == issuer_mailing_address_zip ? "M" : "I"
+      end
       @overall_flag = "N" if match_data == "I"
       [ffm_mailing_address_zip, issuer_mailing_address_zip, match_data]
     end
@@ -561,12 +576,13 @@ module Reports
 
       # return [nil, @rcni_row[32]&.first(5), "U"] if @member.blank?
 
-      ffm_residential_address_county = @member&.residential_address&.county&.gsub("|", "")&.first(5)
+      ffm_residential_address_county = @member&.residential_address&.county_code&.gsub("|", "")&.first(5) || ""
 
       # unprocessed policy
       return [ffm_residential_address_county, nil, "D"] if @overall_flag == "G"
 
       issuer_residential_address_county = @rcni_row[32]&.first(5)
+
       match_data = ffm_residential_address_county == issuer_residential_address_county ? "M" : "I"
       @overall_flag = "N" if match_data == "I"
       [ffm_residential_address_county, issuer_residential_address_county, match_data]
@@ -578,7 +594,7 @@ module Reports
 
       # return [nil, @rcni_row[33], "U"] if @policy.blank?
 
-      ffm_rating_area = @policy&.rating_area
+      ffm_rating_area = @policy&.rating_area || ""
 
       # unprocessed policy
       return [ffm_rating_area, nil, "D"] if @overall_flag == "G"
@@ -637,7 +653,6 @@ module Reports
       [ffm_benefit_start, issuer_benefit_start, match_data]
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     def benefit_end_date
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[38], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
@@ -1047,7 +1062,7 @@ module Reports
       ard_segments = @audit_record.ard_segments.where(policy_eg_id: ard_policy_eg_id,
                                                       en_hbx_id: ard_hbx_member_id)
       unprocessed_ard_segs = ard_segments.map(&:rcno_processed).include?(false)
-      return unless unprocessed_ard_segs
+      return if unprocessed_ard_segs
 
       update_processed_policy(ard_policy_eg_id)
     end
