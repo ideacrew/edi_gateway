@@ -487,6 +487,7 @@ module Reports
       [ffm_issuer_policy_number, issuer_issuer_policy_number, match_data]
     end
 
+    # rubocop:disable Metrics/PerceivedComplexity
     def residential_address_state
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[25], "D"] if @overall_flag == "R" || @overall_flag == "U"
@@ -494,11 +495,16 @@ module Reports
       # return [nil, @rcni_row[25], "U"] if @member.blank?
 
       ffm_residential_address_state = @member&.residential_address&.state&.gsub("|", "") || ""
+      ffm_residential_address_state = ffm_residential_address_state.delete(" ")
+      issuer_mailing_address_state = @rcni_row[30].delete(" ")
+      issuer_residential_address_state = @rcni_row[25].delete(" ")
+      if ffm_residential_address_state.empty? && issuer_mailing_address_state == issuer_residential_address_state
+        return [nil, @rcni_row[26]&.delete(" ")&.first(9), "D"]
+      end
 
       # unprocessed policy
       return [ffm_residential_address_state, nil, "D"] if @overall_flag == "G"
 
-      issuer_residential_address_state = @rcni_row[25]
       match_data = ffm_residential_address_state == issuer_residential_address_state ? "M" : "I"
       @overall_flag = "N" if match_data == "I"
       [ffm_residential_address_state, issuer_residential_address_state, match_data]
@@ -506,22 +512,26 @@ module Reports
 
     def residential_address_zip
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[26]&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[26]&.delete(" ")&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
 
       # return [nil, @rcni_row[26]&.first(9), "U"] if @member.blank?
 
-      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.first(9) || ""
+      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.first(5) || ""
+      ffm_residential_address_zip = ffm_residential_address_zip.delete(" ")
+      issuer_residential_address_zip = @rcni_row[26]&.delete(" ")&.first(5)
+      issuer_mailing_address_zip = @rcni_row[31]&.delete(" ")&.first(5)
+      if ffm_residential_address_zip.empty? && issuer_mailing_address_zip == issuer_residential_address_zip
+        return [nil, @rcni_row[26]&.delete(" ")&.first(9), "D"]
+      end
 
       # unprocessed policy
       return [ffm_residential_address_zip, nil, "D"] if @overall_flag == "G"
 
-      issuer_residential_address_zip = @rcni_row[26]&.first(9)
       match_data = ffm_residential_address_zip == issuer_residential_address_zip ? "M" : "I"
       @overall_flag = "N" if match_data == "I"
-      [ffm_residential_address_zip, issuer_residential_address_zip, match_data]
+      [ffm_residential_address_zip, @rcni_row[26]&.delete(" ")&.first(9), match_data]
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     def mailing_address_state
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[30], "D"] if @overall_flag == "R" || @overall_flag == "U"
@@ -548,7 +558,7 @@ module Reports
 
     def mailing_address_zip
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[31], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[31]&.delete(" ")&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
 
       # return [nil, @rcni_row[31], "U"] if @member.blank?
 
@@ -558,7 +568,7 @@ module Reports
       # unprocessed policy
       return [ffm_mailing_address_zip, nil, "D"] if @overall_flag == "G"
 
-      issuer_mailing_address_zip = @rcni_row[31]&.first(5)&.delete(" ")
+      issuer_mailing_address_zip = @rcni_row[31]&.delete(" ")&.first(5)
       if issuer_mailing_address_zip.empty? && !ffm_mailing_address_zip.empty?
         residential_zip = @member&.residential_address&.zip&.gsub("|", "") || ""
         residential_zip = residential_zip.delete(" ")
@@ -567,7 +577,7 @@ module Reports
         match_data = ffm_mailing_address_zip == issuer_mailing_address_zip ? "M" : "I"
       end
       @overall_flag = "N" if match_data == "I"
-      [ffm_mailing_address_zip, issuer_mailing_address_zip, match_data]
+      [ffm_mailing_address_zip, @rcni_row[31]&.delete(" ")&.first(9), match_data]
     end
 
     def residential_address_county
