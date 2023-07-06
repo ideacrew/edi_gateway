@@ -130,7 +130,11 @@ module Reports
       current_time = Time.now
       formatted_string = current_time.strftime("%Y%m%d%H%M%S")
       last_digit = year % 10
-      "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{hios_id}_I"
+      if Rails.env.test?
+        "#{Rails.root}/rcno_carrier_hios_id_#{hios_id}_for_year_#{year}.csv"
+      else
+        "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{hios_id}_I"
+      end
     end
 
     def fetch_relationship_code(code)

@@ -156,10 +156,8 @@ RSpec.describe Reports::GeneratePreAuditReport, dbclean: :before_each do
   end
 
   let(:payload_hash) { { payload: { carrier_hios_id: audit_report_datum.hios_id, year: 2022 } } }
-  let(:current_time) { Time.now }
-  let(:formatted_string) { current_time.strftime("%Y%m%d%H%M%S") }
-  let(:last_digit) { 2 }
-  let(:filename) { "#{Rails.root}/AUD#{last_digit}_#{formatted_string}000Z_#{audit_report_datum.hios_id}_I" }
+
+  let(:filename) { "#{Rails.root}/carrier_hios_id_#{audit_report_datum.hios_id}_for_year_2022.csv" }
 
   after :each do
     FileUtils.rm_rf(filename)
@@ -172,8 +170,7 @@ RSpec.describe Reports::GeneratePreAuditReport, dbclean: :before_each do
 
     it "should be success" do
       expect(subject.success?).to eq true
-      file_content = CSV.read(filename, col_sep: "|",
-                                        headers: false)
+      file_content = CSV.read(filename, col_sep: "|", headers: false)
       expect(file_content.count).to eq 2
       expect(file_content[0]).to include(enrollee_1[:first_name])
       expect(file_content[0]).to include(enrollee_1[:last_name])
