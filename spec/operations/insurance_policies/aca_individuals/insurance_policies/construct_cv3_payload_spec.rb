@@ -366,17 +366,28 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
       FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_2.id, tax_household_id: aqhp_tax_household_3.id)
     end
 
-    it "should return correct member coverage dates" do
-      result = subject.call({ insurance_policy: insurance_policy })
-      expect(result.success?).to be_truthy
-      result = result.value!
-      expect(result[:aptc_csr_tax_households].first[:covered_individuals][0][:coverage_start_on]).to eq enrollment_1.start_on
-      expect(result[:aptc_csr_tax_households].first[:covered_individuals][0][:coverage_end_on]).to eq enrollment_2.end_on
-      expect(result[:aptc_csr_tax_households].first[:covered_individuals][1][:coverage_start_on]).to eq enrollment_1.start_on
-      expect(result[:aptc_csr_tax_households].first[:covered_individuals][1][:coverage_end_on]).to eq enrollment_1.end_on
+    before :each do
+      @result_call = subject.call({ insurance_policy: insurance_policy })
+      @result = @result_call.value!
+    end
 
-      expect(result[:aptc_csr_tax_households].second[:covered_individuals][0][:coverage_start_on]).to eq enrollment_2.start_on
-      expect(result[:aptc_csr_tax_households].second[:covered_individuals][0][:coverage_end_on]).to eq enrollment_2.end_on
+    it "should should publish the event" do
+      expect(@result_call.success?).to be_truthy
+    end
+
+    it "should return correct member coverage dates for thh first covered individual" do
+      expect(@result[:aptc_csr_tax_households].first[:covered_individuals][0][:coverage_start_on]).to eq enrollment_1.start_on
+      expect(@result[:aptc_csr_tax_households].first[:covered_individuals][0][:coverage_end_on]).to eq enrollment_2.end_on
+    end
+
+    it "should return correct member coverage datesfor thh second covered individual" do
+      expect(@result[:aptc_csr_tax_households].first[:covered_individuals][1][:coverage_start_on]).to eq enrollment_1.start_on
+      expect(@result[:aptc_csr_tax_households].first[:covered_individuals][1][:coverage_end_on]).to eq enrollment_1.end_on
+    end
+
+    it "should return correct member coverage dates second thh & first covered individual" do
+      expect(@result[:aptc_csr_tax_households].second[:covered_individuals][0][:coverage_start_on]).to eq enrollment_2.start_on
+      expect(@result[:aptc_csr_tax_households].second[:covered_individuals][0][:coverage_end_on]).to eq enrollment_2.end_on
     end
   end
 end
