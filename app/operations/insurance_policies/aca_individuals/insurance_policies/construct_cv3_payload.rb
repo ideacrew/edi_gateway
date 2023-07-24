@@ -387,7 +387,8 @@ module InsurancePolicies
           enrollment = valid_enr_thhs.sort_by(&:created_at)&.last&.enrollment
 
           if enrollment.enrollment_end_on > individual[:coverage_start_on] &&
-             enrollment.enrollment_end_on != enrollment.enrollment_end_on.end_of_year
+             enrollment.enrollment_end_on != enrollment.enrollment_end_on.end_of_year &&
+             enrollment.enrollment_end_on.next_day < enrollment.insurance_policy_end_on
             enrollment.enrollment_end_on.next_day
           else
             individual[:coverage_start_on]
