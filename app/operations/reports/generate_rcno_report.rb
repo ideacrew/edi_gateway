@@ -59,7 +59,7 @@ module Reports
             @overall_flag = "U"
           else
             @audit_record = audit_datum.where(subscriber_id: @rcni_row[16]).first
-            if @audit_record.blank?
+            if @audit_record.blank? || JSON.parse(@audit_record.payload).blank?
               # Create a row in RCNO with blank maine data and RCNI eched out carrier data
               # Every field level disposition should be D which is did not compare
               # Overall record level disposition should be R
@@ -69,7 +69,7 @@ module Reports
               @policy, @member, @segments = fetch_policy_member_and_segments
               segment = fetch_segment(@rcni_row[37])
               # If segment(RCNI benefit_start_date) is blank then set @overall_flag is 'B'.
-              @overall_flag = "B" if segment.blank?
+              segment.blank? ? @overall_flag = "B" : update_processed_segment(segment)
             end
           end
           csv << insert_data
@@ -94,10 +94,6 @@ module Reports
     def fetch_policy_member_and_segments
       policies = @audit_record.ard_policies
       fetched_policy = policies.detect { |policy| (policy.policy_eg_id == @rcni_row[20]) }
-      if fetched_policy.present?
-        fetched_policies = policies.select { |policy| policy.policy_eg_id == @rcni_row[20] }
-        fetched_policies.each { |pol| pol.update_attributes!(rcno_processed: true) }
-      end
       if fetched_policy.blank?
         @overall_flag = "R"
         return [nil, nil, nil]
@@ -134,7 +130,11 @@ module Reports
       current_time = Time.now
       formatted_string = current_time.strftime("%Y%m%d%H%M%S")
       last_digit = year % 10
-      "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{hios_id}_I"
+      if Rails.env.test?
+        "#{Rails.root}/rcno_carrier_hios_id_#{hios_id}_for_year_#{year}.csv"
+      else
+        "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{hios_id}_I"
+      end
     end
 
     def fetch_relationship_code(code)
@@ -215,8 +215,7 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[8], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[8], "U"] if @member.blank?
-      ffm_first_name = @member.first_name&.gsub("|", "")
+      ffm_first_name = @member.first_name&.gsub("|", "") || ""
 
       # unprocessed policy
       return [ffm_first_name, nil, "D"] if @overall_flag == "G"
@@ -230,8 +229,6 @@ module Reports
     def compare_middle_name
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[9], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
-
-      # return [nil, @rcni_row[9], "U"] if @member.blank?
 
       ffm_middle_name = @member.middle_name&.gsub("|", "")
 
@@ -249,9 +246,7 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[10], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[10], "U"] if @member.blank?
-
-      ffm_last_name = @member.last_name&.gsub("|", "")
+      ffm_last_name = @member.last_name&.gsub("|", "") || ""
 
       # unprocessed policy
       return [ffm_last_name, nil, "D"] if @overall_flag == "G"
@@ -266,9 +261,7 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[11], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[11], "U"] if @member.blank?
-
-      ffm_dob = @member.enrollee_demographics.dob.strftime("%Y%m%d")
+      ffm_dob = @member.enrollee_demographics.dob.strftime("%Y%m%d") || ""
 
       # unprocessed policy
       return [ffm_dob, nil, "D"] if @overall_flag == "G"
@@ -283,8 +276,6 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[12], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[12], "U"] if @member.blank?
-
       ffm_gender = @member.enrollee_demographics.gender_code
 
       # unprocessed policy
@@ -297,8 +288,6 @@ module Reports
     def compare_ssn
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[13], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
-
-      # return [nil, @rcni_row[13], "U"] if @member.blank?
 
       ffm_ssn = @member.enrollee_demographics.ssn
 
@@ -331,8 +320,6 @@ module Reports
     def relation_to_subscriber_indicator
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[15], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
-
-      # return [nil, @rcni_row[15], "U"] if @member.blank?
 
       ffm_subscriber_status = fetch_relationship_code(@member.relationship_status_code)
 
@@ -386,8 +373,6 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[18], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[18], "U"] if @policy.blank?
-
       ffm_issuer_subscriber_id = @policy.primary_subscriber&.issuer_assigned_member_id
 
       # unprocessed policy
@@ -416,8 +401,6 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[19], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[19], "U"] if @member.blank?
-
       ffm_issuer_member_id = @member.issuer_assigned_member_id
 
       # unprocessed policy
@@ -444,8 +427,6 @@ module Reports
       return [nil, @rcni_row[20], "U"] if @rcni_row[20].blank? && @overall_flag == "U"
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[20], "D"] if @overall_flag == "R"
-
-      # return [nil, @rcni_row[20], "U"] if @policy.blank?
 
       ffm_exchange_policy_number = @policy.enrollment_group_id
 
@@ -491,18 +472,17 @@ module Reports
       [ffm_issuer_policy_number, issuer_issuer_policy_number, match_data]
     end
 
+    # rubocop:disable Metrics/PerceivedComplexity
     def residential_address_state
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[25], "D"] if @overall_flag == "R" || @overall_flag == "U"
 
-      # return [nil, @rcni_row[25], "U"] if @member.blank?
-
-      ffm_residential_address_state = @member&.residential_address&.state&.gsub("|", "")
+      ffm_residential_address_state = @member&.residential_address&.state&.gsub("|", "")&.delete(" ") || ""
 
       # unprocessed policy
       return [ffm_residential_address_state, nil, "D"] if @overall_flag == "G"
 
-      issuer_residential_address_state = @rcni_row[25]
+      issuer_residential_address_state = @rcni_row[25].delete(" ")
       match_data = ffm_residential_address_state == issuer_residential_address_state ? "M" : "I"
       @overall_flag = "N" if match_data == "I"
       [ffm_residential_address_state, issuer_residential_address_state, match_data]
@@ -510,67 +490,86 @@ module Reports
 
     def residential_address_zip
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[26]&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[26]&.delete(" ")&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
 
-      # return [nil, @rcni_row[26]&.first(9), "U"] if @member.blank?
-
-      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.first(9)
+      ffm_residential_address_zip = @member&.residential_address&.zip&.gsub("|", "")&.delete(" ")&.first(5) || ""
 
       # unprocessed policy
       return [ffm_residential_address_zip, nil, "D"] if @overall_flag == "G"
 
-      issuer_residential_address_zip = @rcni_row[26]&.first(9)
+      issuer_residential_address_zip = @rcni_row[26]&.delete(" ")&.first(5)
       match_data = ffm_residential_address_zip == issuer_residential_address_zip ? "M" : "I"
       @overall_flag = "N" if match_data == "I"
-      [ffm_residential_address_zip, issuer_residential_address_zip, match_data]
+      [ffm_residential_address_zip, @rcni_row[26]&.delete(" ")&.first(9), match_data]
     end
 
     def mailing_address_state
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[30], "D"] if @overall_flag == "R" || @overall_flag == "U"
 
-      # return [nil, @rcni_row[30], "U"] if @member.blank?
-
-      ffm_mailing_address_state = @member&.mailing_address&.state&.gsub("|", "")
-
+      ffm_mailing_address_state = @member&.mailing_address&.state&.gsub("|", "")&.delete(" ") || ""
       # unprocessed policy
       return [ffm_mailing_address_state, nil, "D"] if @overall_flag == "G"
 
-      issuer_mailing_address_state = @rcni_row[30]
-      match_data = ffm_mailing_address_state == issuer_mailing_address_state ? "M" : "I"
+      issuer_mailing_address_state = @rcni_row[30].delete(" ")
+      issuer_residential_address_state = @rcni_row[25].delete(" ")
+
+      if ffm_mailing_address_state.empty? && issuer_mailing_address_state == issuer_residential_address_state
+        return [nil, @rcni_row[30]&.delete(" ")&.first(9),
+                "D"]
+      end
+
+      if issuer_mailing_address_state.empty? && !ffm_mailing_address_state.empty?
+        residential_state = @member&.residential_address&.state&.gsub("|", "") || ""
+        residential_state = residential_state.delete(" ")
+        match_data = ffm_mailing_address_state == residential_state ? "D" : "I"
+      else
+        match_data = ffm_mailing_address_state == issuer_mailing_address_state ? "M" : "I"
+      end
+
       @overall_flag = "N" if match_data == "I"
       [ffm_mailing_address_state, issuer_mailing_address_state, match_data]
     end
 
     def mailing_address_zip
       # If Subscriber, Member, or Policy are not found
-      return [nil, @rcni_row[31], "D"] if @overall_flag == "R" || @overall_flag == "U"
+      return [nil, @rcni_row[31]&.delete(" ")&.first(9), "D"] if @overall_flag == "R" || @overall_flag == "U"
 
-      # return [nil, @rcni_row[31], "U"] if @member.blank?
-
-      ffm_mailing_address_zip = @member&.mailing_address&.zip&.gsub("|", "")
-
+      ffm_mailing_address_zip = @member&.mailing_address&.zip&.gsub("|", "")&.delete(" ") || ""
       # unprocessed policy
       return [ffm_mailing_address_zip, nil, "D"] if @overall_flag == "G"
 
-      issuer_mailing_address_zip = @rcni_row[31]
-      match_data = ffm_mailing_address_zip == issuer_mailing_address_zip ? "M" : "I"
+      issuer_residential_address_zip = @rcni_row[26]&.delete(" ")&.first(5)
+      issuer_mailing_address_zip = @rcni_row[31]&.delete(" ")&.first(5)
+
+      if ffm_mailing_address_zip.empty? && issuer_mailing_address_zip == issuer_residential_address_zip
+        return [nil, @rcni_row[31]&.delete(" ")&.first(9),
+                "D"]
+      end
+
+      if issuer_mailing_address_zip.empty? && !ffm_mailing_address_zip.empty?
+        residential_zip = @member&.residential_address&.zip&.gsub("|", "") || ""
+        residential_zip = residential_zip.delete(" ")
+        match_data = ffm_mailing_address_zip == residential_zip ? "D" : "I"
+      else
+        match_data = ffm_mailing_address_zip == issuer_mailing_address_zip ? "M" : "I"
+      end
+
       @overall_flag = "N" if match_data == "I"
-      [ffm_mailing_address_zip, issuer_mailing_address_zip, match_data]
+      [ffm_mailing_address_zip, @rcni_row[31]&.delete(" ")&.first(9), match_data]
     end
 
     def residential_address_county
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[32]&.first(5), "D"] if @overall_flag == "R" || @overall_flag == "U"
 
-      # return [nil, @rcni_row[32]&.first(5), "U"] if @member.blank?
-
-      ffm_residential_address_county = @member&.residential_address&.county&.gsub("|", "")&.first(5)
+      ffm_residential_address_county = @member&.residential_address&.county_code&.gsub("|", "")&.delete(" ")&.first(5) || ""
 
       # unprocessed policy
       return [ffm_residential_address_county, nil, "D"] if @overall_flag == "G"
 
       issuer_residential_address_county = @rcni_row[32]&.first(5)
+
       match_data = ffm_residential_address_county == issuer_residential_address_county ? "M" : "I"
       @overall_flag = "N" if match_data == "I"
       [ffm_residential_address_county, issuer_residential_address_county, match_data]
@@ -580,9 +579,7 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[33], "D"] if @overall_flag == "R" || @overall_flag == "U"
 
-      # return [nil, @rcni_row[33], "U"] if @policy.blank?
-
-      ffm_rating_area = @policy&.rating_area
+      ffm_rating_area = @policy&.rating_area || ""
 
       # unprocessed policy
       return [ffm_rating_area, nil, "D"] if @overall_flag == "G"
@@ -597,7 +594,6 @@ module Reports
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[36], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
 
-      # return [nil, @rcni_row[36], "U"] if @policy.blank?
       # unprocessed policy
       if @overall_flag == "G"
         unprocessed_qhp_id = "#{@policy.qhp_id}#{@policy.csr_variant}"
@@ -619,7 +615,6 @@ module Reports
       # If Subscriber, Member and Policy are found but no segment for the start date
       return [nil, @rcni_row[37], "I"] if @overall_flag == "B"
 
-      # return [nil, @rcni_row[37], "U"] if @member.blank?
       # unprocessed policy
       if @overall_flag == "G"
         policy_sub_member = @policy.enrollees.detect { |enrollee| enrollee.hbx_member_id == @policy.exchange_subscriber_id }
@@ -641,7 +636,6 @@ module Reports
       [ffm_benefit_start, issuer_benefit_start, match_data]
     end
 
-    # rubocop:disable Metrics/PerceivedComplexity
     def benefit_end_date
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[38], "D"] if @overall_flag == "R" || @overall_flag == "U" || @overall_flag == "B"
@@ -1043,6 +1037,24 @@ module Reports
       @overall_flag
     end
 
+    def update_processed_segment(segment)
+      ard_policy_eg_id = @policy.enrollment_group_id
+      ard_hbx_member_id = @member.hbx_member_id
+      ard_segment = @audit_record.ard_segments.where(segment_id: segment.id).first
+      ard_segment.update_attributes!(rcno_processed: true) if ard_segment.present?
+      ard_segments = @audit_record.ard_segments.where(policy_eg_id: ard_policy_eg_id,
+                                                      en_hbx_id: ard_hbx_member_id)
+      unprocessed_ard_segs = ard_segments.map(&:rcno_processed).include?(false)
+      return if unprocessed_ard_segs
+
+      update_processed_policy(ard_policy_eg_id)
+    end
+
+    def update_processed_policy(ard_policy_eg_id)
+      fetched_policy = @audit_record.ard_policies.where(policy_eg_id: ard_policy_eg_id).first
+      fetched_policy.update_attributes!(rcno_processed: true)
+    end
+
     def insert_missing_policy_data(csv, valid_params, rcni_file_path)
       carrier_hios_id = valid_params[:payload][:carrier_hios_id]
       year = valid_params[:payload][:year]
@@ -1068,14 +1080,22 @@ module Reports
           rcni_first_row = File.readlines(rcni_file_path, chomp: true).first.split("|")
           @rcni_row = [rcni_first_row[0], rcni_first_row[1], rcni_first_row[2], rcni_first_row[3],
                        rcni_first_row[4], rcni_first_row[5], rcni_first_row[6]] + ([""] * 56)
-
+          unprocessed_ard_segs = record.ard_segments.where(policy_eg_id: policy.policy_eg_id, rcno_processed: false)
+          en_hbx_ids = unprocessed_ard_segs.map(&:en_hbx_id)
+          unprocessed_ard_seg_ids = unprocessed_ard_segs.map(&:segment_id)
           policy_entity.enrollees.each do |enrollee|
-            @policy = policy_entity
-            @member = enrollee
-            @segments = enrollee.segments
-            @overall_flag = "G"
-            csv << insert_data
-            @total_number_of_issuer_records += 1
+            next unless en_hbx_ids.include?(enrollee.hbx_member_id)
+
+            enrollee.segments.each do |segment|
+              next unless unprocessed_ard_seg_ids.include?(segment.id)
+
+              @policy = policy_entity
+              @member = enrollee
+              @segments = [segment]
+              @overall_flag = "G"
+              csv << insert_data
+              @total_number_of_issuer_records += 1
+            end
           end
         end
       end

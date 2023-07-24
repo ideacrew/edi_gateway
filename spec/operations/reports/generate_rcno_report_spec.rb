@@ -163,10 +163,7 @@ RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
     [result_1.to_h, result_2.to_h].to_json
   end
 
-  let(:current_time) { Time.now }
-  let(:formatted_string) { current_time.strftime("%Y%m%d%H%M%S") }
-  let(:last_digit) { 2 }
-  let(:filename) { "#{Rails.root}/RCNO#{last_digit}_#{formatted_string}000Z_#{audit_report_datum&.hios_id}_I" }
+  let(:filename) { "#{Rails.root}/rcno_carrier_hios_id_#{audit_report_datum&.hios_id}_for_year_2022.csv" }
 
   after :each do
     FileUtils.rm_rf(filename)
@@ -177,6 +174,15 @@ RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
       policies = JSON.parse(audit_report_datum.payload)
       policies.each do |policy|
         audit_report_datum.ard_policies << ArdPolicy.new(payload: policy.to_json, policy_eg_id: policy["enrollment_group_id"])
+        policy['enrollees'].each do |enrollee|
+          enrollee['segments'].each do |segment|
+            audit_report_datum.ard_segments << ArdSegment.new(payload: segment.to_json,
+                                                              segment_id: segment['id'],
+                                                              policy_eg_id: policy["enrollment_group_id"],
+                                                              en_hbx_id: enrollee['hbx_member_id'],
+                                                              segment_start_date: segment["effective_start_date"])
+          end
+        end
       end
     end
 
@@ -189,9 +195,9 @@ RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
       expect(result.success?).to eq true
       expect(File.exist?(output_file)).to eq true
       file_content = CSV.read(output_file, col_sep: "|", headers: false)
-      expect(file_content.count).to eq 3
-      expect(file_content[1]).to include("10011")
-      expect(file_content[1]).to include("dummytest")
+      expect(file_content.count).to eq 4
+      expect(file_content[2]).to include("10011")
+      expect(file_content[2]).to include("dummytest")
     end
   end
 end

@@ -14,6 +14,7 @@ class AuditReportDatum
   field :year, type: Integer
 
   embeds_many :ard_policies, cascade_callbacks: true
+  embeds_many :ard_segments, cascade_callbacks: true
 
   index({ hios_id: 1, status: 1 })
   index({ subscriber_id: 1, status: 1 })

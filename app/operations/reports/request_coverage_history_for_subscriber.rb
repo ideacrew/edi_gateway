@@ -53,6 +53,15 @@ module Reports
       policies_response = JSON.parse(coverage_history_response)
       policies_response.each do |policy|
         audit_datum.ard_policies << ArdPolicy.new(payload: policy.to_json, policy_eg_id: policy["enrollment_group_id"])
+        policy['enrollees'].each do |enrollee|
+          enrollee['segments'].each do |segment|
+            audit_datum.ard_segments << ArdSegment.new(payload: segment.to_json,
+                                                       segment_id: segment['id'],
+                                                       policy_eg_id: policy["enrollment_group_id"],
+                                                       en_hbx_id: enrollee['hbx_member_id'],
+                                                       segment_start_date: segment["effective_start_date"])
+          end
+        end
       end
       if @logger.present?
         @logger.info "audit status in our db for subscriber #{audit_datum.subscriber_id} - #{audit_datum.status}"

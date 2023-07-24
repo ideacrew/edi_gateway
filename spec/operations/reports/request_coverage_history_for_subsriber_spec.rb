@@ -36,7 +36,13 @@ RSpec.describe Reports::RequestCoverageHistoryForSubscriber, dbclean: :before_ea
     let(:audit_report_datum) do
       create(:audit_report_datum, hios_id: "12345", year: 2022, subscriber_id: policy_1.subscriber.m_id)
     end
-    let(:payload_response) { [{ enrollment_group_id: "12345" }] }
+    let(:payload_response) do
+      [{ "enrollment_group_id" => "1213539",
+         "enrollees" =>
+                                [{ "hbx_member_id" => "1014042",
+                                   "segments" =>
+                                  [{ "id" => "1014042-35331-20220101", "effective_start_date" => "2022-01-01" }] }] }]
+    end
 
     subject do
       described_class.new.call({

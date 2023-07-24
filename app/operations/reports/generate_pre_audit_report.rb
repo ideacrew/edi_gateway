@@ -185,7 +185,11 @@ module Reports
       current_time = Time.now
       formatted_string = current_time.strftime("%Y%m%d%H%M%S")
       last_digit = year % 10
-      "#{Rails.root}/AUD#{last_digit}_#{formatted_string}000Z_#{carrier_hios_id}_I"
+      if Rails.env.test?
+        "#{Rails.root}/carrier_hios_id_#{carrier_hios_id}_for_year_#{year}.csv"
+      else
+        "#{Rails.root}/AUD#{last_digit}_#{formatted_string}000Z_#{carrier_hios_id}_I"
+      end
     end
 
     def segment_id(id, policy_entity)
@@ -213,7 +217,7 @@ module Reports
        enrollee.middle_name, nil, enrollee.residential_address&.address_1, enrollee.residential_address&.address_2,
        enrollee.residential_address&.city, enrollee.residential_address&.state,
        enrollee.residential_address&.zip&.to_s&.rjust(5, "0"),
-       enrollee.residential_address&.county, phone_number(enrollee),
+       enrollee.residential_address&.county_code, phone_number(enrollee),
        enrollee.enrollee_demographics&.ssn&.to_s&.rjust(9, "0"),
        enrollee.enrollee_demographics&.dob&.strftime("%Y%m%d"), gender_code(enrollee),
        tobacco_use_code(enrollee), nil, nil, nil, nil, email_address(enrollee),
