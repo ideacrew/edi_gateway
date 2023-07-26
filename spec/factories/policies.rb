@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :policy, class: Policy do
     sequence(:eg_id, &:to_s)
+    sequence(:id, &:to_s)
     pre_amt_tot { '666.66' }
     tot_res_amt { '111.11' }
     tot_emp_res_amt { '222.22' }
@@ -12,14 +13,13 @@ FactoryBot.define do
     applied_aptc { '3.33' }
     broker
     plan
-    sequence(:id) { |n| "1234#{n}" }
-    sequence(:eg_id) { |n| "4321#{n}" }
     carrier_specific_plan_id { 'rspec-mock' }
     rating_area { "100" }
     composite_rating_tier { 'rspec-mock' }
     kind { 'individual' }
-    after(:create) do |p, _evaluator|
-      create_list(:enrollee, 2, policy: p)
+
+    after(:create) do |p, evaluator|
+      create_list(:enrollee, 2, policy: p, coverage_start: evaluator.coverage_start, coverage_end: evaluator.coverage_end)
     end
 
     trait :with_enrollee do
