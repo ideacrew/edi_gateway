@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Metrics/ClassLength
 # Represents a Policy, consisting of individuals and a kind of coverage.
 class Policy
   include Mongoid::Document
@@ -188,6 +187,26 @@ class Policy
       aptc_credit > pre_amt_tot.to_f.round(2) ? pre_amt_tot.to_f.round(2) : aptc_credit
     end
   end
-end
 
-# rubocop:enable Metrics/ClassLength
+  def rejected?
+    edi_transactions = Protocols::X12::TransactionSetEnrollment.where({ "policy_id" => self.id })
+    (edi_transactions.count == 1 && edi_transactions.first.aasm_state == 'rejected')
+  end
+
+  def authority_member
+    self.subscriber.person.authority_member
+  end
+
+  def belong_to_authority_member?
+    authority_member.hbx_member_id == self.subscriber.m_id
+  end
+
+  def edi_transaction_sets
+    Protocols::X12::TransactionSetEnrollment.where({ "policy_id" => self._id })
+  end
+
+  def effectuated?
+    edi_transactions = edi_transaction_sets
+    edi_transactions.any? { |transaction| transaction.transaction_kind == 'effectuation' }
+  end
+end

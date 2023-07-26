@@ -60,9 +60,9 @@ module Subscribers
         cv3_payload =
           ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
             {
-              tax_year: payload[:tax_year],
-              tax_form_type: payload[:tax_form_type],
-              irs_group_id: payload[:irs_group_id]
+              tax_year: tax_year,
+              tax_form_type: tax_form_type,
+              irs_group_id: irs_group_id
             }
           )
         raise cv3_payload.failure unless cv3_payload.success?
@@ -70,9 +70,9 @@ module Subscribers
         result =
           ::Tax1095a::PublishFamilyPayload.new.call(
             {
-              tax_year: payload[:tax_year],
-              tax_form_type: payload[:tax_form_type],
-              transmission_kind: payload[:transmission_kind],
+              tax_year: tax_year,
+              tax_form_type: tax_form_type,
+              transmission_kind: "1095a",
               cv3_payload: cv3_payload.success
             }
           )
