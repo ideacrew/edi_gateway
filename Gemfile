@@ -35,13 +35,18 @@ gem 'dry-validation',      '~> 1.6.0'
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem 'jbuilder'
 
+gem 'globalid', '~> 1.0.1'
+
 # Double entry accounting feature [https://github.com/ledermann/keepr]
 gem 'keepr', '~> 0.7.0'
+
+gem 'loofah', '~> 2.19.1'
 
 # MongoDB Database
 gem 'money-rails', '~> 1.15'
 gem 'mongoid',             '~> 7.4'
 
+gem 'nokogiri', '~> 1.14.3'
 gem 'nokogiri-happymapper'
 
 # Postgres Database
@@ -53,6 +58,7 @@ gem 'puma', '~> 5.0'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem "rails", "~> 7.0.5.1"
 
+gem 'rails-html-sanitizer', '~> 1.4.4'
 gem 'rbnacl'
 
 # Use Redis adapter to run Action Cable in production
@@ -63,6 +69,8 @@ gem 'rbnacl'
 
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 # gem "sprockets-rails"
+
+gem 'sinatra', '~> 3.0.4'
 
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
@@ -102,7 +110,7 @@ group :development do
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'web-console'
 
-  gem 'yard'
+  gem 'yard', '~> 0.9.30'
   gem 'yard-mongoid'
 end
 
