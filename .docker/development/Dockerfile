@@ -1,4 +1,4 @@
-FROM ruby:2.7.6 AS edi_gateway
+FROM ruby:2.7.8 AS edi_gateway
 
 LABEL author="IdeaCrew"
 
