@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :policy, class: Policy do
     sequence(:eg_id, &:to_s)
+    sequence(:id, &:to_s)
     pre_amt_tot { '666.66' }
     tot_res_amt { '111.11' }
     tot_emp_res_amt { '222.22' }
