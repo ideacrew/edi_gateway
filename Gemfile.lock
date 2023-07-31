@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ideacrew/aca_entities.git
-  revision: e3c41158ef445a5a5cc1c6a1f99e58fbce655b32
+  revision: 672ba0650edf1b72bb416d500889645f8e7f4d9c
   branch: trunk
   specs:
     aca_entities (0.10.0)
@@ -11,6 +11,7 @@ GIT
       dry-types (~> 1.0)
       dry-validation (~> 1.2)
       iso_country_codes
+      json-schema
       nokogiri-happymapper
       oj (~> 3.11)
       rbnacl (~> 7.1)
@@ -269,6 +270,8 @@ GEM
       ruby-vips (>= 2.0.17, < 3)
     iso_country_codes (0.7.8)
     json (2.6.2)
+    json-schema (4.0.0)
+      addressable (>= 2.8)
     keepr (0.7.0)
       activerecord (>= 4.2)
       ancestry (>= 3.1.0)
