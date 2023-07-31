@@ -13,6 +13,7 @@ module Generators
       def call(params = {})
         @sbmi_policy = params[:sbmi_policy]
         @folder_path = params[:folder_path]
+        @logger = params[:logger]
         result = serialize
 
         Success(result)
@@ -58,7 +59,7 @@ module Generators
       # rubocop:disable Lint/ShadowingOuterLocalVariable
       def serialize_covered_individual(covered_xml, grouped_individuals)
         individual = grouped_individuals[0]
-        puts "missing zip #{@sbmi_policy.record_control_number}" if individual.postal_code.blank?
+        @logger.info "missing ssn #{@sbmi_policy.record_control_number}" if individual.social_security_number.blank?
 
         grouped_individuals = grouped_individuals.sort_by(&:member_start_date).group_by(&:member_start_date).collect do |_k, v|
           v[0]

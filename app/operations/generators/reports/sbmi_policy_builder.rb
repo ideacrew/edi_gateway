@@ -91,12 +91,16 @@ module Generators
         elsif @policy.aasm_state == 'resubmitted'
           'Y'
         elsif @policy.subscriber.coverage_start > Date.new(2020, 12, 31)
-          'N'
+          effectuated?(@policy) ? 'Y' : 'N'
         else
           'Y'
         end
       end
       # rubocop:enable Lint/DuplicateBranch
+
+      def effectuated?(policy)
+        policy&.subscriber&.cp_id&.present?
+      end
 
       def construct_covered_individual(enrollee, is_subscriber)
         if enrollee.is_a?(Person)

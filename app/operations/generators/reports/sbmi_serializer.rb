@@ -43,7 +43,7 @@ module Generators
           create_sbmi_folder(hios_prefix, subdirectory_prefix)
           count = 0
 
-          Policy.where(:plan_id.in => plan_ids).limit(10).each do |pol|
+          Policy.where(:plan_id.in => plan_ids).each do |pol|
             next if pol.rejected?
             next if pol.policy_start < Date.new(@calendar_year, 1, 1)
             next if pol.policy_start > Date.new(@calendar_year, 12, 31)
@@ -64,16 +64,19 @@ module Generators
             rescue StandardError => e
               puts "Exception: #{pol.id}"
               puts e.inspect
+              @logger.error("Exception: #{pol.id} #{e.inspect}")
               next
             end
 
             if builder.success?
               folder_path = "#{@sbmi_root_folder}/#{@sbmi_folder_name}"
-              Generators::Reports::SbmiXml.new.call({ sbmi_policy: builder.value!, folder_path: folder_path })
+              Generators::Reports::SbmiXml.new.call({ sbmi_policy: builder.value!, folder_path: folder_path,
+                                                      logger: @logger })
             end
           rescue StandardError => e
             puts "Exception: #{pol.id}"
             puts e.inspect
+            @logger.error("Exception: #{pol.id} #{e.inspect}")
             next
           end
 
