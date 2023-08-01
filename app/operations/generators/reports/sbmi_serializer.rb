@@ -43,7 +43,10 @@ module Generators
           create_sbmi_folder(hios_prefix, subdirectory_prefix)
           count = 0
 
-          Policy.where(:plan_id.in => plan_ids).each do |pol|
+          policies = Policy.where(:plan_id.in => plan_ids)
+          next if policies.blank?
+
+          policies.each do |pol|
             next if pol.rejected?
             next if pol.policy_start < Date.new(@calendar_year, 1, 1)
             next if pol.policy_start > Date.new(@calendar_year, 12, 31)
