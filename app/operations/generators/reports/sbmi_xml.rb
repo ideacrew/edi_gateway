@@ -120,7 +120,7 @@ module Generators
           xml.PartialMonthEffectiveEndDate proration.partial_month_end_date.strftime("%Y-%m-%d")
           xml.PartialMonthPremiumAmount(proration.partial_month_premium&.then { |amount| format("%.2f", amount) })
           xml.PartialMonthAPTCAmount(proration.partial_month_aptc&.then { |amount| format("%.2f", amount) })
-          xml.PartialMonthCSRAmount(proration.partial_month_csr&.then { |amount| format("%.2f", amount) }) if csr_variant != '01'
+          xml.PartialMonthCSRAmount("0.00") if csr_variant != '01'
         end
       end
 
