@@ -65,9 +65,9 @@ module Generators
             begin
               builder = Generators::Reports::SbmiPolicyBuilder.new.call({ policy: pol })
             rescue StandardError => e
-              puts "Exception: #{pol.id}"
+              puts "Exception: Policy ID - #{pol.id}"
               puts e.inspect
-              @logger.error("Exception: #{pol.id} #{e.inspect}")
+              @logger.error("Exception: Policy ID - #{pol.id} #{e.backtrace}")
               next
             end
 
@@ -79,7 +79,7 @@ module Generators
           rescue StandardError => e
             puts "Exception: #{pol.id}"
             puts e.inspect
-            @logger.error("Exception: #{pol.id} #{e.inspect}")
+            @logger.error("Exception: Policy ID - #{pol.id} #{e.backtrace}")
             next
           end
 
