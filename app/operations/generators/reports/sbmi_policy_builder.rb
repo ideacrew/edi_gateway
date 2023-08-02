@@ -155,7 +155,8 @@ module Generators
           monthly_responsible_amount: responsible_amount.to_f,
           monthly_aptc_amount: applied_aptc.to_f,
           monthly_csr_amount: 0.0.to_f,
-          csr_variant: csr_variant
+          csr_variant: csr_variant,
+          prorated_amounts: []
         }
 
         if mid_month_start_date?(financial_dates) && mid_month_end_date?(financial_dates)
