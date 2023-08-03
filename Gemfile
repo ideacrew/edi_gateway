@@ -8,7 +8,7 @@ ruby "3.2.2"
 #######################################################
 # Local components/engines
 #######################################################
-gem 'aca_entities', git: 'https://github.com/ideacrew/aca_entities.git', branch: 'pt_185751932'
+gem 'aca_entities', git: 'https://github.com/ideacrew/aca_entities.git', branch: 'trunk'
 gem 'aca_x12_entities', git: "https://github.com/ideacrew/aca_x12_entities.git", branch: "trunk"
 gem 'event_source', git: 'https://github.com/ideacrew/event_source.git', branch: 'trunk'
 # gem 'keycloak',           git: 'https://github.com/ideacrew/keycloak-client.git', branch: 'support_relay_state'
