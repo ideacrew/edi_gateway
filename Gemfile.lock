@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/ideacrew/aca_entities.git
-  revision: 672ba0650edf1b72bb416d500889645f8e7f4d9c
+  revision: 3872f3bcdfd6b08cd2b5b6df215b903a698a0573
   branch: trunk
   specs:
     aca_entities (0.10.0)
@@ -32,7 +32,7 @@ GIT
 
 GIT
   remote: https://github.com/ideacrew/event_source.git
-  revision: 193d07ab0a60b82568f5983c7aee967a1234755c
+  revision: 62b581802a6d191e7d96cba8c7b761a8d278e348
   branch: trunk
   specs:
     event_source (0.5.7)
@@ -52,7 +52,7 @@ GIT
       faraday_middleware (~> 1.0)
       logging (~> 2.3.0)
       mime-types
-      nokogiri (>= 1.12.5)
+      nokogiri (>= 1.13.0)
       oj (~> 3.11)
       ox (~> 2.14)
       resque-bus (~> 0.7.0)
@@ -597,7 +597,7 @@ DEPENDENCIES
   yard-mongoid
 
 RUBY VERSION
-   ruby 2.7.8p225
+   ruby 3.2.2p53
 
 BUNDLED WITH
    2.3.3
