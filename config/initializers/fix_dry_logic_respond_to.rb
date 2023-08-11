@@ -8,8 +8,10 @@ require "date"
 require "dry/logic/version"
 
 # Problem Description: https://github.com/dry-rb/dry-logic/issues/104
-# The presence of dry-logic version 1.2.0 is leading to a conflict with irb autocomplete functionality, resulting in crashes in the Rails console (rails console).
-# Although the conflict has been addressed in dry-logic version 1.5.0, upgrading to this version is not feasible due to dependencies on event source dry gems.
+# The presence of dry-logic version 1.2.0 is leading to a conflict with irb autocomplete functionality,
+# resulting in crashes in the Rails console (rails console).
+# Although the conflict has been addressed in dry-logic version 1.5.0,
+# upgrading to this version is not feasible due to dependencies on event source dry gems.
 # As a workaround, we are applying a monkey patch to the dry-logic gem in order to resolve the issue.
 # This monkey patch is only applied if the dry-logic version is less than 1.5.0.
 if Gem::Version.new(Dry::Logic::VERSION) >= Gem::Version.new('1.5')
