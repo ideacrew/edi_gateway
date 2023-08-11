@@ -12,7 +12,9 @@ require "dry/logic/version"
 # Although the conflict has been addressed in dry-logic version 1.5.0, upgrading to this version is not feasible due to dependencies on event source dry gems.
 # As a workaround, we are applying a monkey patch to the dry-logic gem in order to resolve the issue.
 # This monkey patch is only applied if the dry-logic version is less than 1.5.0.
-warn("You may need not this file: if dry-logic gem is upgraded to 1.5.") if Gem::Version.new(Dry::Logic::VERSION) >= Gem::Version.new('1.5')
+if Gem::Version.new(Dry::Logic::VERSION) >= Gem::Version.new('1.5')
+  warn("You may need not this file: if dry-logic gem is upgraded to 1.5.")
+end
 module Dry
   module Logic
     # This is a monkey patch to fix the issue with irb autocomplete functionality
