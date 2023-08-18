@@ -195,9 +195,9 @@ RSpec.describe Reports::GenerateRcnoReport, dbclean: :before_each do
       expect(result.success?).to eq true
       expect(File.exist?(output_file)).to eq true
       file_content = CSV.read(output_file, col_sep: "|", headers: false)
-      expect(file_content.count).to eq 4
-      expect(file_content[2]).to include("10011")
-      expect(file_content[2]).to include("dummytest")
+      expect(file_content.count).to eq 5
+      expect(file_content[3]).to include("10011")
+      expect(file_content[3]).to include("dummytest")
     end
   end
 end
