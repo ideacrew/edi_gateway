@@ -146,7 +146,7 @@ module Reports
 
       policy_contract_result = AcaEntities::Contracts::Policies::PolicyContract.new.call(JSON.parse(fetched_policy.payload))
       if policy_contract_result.failure?
-        @logger.info "Policy contract failure: #{policy_contract_result.errors} for record row #{@rcni_row}"
+        @logger.error "Policy contract failure: #{policy_contract_result.errors} for record row #{@rcni_row}"
       end
 
       policy_entity = AcaEntities::Policies::Policy.new(policy_contract_result.to_h)
