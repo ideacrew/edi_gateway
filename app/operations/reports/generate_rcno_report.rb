@@ -143,12 +143,16 @@ module Reports
         @overall_flag = "R"
         return [nil, nil, nil]
       end
+
       policy_contract_result = AcaEntities::Contracts::Policies::PolicyContract.new.call(JSON.parse(fetched_policy.payload))
-      return [nil, nil, nil] if policy_contract_result.failure?
+      if policy_contract_result.failure?
+        @logger.error "Policy contract failure: #{policy_contract_result.errors} for record row #{@rcni_row}"
+      end
 
       policy_entity = AcaEntities::Policies::Policy.new(policy_contract_result.to_h)
+      @logger.info "No member found due to blank policy entity for #{@rcni_row}" if policy_entity.blank?
 
-      member = policy_entity.enrollees.detect { |enrollee| enrollee.hbx_member_id == @rcni_row[17] }
+      member = policy_entity&.enrollees&.detect { |enrollee| enrollee.hbx_member_id == @rcni_row[17] }
       if member.present?
         segments = member.segments
         @overall_flag = "R" if segments.blank?
