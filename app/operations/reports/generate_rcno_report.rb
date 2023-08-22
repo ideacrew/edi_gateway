@@ -38,6 +38,11 @@ module Reports
       Success(audit_report_datum)
     end
 
+    # rubocop:disable Metrics/MethodLength
+    # rubocop:disable Metrics/AbcSize
+    # rubocop:disable Metrics/CyclomaticComplexity
+    # rubocop:disable Metrics/PerceivedComplexity
+    # rubocop:disable Metrics/BlockNesting
     def generate_rcno_report(rcni_file_path, valid_params, audit_datum)
       file_name = fetch_rcno_file_name(valid_params)
       @total_number_of_issuer_records = 0
@@ -45,97 +50,53 @@ module Reports
       @total_dependents = 0
       @total_premium_amount = 0.00
       @total_applied_premium_amount = 0.00
-
       CSV.open(file_name, "w", col_sep: "|") do |csv|
-        process_rcni_file(rcni_file_path, audit_datum, csv)
+        File.readlines(rcni_file_path, chomp: true).each do |line|
+          @overall_flag = "M"
+          @rcni_row = line.split("|")
+          next unless @rcni_row[0] == "01"
+
+          # mark over flag to U unprocessable if subscriber_id, member_id, policy_id, or benefit_start_date are blank?
+          if @rcni_row[16].blank? || @rcni_row[17].blank? || @rcni_row[20].blank? || @rcni_row[37].blank?
+            @overall_flag = "U"
+          else
+            @audit_record = audit_datum.where(subscriber_id: @rcni_row[16]).first
+            if @audit_record.blank? || JSON.parse(@audit_record.payload).blank?
+              # Create a row in RCNO with blank maine data and RCNI eched out carrier data
+              # Every field level disposition should be D which is did not compare
+              # Overall record level disposition should be R
+              @overall_flag = "R"
+              @logger.info "Unable to find subscriber from given rcni report #{@rcni_row[16]}"
+            else
+              @policy, @member, @segments = fetch_policy_member_and_segments
+              unless @policy.blank? || @member.blank? || @segments.blank?
+                segment = fetch_segment(@rcni_row[37])
+                # If segment(RCNI benefit_start_date) is blank then set @overall_flag is 'B'.
+                segment.blank? ? @overall_flag = "B" : update_processed_segment(segment)
+              end
+            end
+          end
+          csv << insert_data
+          @total_number_of_issuer_records += 1
+        rescue StandardError => e
+          puts e
+          puts "Error for row #{@rcni_row}"
+          @logger.info "Unable to generate report due to #{e.backtrace} for member #{@member} record row #{@rcni_row}"
+          Rails.logger.error("Unable to generate report due to #{e} for row #{@rcni_row}")
+        end
         insert_missing_policy_data(csv, valid_params, rcni_file_path)
         csv << insert_total_record_data
-      end
-    rescue StandardError => e
-      handle_error(e)
-    end
-
-    def process_rcni_file(rcni_file_path, audit_datum, csv)
-      File.readlines(rcni_file_path, chomp: true).each do |line|
-        process_rcni_row(line, audit_datum, csv)
       rescue StandardError => e
-        handle_error(e)
+        puts e
+        puts "Error for row #{@rcni_row}"
+        @logger.info "Unable to generate report due to #{e.backtrace} for member #{@member} record row #{@rcni_row}"
+        Rails.logger.error("Unable to generate report due to #{e} for row #{@rcni_row}")
       end
     end
+    # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/PerceivedComplexity
+    # rubocop:enable Metrics/BlockNesting
 
-    def process_rcni_row(line, audit_datum, csv)
-      @overall_flag = "M"
-      @rcni_row = line.split("|")
-
-      return unless @rcni_row[0] == "01"
-
-      process_row_flag(audit_datum)
-      csv << insert_data
-      @total_number_of_issuer_records += 1
-    rescue StandardError => e
-      handle_error(e)
-    end
-
-    def process_row_flag(audit_datum)
-      # mark over flag to U unprocessable if subscriber_id, member_id, policy_id, or benefit_start_date are blank?
-      if any_required_fields_blank?
-        @overall_flag = "U"
-      else
-        process_valid_rcni_row(audit_datum)
-      end
-    end
-
-    def any_required_fields_blank?
-      @rcni_row[16..17].any?(&:blank?) || @rcni_row[20].blank? || @rcni_row[37].blank?
-    end
-
-    def process_valid_rcni_row(audit_datum)
-      @audit_record = audit_datum.where(subscriber_id: @rcni_row[16]).first
-      if audit_record_blank? || audit_payload_blank?
-        # Create a row in RCNO with blank maine data and RCNI eched out carrier data
-        # Every field level disposition should be D which is did not compare
-        # Overall record level disposition should be R
-        handle_blank_audit_record
-      else
-        process_non_blank_audit_record
-      end
-    end
-
-    def audit_record_blank?
-      @audit_record.blank?
-    end
-
-    def audit_payload_blank?
-      JSON.parse(@audit_record.payload).blank?
-    rescue JSON::ParserError
-      true
-    end
-
-    def process_non_blank_audit_record
-      @policy, @member, @segments = fetch_policy_member_and_segments
-      process_segments unless @policy.blank? || @member.blank? || @segments.blank?
-    end
-
-    def process_segments
-      segment = fetch_segment(@rcni_row[37])
-      # If segment(RCNI benefit_start_date) is blank then set @overall_flag is 'B'.
-      @overall_flag = segment.blank? ? "B" : update_processed_segment(segment)
-    end
-
-    def handle_blank_audit_record
-      @overall_flag = "R"
-      @logger.info "Unable to find subscriber from given rcni report #{@rcni_row[16]}"
-    end
-
-    def handle_error(errors)
-      puts errors
-      puts "Error for row #{@rcni_row}"
-      @logger.info "Unable to generate report due to #{errors.backtrace} for member #{@member} record row #{@rcni_row}"
-      Rails.logger.error("Unable to generate report due to #{errors} for row #{@rcni_row}")
-    end
-
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/CyclomaticComplexity
     def fetch_policy_member_and_segments
       policies = @audit_record.ard_policies
       fetched_policy = policies.detect { |policy| (policy.policy_eg_id == @rcni_row[20]) }
@@ -143,7 +104,6 @@ module Reports
         @overall_flag = "R"
         return [nil, nil, nil]
       end
-
       policy_contract_result = AcaEntities::Contracts::Policies::PolicyContract.new.call(JSON.parse(fetched_policy.payload))
       if policy_contract_result.failure?
         @logger.error "Policy contract failure: #{policy_contract_result.errors} for record row #{@rcni_row}"
