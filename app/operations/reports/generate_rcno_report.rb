@@ -1090,13 +1090,12 @@ module Reports
           @rcni_row = [rcni_first_row[0], rcni_first_row[1], rcni_first_row[2], rcni_first_row[3],
                        rcni_first_row[4], rcni_first_row[5], rcni_first_row[6]] + ([""] * 56)
           unprocessed_ard_segs = record.ard_segments.where(policy_eg_id: policy.policy_eg_id, rcno_processed: false)
-          en_hbx_ids = unprocessed_ard_segs.map(&:en_hbx_id)
-          unprocessed_ard_seg_ids = unprocessed_ard_segs.map(&:segment_id)
           policy_entity.enrollees.each do |enrollee|
-            next unless en_hbx_ids.include?(enrollee.hbx_member_id)
-
             enrollee.segments.each do |segment|
-              next unless unprocessed_ard_seg_ids.include?(segment.id)
+              # Check if there is an unprocessed segment that matches both enrollee and start date before adding row
+              matching_unprocessed_segment = unprocessed_ard_segs.where(en_hbx_id: enrollee.hbx_member_id,
+                                                                        segment_start_date: segment.effective_start_date)
+              next if matching_unprocessed_segment.blank?
 
               @policy = policy_entity
               @member = enrollee
