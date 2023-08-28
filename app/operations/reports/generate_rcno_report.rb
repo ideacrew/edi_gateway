@@ -5,7 +5,7 @@ require 'csv'
 module Reports
   # Store coverage history for a subscriber and publish event to generate report
   # rubocop:disable Metrics/ClassLength
-  class GenerateRcnoReportE
+  class GenerateRcnoReport
     include Dry::Monads[:result, :do]
 
     def call(params)
