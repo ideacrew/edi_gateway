@@ -1049,9 +1049,9 @@ module Reports
     def update_processed_segment(segment)
       ard_policy_eg_id = @policy.enrollment_group_id
       ard_hbx_member_id = @member.hbx_member_id
-      ard_segments = @audit_record.ard_segments.where(policy_eg_id: ard_policy_eg_id,
+      ard_segment = @audit_record.ard_segments.where(policy_eg_id: ard_policy_eg_id,
                                                       en_hbx_id: ard_hbx_member_id,
-                                                      segment_start_date: segment.effective_start_date)
+                                                      segment_start_date: segment.effective_start_date).first
       ard_segment.update_attributes!(rcno_processed: true) if ard_segment.present?
       unprocessed_ard_segs = ard_segments.map(&:rcno_processed).include?(false)
       return if unprocessed_ard_segs
