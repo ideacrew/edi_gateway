@@ -721,7 +721,9 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        return [nil, nil, "D"] unless @member.is_subscriber
+        # when overall_flag is G, we only pass through one segment
+        segment = @segments.first
         start_date = segment&.effective_start_date
 
         unprocessed_aptc_start_date = start_date&.strftime("%Y%m%d")
@@ -752,7 +754,9 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        return [nil, nil, "D"] unless @member.is_subscriber
+        # when overall_flag is G, we only pass through one segment
+        segment = @segments.first
         end_date = segment&.effective_end_date
 
         unprocessed_aptc_end_date = end_date&.strftime("%Y%m%d")
@@ -827,7 +831,8 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        return [nil, nil, "D"] unless @member.is_subscriber
+        segment = @segments.first
         unprocessed_total_premium_start = segment&.effective_start_date&.strftime("%Y%m%d")
         return [unprocessed_total_premium_start, nil, "D"]
       end
@@ -856,7 +861,8 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        return [nil, nil, "D"] unless @member.is_subscriber
+        segment = @segments.first
         unprocessed_total_premium_end = segment&.effective_end_date&.strftime("%Y%m%d")
         return [unprocessed_total_premium_end, nil, "D"]
       end
@@ -927,7 +933,8 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        # show dates for all members
+        segment = @segments.first
         start_date = segment&.effective_start_date
         unprocessed_individual_premium_start_date = start_date&.strftime("%Y%m%d")
         return [unprocessed_individual_premium_start_date, nil, "D"]
