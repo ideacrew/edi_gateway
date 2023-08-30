@@ -692,7 +692,7 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        segment = @segments.first
         unprocessed_aptc_amount = format('%.2f', fetch_applied_aptc_amount(segment))
         return [unprocessed_aptc_amount, nil, "D"]
       end
@@ -801,7 +801,7 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        segment = @segments.first
         unprocessed_total_premium = begin
           format('%.2f', segment&.total_premium_amount)
         rescue StandardError
@@ -901,7 +901,7 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        segment = @segments.first
         amount = segment.present? ? segment.individual_premium_amount : 0.00
         premium_amount = @member.is_subscriber ? amount : @member.premium_amount
         unprocessed_individual_premium = format('%.2f', premium_amount)
@@ -968,7 +968,7 @@ module Reports
       # return [nil, @rcni_row[50], "U"] if @member.blank?
       # unprocessed policy
       if @overall_flag == "G"
-        segment = fetch_segment(@member.coverage_start)
+        segment = @segments.first
         end_date = segment&.effective_end_date
         unprocessed_individual_premium_end_date = end_date&.strftime("%Y%m%d")
         return [unprocessed_individual_premium_end_date, nil, "D"]
