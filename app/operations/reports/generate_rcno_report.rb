@@ -626,8 +626,8 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        policy_sub_member = @policy.enrollees.detect { |enrollee| enrollee.hbx_member_id == @policy.exchange_subscriber_id }
-        unprocessed_start_date = policy_sub_member&.coverage_start&.strftime("%Y%m%d")
+        # when overall_flag is G, we only pass through one segment
+        unprocessed_start_date = @segments&.first&.effective_start_date&.strftime("%Y%m%d")
         return [unprocessed_start_date, nil, "D"]
       end
       segment = fetch_segment(@rcni_row[37])
@@ -651,8 +651,8 @@ module Reports
 
       # unprocessed policy
       if @overall_flag == "G"
-        policy_sub_member = @policy.enrollees.detect { |enrollee| enrollee.hbx_member_id == @policy.exchange_subscriber_id }
-        unprocessed_end_date = policy_sub_member&.coverage_end&.strftime("%Y%m%d")
+        # when overall_flag is G, we only pass through one segment
+        unprocessed_end_date = @segments&.first&.effective_end_date&.strftime("%Y%m%d")
         return [unprocessed_end_date, nil, "D"]
       end
       return [nil, @rcni_row[38], "U"] if @member.blank?
