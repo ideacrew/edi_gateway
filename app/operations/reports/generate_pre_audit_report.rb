@@ -239,8 +239,8 @@ module Reports
        effective_start_date(enrollee, segment), effective_end_date(enrollee, segment),
        format('%.2f', segment.individual_premium_amount),
        segment.effective_start_date&.strftime("%Y%m%d"), non_subscriber_end_date(enrollee, segment),
-       total_responsible_amount(enrollee, segment, policy_entity), segment.effective_start_date&.strftime("%Y%m%d"),
-       segment.effective_end_date&.strftime("%Y%m%d"), nil, nil, nil, policy_entity.term_for_np ? 6 : nil, nil,
+       total_responsible_amount(enrollee, segment, policy_entity), effective_start_date(enrollee, segment),
+       effective_end_date(enrollee, segment), nil, nil, nil, policy_entity.term_for_np ? 6 : nil, nil,
        policy_entity.term_for_np ? 6 : nil,
        policy_entity.rating_area, nil, nil, nil, policy_entity.insurance_line_code, nil, nil, nil, nil, nil, nil, nil,
        nil, nil]
