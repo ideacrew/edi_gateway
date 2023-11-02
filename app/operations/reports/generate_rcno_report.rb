@@ -418,7 +418,7 @@ module Reports
       issuer_issuer_member_id = @rcni_row[19]
 
       if @policy.aasm_state == "canceled" | (ffm_issuer_member_id.blank? && issuer_issuer_member_id.blank?)
-        return [ffm_issuer_member_id, issuer_issuer_member_id, "D"] 
+        return [ffm_issuer_member_id, issuer_issuer_member_id, "D"]
       end
 
       if ffm_issuer_member_id.blank? && issuer_issuer_member_id.present?
