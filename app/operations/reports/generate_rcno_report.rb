@@ -389,7 +389,7 @@ module Reports
 
       issuer_issuer_subscriber_id = @rcni_row[18]
 
-      if ffm_issuer_subscriber_id.blank? && issuer_issuer_subscriber_id.blank?
+      if @policy.aasm_state == "canceled" | (ffm_issuer_subscriber_id.blank? && issuer_issuer_subscriber_id.blank?)
         return [ffm_issuer_subscriber_id, issuer_issuer_subscriber_id,
                 "D"]
       end
@@ -417,7 +417,9 @@ module Reports
 
       issuer_issuer_member_id = @rcni_row[19]
 
-      return [ffm_issuer_member_id, issuer_issuer_member_id, "D"] if ffm_issuer_member_id.blank? && issuer_issuer_member_id.blank?
+      if @policy.aasm_state == "canceled" | (ffm_issuer_member_id.blank? && issuer_issuer_member_id.blank?)
+        return [ffm_issuer_member_id, issuer_issuer_member_id, "D"] 
+      end
 
       if ffm_issuer_member_id.blank? && issuer_issuer_member_id.present?
         return [ffm_issuer_member_id, issuer_issuer_member_id,
@@ -464,7 +466,7 @@ module Reports
 
       issuer_issuer_policy_number = @rcni_row[21]
 
-      if ffm_issuer_policy_number.blank? && issuer_issuer_policy_number.blank?
+      if @policy.aasm_state == "canceled" | (ffm_issuer_policy_number.blank? && issuer_issuer_policy_number.blank?)
         return [ffm_issuer_policy_number, issuer_issuer_policy_number,
                 "D"]
       end
