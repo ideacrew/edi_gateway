@@ -2,6 +2,32 @@ disable-version-check: false
 report:
   exclude-fingerprint:
     # False positives for example connection url in mongoid.yml
+    - f91d14852b7392b729c5bfa8282aae79_0
+    - 90b18ca30d297d4d0939209d6ab764b1_0
+    # default amqp not actually used in production
+    - cf870ae7052bb5731210ae8c0c53092c_0
+    - 2d04d7c8b4ee5d3e593887310559866b_0
+    # reviewed these operations:
+    # app/event_source/subscribers/families/found_by_subscriber.rb
+    # app/operations/data_stores/contract_holder_sync_jobs/process_response_event.rb
+    # app/operations/integrations/events/build.rb
+    # determined the above operations/subscribers do not log sensitive data and therefore may be ignored as false positives. 
+    # The reason we made this determination is because the only potentially sensitive data being logged is a cv3 family payload which currently we already consider protected under our current encryption scheme.
+    # However, if these operations change, they will need to be reviewed again
+    - 88973a7416419e2845c06e0be825b556_0
+    # postgresql is not used in production. This is a legacy schema that does not store actual data. We did not delete file because the specs will break. If we ever actually use postgres, we will need to revisit this exclusion
+    - a6e77c6d42db8f03ffbe5acae290f72c_0
+    - a6e77c6d42db8f03ffbe5acae290f72c_1
+    - a6e77c6d42db8f03ffbe5acae290f72c_2
+    #  # this report is not triggered via web interface. Can only be triggered by an admin on the command line
+    - c93b0a613ceb859f60b4991c33e2d73f_0
+    - c93b0a613ceb859f60b4991c33e2d73f_1
+    - c93b0a613ceb859f60b4991c33e2d73f_2
+    - c93b0a613ceb859f60b4991c33e2d73f_3
+    - c93b0a613ceb859f60b4991c33e2d73f_4
+    - c93b0a613ceb859f60b4991c33e2d73f_5
+    - c93b0a613ceb859f60b4991c33e2d73f_6
+    - c93b0a613ceb859f60b4991c33e2d73f_7
   format: ""
   no-color: false
   output: ""
