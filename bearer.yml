@@ -44,5 +44,5 @@ scan:
     - secrets
   skip-path:
     # this report is not triggered via web interface. Can only be triggered by an admin on the command line
-    - "1095a_csv_report.rb"
+    - "./1095a_csv_report.rb"
   
