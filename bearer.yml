@@ -19,8 +19,10 @@ report:
     - a6e77c6d42db8f03ffbe5acae290f72c_0
     - a6e77c6d42db8f03ffbe5acae290f72c_1
     - a6e77c6d42db8f03ffbe5acae290f72c_2
-    # the below files are not run in production until manually executed.
+    #  # this report is not triggered via web interface. Can only be triggered by an admin on the command line
     - c93b0a613ceb859f60b4991c33e2d73f_0
+    - c93b0a613ceb859f60b4991c33e2d73f_1
+    - c93b0a613ceb859f60b4991c33e2d73f_2
   format: ""
   no-color: false
   output: ""
@@ -44,7 +46,5 @@ scan:
   scanner:
     - sast
     - secrets
-  skip-path:
-    # this report is not triggered via web interface. Can only be triggered by an admin on the command line
-    - "1095a_csv_report.rb"
+  skip-path: []
   
