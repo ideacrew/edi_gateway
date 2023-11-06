@@ -2,6 +2,11 @@ disable-version-check: false
 report:
   exclude-fingerprint:
     # False positives for example connection url in mongoid.yml
+    - f91d14852b7392b729c5bfa8282aae79_0
+    - 90b18ca30d297d4d0939209d6ab764b1_0
+    # default amqp not actually used in production
+    - cf870ae7052bb5731210ae8c0c53092c_0
+    - 2d04d7c8b4ee5d3e593887310559866b_0
   format: ""
   no-color: false
   output: ""
@@ -25,4 +30,7 @@ scan:
   scanner:
     - sast
     - secrets
-  skip-path: []
+  skip-path:
+    # this report is not triggered via web interface. Can only be triggered by an admin on the command line
+    - "1095a_csv_report.rb"
+  
