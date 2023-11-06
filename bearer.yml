@@ -15,6 +15,10 @@ report:
     # The reason we made this determination is because the only potentially sensitive data being logged is a cv3 family payload which currently we already consider protected under our current encryption scheme.
     # However, if these operations change, they will need to be reviewed again
     - 88973a7416419e2845c06e0be825b556_0
+    # postgresql is not used in production. This is a legacy schema that does not store actual data. We did not delete file because the specs will break. If we ever actually use postgres, we will need to revisit this exclusion
+    - a6e77c6d42db8f03ffbe5acae290f72c_0
+    - a6e77c6d42db8f03ffbe5acae290f72c_1
+    - a6e77c6d42db8f03ffbe5acae290f72c_2 
   format: ""
   no-color: false
   output: ""
