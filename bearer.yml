@@ -7,18 +7,14 @@ report:
     # default amqp not actually used in production
     - cf870ae7052bb5731210ae8c0c53092c_0
     - 2d04d7c8b4ee5d3e593887310559866b_0
-    # In order to mark this as a false positive, we are waiting confirmation from devops that the data in the postgres database is encrypted at rest
-    # - a6e77c6d42db8f03ffbe5acae290f72c_0
-    # - a6e77c6d42db8f03ffbe5acae290f72c_1
-    # - a6e77c6d42db8f03ffbe5acae290f72c_2
-    # In order to mark this as a false positive, we need someone who understands the content of the payloads in question to attest to having performed the following tasks
     # reviewed these operations:
     # app/event_source/subscribers/families/found_by_subscriber.rb
     # app/operations/data_stores/contract_holder_sync_jobs/process_response_event.rb
     # app/operations/integrations/events/build.rb
-    # determined the above operations do not log sensitive data and therefore may be ignored as false positives. 
+    # determined the above operations/subscribers do not log sensitive data and therefore may be ignored as false positives. 
+    # The reason we made this determination is because the only potentially sensitive data being logged is a cv3 family payload which currently we already consider protected under our current encryption scheme.
     # However, if these operations change, they will need to be reviewed again
-    # - 88973a7416419e2845c06e0be825b556_0
+    - 88973a7416419e2845c06e0be825b556_0
   format: ""
   no-color: false
   output: ""
