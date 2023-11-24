@@ -390,4 +390,70 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
       expect(@result[:aptc_csr_tax_households].second[:covered_individuals][0][:coverage_end_on]).to eq enrollment_2.end_on
     end
   end
+
+  context "fetch_thh_members_from_enr_thhs" do
+    let(:enrollment_1_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+    let(:enrollment_1_dependents) { FactoryBot.build(:enrolled_member, person: dependent_person) }
+
+    let!(:enrollment_1) do
+      FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
+                                     effectuated_on: Date.new(year, 1, 1),
+                                     created_at: Time.now,
+                                     insurance_policy: insurance_policy,
+                                     subscriber: enrollment_1_subscriber,
+                                     dependents: [enrollment_1_dependents])
+    end
+    let!(:premium_schedule_1_enrollment_1) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.subscriber) }
+    let!(:premium_schedule_2_enrollment_1) do
+      FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.dependents.first)
+    end
+    let!(:aqhp_tax_household_1) { FactoryBot.create(:tax_household, is_aqhp: false) }
+    let!(:aqhp_tax_household_2) { FactoryBot.create(:tax_household, is_aqhp: true) }
+    let!(:aqhp_tax_household_3) { FactoryBot.create(:tax_household, is_aqhp: true) }
+
+    let!(:uqp_thh_1_sub_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_1, person: subscriber_person,
+                                               is_tax_filer: true)
+    end
+    let!(:uqhp_thh_1_dep_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_1, person: dependent_person,
+                                               is_tax_filer: false)
+    end
+
+    let!(:aqhp_thh_2_sub_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_2, person: subscriber_person,
+                                               is_tax_filer: true)
+    end
+
+    let!(:aqhp_thh_3_dep_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household_3, person: dependent_person,
+                                               is_tax_filer: true)
+    end
+
+    let!(:uqhp_enrollment_tax_household_1) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: aqhp_tax_household_1.id)
+    end
+
+    let!(:aqhp_enrollment_tax_household_2) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: aqhp_tax_household_2.id)
+    end
+
+    let!(:aqhp_enrollment_tax_household_3) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: aqhp_tax_household_3.id)
+    end
+
+    before :each do
+      @result_call = subject.call({ insurance_policy: insurance_policy })
+      @result = @result_call.value!
+    end
+
+    it "should should publish the event" do
+      expect(@result_call.success?).to be_truthy
+    end
+
+    it "should return correct members for each tax_household" do
+      expect(@result[:aptc_csr_tax_households].first[:covered_individuals].count).to eq 1
+      expect(@result[:aptc_csr_tax_households].first[:covered_individuals].count).to eq 1
+    end
+  end
 end
