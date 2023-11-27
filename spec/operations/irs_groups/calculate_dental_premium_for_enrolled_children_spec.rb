@@ -93,4 +93,18 @@ RSpec.describe IrsGroups::CalculateDentalPremiumForEnrolledChildren, type: :mode
       expect(subject.success.to_f).to eq(primary_enrollee_two_dependent)
     end
   end
+
+  context 'with only 1 dependent who was 19 at start of coverage' do
+    let(:dependent5) do
+      FactoryBot.build(:enrolled_member,
+                       person: FactoryBot.create(:people_person),
+                       dob: Date.new(year - 19, 1, 1))
+    end
+
+    let(:dependents) { [dependent5] }
+
+    it 'return should 0' do
+      expect(subject.success.to_f).to eq(0.0)
+    end
+  end
 end
