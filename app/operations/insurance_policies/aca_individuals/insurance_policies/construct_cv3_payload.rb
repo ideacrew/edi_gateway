@@ -556,7 +556,9 @@ module InsurancePolicies
           return thh_members_from_enr_thhs if enr_thhs.present? && !tax_household.is_aqhp
           return tax_household.tax_household_members unless tax_household.is_aqhp
 
-          enr_thhs_for_month = enr_thhs.select { |enr_thh| valid_enrollment_tax_household?(enr_thh, tax_household) }
+          enr_thhs_for_month = enr_thhs.select do |enr_thh|
+            enr_thh.tax_household.is_aqhp && valid_enrollment_tax_household?(enr_thh, tax_household)
+          end
 
           enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
             thh_members_from_enr_thhs
