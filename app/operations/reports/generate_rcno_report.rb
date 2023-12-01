@@ -340,7 +340,7 @@ module Reports
     end
 
     def exchange_assigned_subscriber_id
-      return [nil, @rcni_row[16], "U"] if @rcni_row[16].blank? && @overall_flag == "U"
+      return [nil, @rcni_row[16], "U"] if @overall_flag == "U"
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[16], "D"] if @overall_flag == "R"
 
@@ -359,7 +359,7 @@ module Reports
     end
 
     def exchange_assigned_member_id
-      return [nil, @rcni_row[17], "U"] if @rcni_row[17].blank? && @overall_flag == "U"
+      return [nil, @rcni_row[17], "U"] if @overall_flag == "U"
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[17], "D"] if @overall_flag == "R"
 
@@ -433,7 +433,7 @@ module Reports
     end
 
     def exchange_assigned_policy_number
-      return [nil, @rcni_row[20], "U"] if @rcni_row[20].blank? && @overall_flag == "U"
+      return [nil, @rcni_row[20], "U"] if @overall_flag == "U"
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[20], "D"] if @overall_flag == "R"
 
@@ -616,7 +616,7 @@ module Reports
     end
 
     def benefit_start_date
-      return [nil, @rcni_row[37], "U"] if @rcni_row[37].blank? && @overall_flag == "U"
+      return [nil, @rcni_row[37], "U"] if @overall_flag == "U"
 
       # If Subscriber, Member, or Policy are not found
       return [nil, @rcni_row[37], "D"] if @overall_flag == "R"

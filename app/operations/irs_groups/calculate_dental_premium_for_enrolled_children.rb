@@ -79,10 +79,7 @@ module IrsGroups
                 end
 
       # Finalize members based on Age
-      members = members.select do |member|
-        age_function = AcaEntities::Functions::AgeOn.new(on_date: @enrollment.effectuated_on)
-        age_function.call(member.dob) < 19
-      end
+      members = fetch_valid_child_members(members)
 
       members_premium = members.reduce(0.00) do |sum, member|
         (sum + member.premium_schedule.premium_amount).round(2)
@@ -95,7 +92,10 @@ module IrsGroups
 
     # The maximum is for 3 children so we return premium for primary_enrollee_two_dependent.
     def family_premium(dental_product)
-      case primary_tier_value
+      child_members = fetch_valid_child_members(@child_members)
+      return 0.0 if child_members.blank?
+
+      case primary_tier_value(child_members)
       when 'primary_enrollee'
         dental_product.primary_enrollee
       when 'primary_enrollee_one_dependent'
@@ -106,14 +106,21 @@ module IrsGroups
     end
 
     # The maximum is for 3 children so we return premium for primary_enrollee_two_dependent.
-    def primary_tier_value
-      case @child_members.count
+    def primary_tier_value(child_members)
+      case child_members.count
       when 1
         'primary_enrollee'
       when 2
         'primary_enrollee_one_dependent'
       else
         'primary_enrollee_two_dependent'
+      end
+    end
+
+    def fetch_valid_child_members(members)
+      members.select do |member|
+        age_function = AcaEntities::Functions::AgeOn.new(on_date: @enrollment.effectuated_on)
+        age_function.call(member.dob) < 19
       end
     end
 
