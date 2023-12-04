@@ -58,12 +58,21 @@ module InsurancePolicies
 
           Success(
             {
-              title: insurance_provider.title,
+              title: fetch_insurance_provider_title(insurance_provider.title),
               hios_id: insurance_provider.hios_id,
               fein: insurance_provider.fein,
               insurance_products: construct_insurance_products(insurance_provider.insurance_products)
             }
           )
+        end
+
+        def fetch_insurance_provider_title(title)
+          {
+            "Anthem Blue Cross and Blue Shield" => "Anthem Health Plans of Maine Inc",
+            "Harvard Pilgrim Health Care" => "Harvard Pilgrim Health Care Inc",
+            "Community Health Options" => "Maine Community Health Options",
+            "Taro Health" => "Taro Health Plan of Maine Inc",
+          }[title] || title
         end
 
         def construct_insurance_products(insurance_products)

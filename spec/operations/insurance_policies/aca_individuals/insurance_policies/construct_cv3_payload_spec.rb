@@ -443,6 +443,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
     end
 
     before :each do
+      insurance_policy.insurance_product.insurance_provider.update_attributes(title: "Anthem Blue Cross and Blue Shield")
       @result_call = subject.call({ insurance_policy: insurance_policy })
       @result = @result_call.value!
     end
@@ -454,6 +455,10 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
     it "should return correct members for each tax_household" do
       expect(@result[:aptc_csr_tax_households].first[:covered_individuals].count).to eq 1
       expect(@result[:aptc_csr_tax_households].first[:covered_individuals].count).to eq 1
+    end
+
+    it "should return valid provider title" do
+      expect(@result[:insurance_provider][:title]).to eq "Anthem Health Plans of Maine Inc"
     end
   end
 end
