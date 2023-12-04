@@ -71,7 +71,7 @@ module InsurancePolicies
             "Anthem Blue Cross and Blue Shield" => "Anthem Health Plans of Maine Inc",
             "Harvard Pilgrim Health Care" => "Harvard Pilgrim Health Care Inc",
             "Community Health Options" => "Maine Community Health Options",
-            "Taro Health" => "Taro Health Plan of Maine Inc",
+            "Taro Health" => "Taro Health Plan of Maine Inc"
           }[title] || title
         end
 
