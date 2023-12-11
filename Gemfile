@@ -22,7 +22,7 @@ gem 'event_source', git: 'https://github.com/ideacrew/event_source.git', branch:
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
+gem 'carrierwave-mongoid','~> 1.4.0', :require => 'carrierwave/mongoid'
 
 gem 'dry-container',       '0.7.2'
 gem 'dry-schema',          '~> 1.6.2'
