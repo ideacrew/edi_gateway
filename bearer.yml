@@ -28,6 +28,47 @@ report:
     - c93b0a613ceb859f60b4991c33e2d73f_5
     - c93b0a613ceb859f60b4991c33e2d73f_6
     - c93b0a613ceb859f60b4991c33e2d73f_7
+    
+    
+    # false positive actionview
+    - 6b28991df7e355508a893efa4b6d2bb5_0
+    - 6b28991df7e355508a893efa4b6d2bb5_1
+    - 6b28991df7e355508a893efa4b6d2bb5_2
+    - 6b28991df7e355508a893efa4b6d2bb5_3
+    - 6b28991df7e355508a893efa4b6d2bb5_4
+    # false positive resque-scheduler
+    - f3dc3c72249daced0fab18c8bc73b54e_0
+    # false positive typhoeus
+    - 24f192aaba5f9d3ff4edc63c5450955c_0
+    # false positive web-console
+    - 6dbe8385a48c46b4fa411bfeea05a471_0
+
+    #false positive activerecord
+    - 369f6e12ca403478f8f63f6a40a0c2ba_0
+
+    #false positive bunny
+    - 3b5934e1e2b1857b49c77d686d7a6ed7_0
+
+    # false positive selenium-webdriver
+    - ee92a5583c0ffecf287998b2ad43fc4f_0
+
+    # false positive actionpack
+    - 13bcc8dfad27f5619c8900c865c2b5ba_0
+
+    # false positive redis
+    - 7dfd5ec025d7c2bad45726c4c1cc76ac_0
+    - 7dfd5ec025d7c2bad45726c4c1cc76ac_2
+
+    # false positive sinatra
+    - 5b68d67aaf1c6f5db7f00d6ee0474a6f_0
+    - 5b68d67aaf1c6f5db7f00d6ee0474a6f_1
+    - 5b68d67aaf1c6f5db7f00d6ee0474a6f_2
+    - 5b68d67aaf1c6f5db7f00d6ee0474a6f_3
+
+    # false positive yar 
+    - 0aec2bab7eea57c0f42ebecfdbf7b267_0
+    - 0aec2bab7eea57c0f42ebecfdbf7b267_1
+    - 0aec2bab7eea57c0f42ebecfdbf7b267_2
   format: ""
   no-color: false
   output: ""
