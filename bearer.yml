@@ -52,4 +52,4 @@ scan:
     - sast
     - secrets
   skip-path:
-    - 'vendor/bundle'
+    - 'vendor/bundle/'
