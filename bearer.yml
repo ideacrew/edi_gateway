@@ -267,5 +267,4 @@ scan:
   scanner:
     - sast
     - secrets
-  skip-path:
-    - 'vendor/bundle/'
+  skip-path: []
