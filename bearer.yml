@@ -52,4 +52,4 @@ scan:
     - sast
     - secrets
   skip-path:
-    - 'vendor/bundle/ruby/3.2.0/gems/'
+    - 'vendor/bundle/ruby/'
