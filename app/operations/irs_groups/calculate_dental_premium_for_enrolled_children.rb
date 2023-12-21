@@ -9,8 +9,11 @@ module IrsGroups
     require 'dry/monads'
     require 'dry/monads/do'
 
+    attr_reader :enrollment, :dental_policy
+
     def call(params)
       validated_params = yield validate(params)
+      @enrollment = validated_params[:enrollment]
       dental_premium = yield calculate_premium(validated_params)
 
       Success(dental_premium)
@@ -27,8 +30,7 @@ module IrsGroups
     end
 
     def calculate_premium(validated_params)
-      @enrollment = validated_params[:enrollment]
-      dental_policy = fetch_dental_policy
+      @dental_policy = fetch_dental_policy
       return Success(0.0) if dental_policy.blank?
       return Success(0.0) if no_eligible_enrolled_members_on_dental_policy(dental_policy,
                                                                            validated_params[:enrolled_people],
@@ -130,6 +132,7 @@ module IrsGroups
         next if insurance_policy.aasm_state == "canceled"
 
         insurance_policy.insurance_product.coverage_type == "dental" &&
+          (insurance_policy.start_on..insurance_policy.policy_end_on).cover?(@enrollment.start_on) &&
           insurance_policy.insurance_product.plan_year == @enrollment.start_on.year
       end
     end
