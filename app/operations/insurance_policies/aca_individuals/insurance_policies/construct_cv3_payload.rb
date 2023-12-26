@@ -416,7 +416,7 @@ module InsurancePolicies
 
         def construct_coverage_information(insurance_policy, covered_individuals, tax_household)
           (1..12).collect do |month|
-            enrollments_for_month = insurance_policy.enrollments_for_month(month, insurance_policy.start_on.year)
+            enrollments_for_month = insurance_policy.enrollments_for_month(10, insurance_policy.start_on.year)
             if insurance_policy.aasm_state == "canceled"
               {
                 month: Date::MONTHNAMES[month],
@@ -436,7 +436,8 @@ module InsurancePolicies
               end
 
               thh_members = fetch_tax_household_members(enrollments_for_month, tax_household)
-              pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members, month)
+              pediatric_dental_pre = enrollments_for_month.first
+                                       &.pediatric_dental_premium(enrollments_for_month, thh_members, month)
               pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
               aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 
