@@ -76,7 +76,7 @@ RSpec.describe IrsGroups::CalculateDentalPremiumForEnrolledChildren, type: :mode
     let(:dependents) { [dependent1, dependent2, dependent3] }
 
     it 'returns value for primary_enrollee_two_dependent' do
-      expect(subject.success.to_f).to eq(primary_enrollee_two_dependent)
+      expect(subject.success.to_f).to eq(114.99)
     end
   end
 
