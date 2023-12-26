@@ -559,9 +559,10 @@ module InsurancePolicies
           enr_thhs_for_month = enr_thhs.select do |enr_thh|
             enr_thh.tax_household.is_aqhp && valid_enrollment_tax_household?(enr_thh, tax_household)
           end
+          enrolled_thh_members_person_ids = enr_thhs_for_month&.flat_map(&:tax_household)
+                                         &.flat_map(&:tax_household_members)&.uniq(&:person_id)
 
-          enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
-            thh_members_from_enr_thhs
+          enrolled_thh_members_person_ids.present? ? enrolled_thh_members_person_ids : thh_members_from_enr_thhs
         end
 
         # rubocop:enable Metrics/CyclomaticComplexity
