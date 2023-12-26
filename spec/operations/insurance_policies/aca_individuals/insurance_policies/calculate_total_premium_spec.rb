@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTotalPremium do
-
   subject { described_class.new.call(input_params) }
 
   describe 'with invalid params' do
@@ -25,9 +24,10 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
     end
 
     context 'when insurance_policy is blank' do
-      let(:input_params) { 
+      let(:input_params) do
         { enrolled_members: "test",
-          insurance_policy: "test"} }
+          insurance_policy: "test" }
+      end
 
       it 'should return failure' do
         expect(subject).to be_failure
@@ -58,14 +58,16 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
     end
 
     context 'when insurance_product is health' do
-      let(:insurance_policy) {
+      let(:insurance_policy) do
         FactoryBot.create(:insurance_policy, start_on: Date.new(year, 1, 1),
-                                             end_on: Date.new(year, 12, 31)) }
+                                             end_on: Date.new(year, 12, 31))
+      end
 
-      let(:input_params) {
+      let(:input_params) do
         { enrolled_members: [double],
           insurance_policy: insurance_policy,
-          calendar_month: 1 } }
+          calendar_month: 1 }
+      end
 
       it 'should return success' do
         expect(subject.success?).to eq true
@@ -99,10 +101,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
                                            dependents: [dependent1, dependent2])
           end
 
-          let(:input_params) {
+          let(:input_params) do
             { enrolled_members: [subscriber, dependent1, dependent2],
               insurance_policy: dental_policy,
-              calendar_month: enrollment.start_on.month } }
+              calendar_month: enrollment.start_on.month }
+          end
 
           it 'should return success' do
             expect(subject.success?).to eq true
@@ -137,10 +140,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
                                            dependents: [dependent1, dependent2])
           end
 
-          let(:input_params) {
+          let(:input_params) do
             { enrolled_members: [subscriber, dependent1, dependent2],
               insurance_policy: dental_policy,
-              calendar_month: enrollment.end_on.month } }
+              calendar_month: enrollment.end_on.month }
+          end
 
           it 'should return success' do
             expect(subject.success?).to eq true
@@ -184,10 +188,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
                                            dependents: [dependent1])
           end
 
-          let(:input_params) {
+          let(:input_params) do
             { enrolled_members: [subscriber, dependent1, dependent2],
               insurance_policy: dental_policy,
-              calendar_month: enrollment.end_on.month } }
+              calendar_month: enrollment.end_on.month }
+          end
 
           it 'should return success' do
             expect(subject.success?).to eq true
@@ -225,10 +230,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
           let!(:premium_schedule_2) { FactoryBot.create(:premium_schedule, enrolled_member: dependent1) }
           let!(:premium_schedule_3) { FactoryBot.create(:premium_schedule, enrolled_member: dependent2) }
 
-          let(:input_params) {
+          let(:input_params) do
             { enrolled_members: [subscriber, dependent1, dependent2],
               insurance_policy: dental_policy,
-              calendar_month: enrollment.end_on.month } }
+              calendar_month: enrollment.end_on.month }
+          end
 
           it 'should return success' do
             expect(subject.success?).to eq true
@@ -264,10 +270,11 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::CalculateTo
           let!(:premium_schedule_2) { FactoryBot.create(:premium_schedule, enrolled_member: dependent1) }
           let!(:premium_schedule_3) { FactoryBot.create(:premium_schedule, enrolled_member: dependent2) }
 
-          let(:input_params) {
+          let(:input_params) do
             { enrolled_members: [subscriber, dependent1, dependent2],
               insurance_policy: dental_policy,
-              calendar_month: enrollment.end_on.month } }
+              calendar_month: enrollment.end_on.month }
+          end
 
           it 'should return success' do
             expect(subject.success?).to eq true
