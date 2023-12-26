@@ -416,7 +416,7 @@ module InsurancePolicies
 
         def construct_coverage_information(insurance_policy, covered_individuals, tax_household)
           (1..12).collect do |month|
-            enrollments_for_month = insurance_policy.enrollments_for_month(10, insurance_policy.start_on.year)
+            enrollments_for_month = insurance_policy.enrollments_for_month(month, insurance_policy.start_on.year)
             if insurance_policy.aasm_state == "canceled"
               {
                 month: Date::MONTHNAMES[month],
