@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: ./.docker/development/Dockerfile
       args:
-        RUBY_VERSION: "3.2.2"
+        RUBY_VERSION: "3.3.0"
         BUNDLER_VERSION_OVERRIDE: "2.3.3"
     image: edi_gateway_dev:0.3.0
     links:

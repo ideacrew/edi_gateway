@@ -2,7 +2,7 @@
 ###    app config    ###
 ########################
 
-FROM ruby:3.2.2 AS app
+FROM ruby:3.3.0 AS app
 
 LABEL author="IdeaCrew"
 
