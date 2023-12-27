@@ -456,4 +456,61 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicies::ConstructCv
       expect(@result[:aptc_csr_tax_households].first[:covered_individuals].count).to eq 1
     end
   end
+
+  context "when moved from uqhp to aqhp" do
+    let(:enrollment_1_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+    let(:enrollment_2_subscriber) { FactoryBot.build(:enrolled_member, person: subscriber_person) }
+    let!(:enrollment_1) do
+      FactoryBot.create(:enrollment, start_on: Date.new(year, 1, 1),
+                                     effectuated_on: Date.new(year, 1, 1),
+                                     end_on: Date.new(year, 11, 30),
+                                     created_at: Time.now,
+                                     insurance_policy: insurance_policy,
+                                     subscriber: enrollment_1_subscriber)
+    end
+
+    let!(:enrollment_2) do
+      FactoryBot.create(:enrollment, start_on: Date.new(year, 12, 1),
+                                     effectuated_on: Date.new(year, 12, 1),
+                                     created_at: Time.now,
+                                     insurance_policy: insurance_policy,
+                                     subscriber: enrollment_2_subscriber)
+    end
+    let!(:premium_schedule_1_enrollment_1) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_1.subscriber) }
+    let!(:premium_schedule_2_enrollment_1) { FactoryBot.create(:premium_schedule, enrolled_member: enrollment_2.subscriber) }
+
+    let!(:uqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: false) }
+    let!(:aqhp_tax_household) { FactoryBot.create(:tax_household, is_aqhp: true) }
+    let!(:uqhp_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: uqhp_tax_household, person: subscriber_person,
+                                               is_tax_filer: true)
+    end
+    let!(:aqhp_tax_household_member) do
+      FactoryBot.create(:tax_household_member, tax_household: aqhp_tax_household, person: subscriber_person,
+                                               is_tax_filer: true)
+    end
+    let!(:uqhp_enrollment_tax_household) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_1.id, tax_household_id: uqhp_tax_household.id)
+    end
+
+    let!(:aqhp_enrollment_tax_household) do
+      FactoryBot.create(:enrollments_tax_households, enrollment_id: enrollment_2.id, tax_household_id: aqhp_tax_household.id)
+    end
+
+    before :each do
+      @result_call = subject.call({ insurance_policy: insurance_policy })
+      @result = @result_call.value!
+    end
+
+    it "should be a success" do
+      expect(@result_call.success?).to be_truthy
+    end
+
+    it "should have premium information for all the months" do
+      result = @result[:aptc_csr_tax_households][0][:months_of_year].all? do |month|
+        month[:coverage_information][:total_premium][:cents].positive?
+      end
+      expect(result).to be_truthy
+    end
+  end
 end
