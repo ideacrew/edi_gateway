@@ -17,7 +17,7 @@ jobs:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: wbari/start-mongoDB@v0.2
         with:
           mongoDBVersion: '4.2'
@@ -30,7 +30,7 @@ jobs:
           rabbitmq vhost: '/'
       - uses: ruby/setup-ruby@v1
       - name: Cache Gems
-        uses: actions/cache@v1
+        uses: actions/cache@v3
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
