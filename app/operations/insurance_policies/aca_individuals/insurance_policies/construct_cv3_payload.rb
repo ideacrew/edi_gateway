@@ -434,7 +434,8 @@ module InsurancePolicies
               end
 
               thh_members = fetch_tax_household_members(enrollments_for_month, tax_household)
-              pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members, month)
+              pediatric_dental_pre = enrollments_for_month.first
+                                       &.pediatric_dental_premium(enrollments_for_month, thh_members, month)
               pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
               aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 

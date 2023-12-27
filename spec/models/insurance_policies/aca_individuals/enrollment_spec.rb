@@ -50,9 +50,17 @@ RSpec.describe InsurancePolicies::AcaIndividuals::Enrollment, type: :model, db_c
     context 'all members eligible for medicaid_chip_eligible' do
       it 'returns pediatric dental premium' do
         expect(
-          enrollment.pediatric_dental_premium(tax_household_members, calendar_month)
+          enrollment.pediatric_dental_premium([enrollment], tax_household_members, calendar_month)
         ).to eq(premium)
       end
+    end
+  end
+
+  describe '#fetch_eligible_enrollees' do
+    it 'returns eligible members' do
+      expect(
+        enrollment.fetch_eligible_enrollees([enrollment], tax_household_members)
+      ).to match_array([subscriber, dependents.first, dependents.second])
     end
   end
 

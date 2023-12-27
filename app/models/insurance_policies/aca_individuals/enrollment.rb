@@ -70,20 +70,32 @@ module InsurancePolicies
         end
       end
 
-      def fetch_eligible_enrollees(tax_household_members)
+      # Fetch eligible enrollees based on tax household members.
+      #
+      # @param enrollments [Array<Enrollment>] The list of enrollments.
+      # @param tax_household_members [Array<TaxHouseholdMember>] The list of tax household members.
+      # @return [Array<Enrollee>] The eligible enrollees.
+      def fetch_eligible_enrollees(enrollments, tax_household_members)
+        all_enrolled_members = [enrollments.flat_map(&:subscriber) + enrollments.flat_map(&:dependents)].flatten.compact
         thh_mem_person_hbx_ids = tax_household_members.map(&:person).map(&:hbx_id)
-        [[subscriber] + dependents].flatten.select do |enrollee|
+        all_enrolled_members.select do |enrollee|
           thh_mem_person_hbx_ids.include?(enrollee.person.hbx_id)
         end
       end
 
-      def pediatric_dental_premium(tax_household_members, calendar_month)
+      # Calculate the pediatric dental premium for a specific calendar month.
+      #
+      # @param enrollments_for_month [Array<Enrollment>] The list of enrollments for the month.
+      # @param tax_household_members [Array<TaxHouseholdMember>] The list of tax household members.
+      # @param calendar_month [Integer] The calendar month for which the premium is calculated.
+      # @return [Float] The calculated pediatric dental premium for the specified month.
+      def pediatric_dental_premium(enrollments_for_month, tax_household_members, calendar_month)
         return 0.0 if insurance_policy.term_for_np && insurance_policy.policy_end_on.month == calendar_month
 
-        eligible_enrollees = fetch_eligible_enrollees(tax_household_members)
+        eligible_enrollees = fetch_eligible_enrollees(enrollments_for_month, tax_household_members)
         return 0.0 if eligible_enrollees.empty?
 
-        ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ enrollment: self,
+        ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ enrollments: enrollments_for_month,
                                                                           enrolled_people: eligible_enrollees,
                                                                           month: calendar_month }).value!.to_f
       end
