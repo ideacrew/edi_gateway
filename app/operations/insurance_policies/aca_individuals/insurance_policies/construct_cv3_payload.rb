@@ -386,9 +386,7 @@ module InsurancePolicies
           valid_enr_thhs = fetch_valid_enrollments_tax_households(@enrollments, tax_household_for_individual)
           enrollment = valid_enr_thhs.sort_by(&:created_at)&.last&.enrollment
 
-          if enrollment.enrollment_end_on > individual[:coverage_start_on] &&
-             enrollment.enrollment_end_on != enrollment.enrollment_end_on.end_of_year &&
-             enrollment.enrollment_end_on.next_day < enrollment.insurance_policy_end_on
+          if enrollment.is_enrollment_eligible?(individual)
             enrollment.enrollment_end_on.next_day
           else
             individual[:coverage_start_on]
@@ -436,7 +434,8 @@ module InsurancePolicies
               end
 
               thh_members = fetch_tax_household_members(enrollments_for_month, tax_household)
-              pediatric_dental_pre = enrollments_for_month.first&.pediatric_dental_premium(thh_members, month)
+              pediatric_dental_pre = enrollments_for_month.first
+                                       &.pediatric_dental_premium(enrollments_for_month, thh_members, month)
               pre_amt_tot = calculate_ehb_premium_for(insurance_policy, tax_household, enrollments_for_month, month)
               aptc_tax_credit = insurance_policy.applied_aptc_amount_for(enrollments_for_month, month, tax_household)
 
@@ -559,9 +558,10 @@ module InsurancePolicies
           enr_thhs_for_month = enr_thhs.select do |enr_thh|
             enr_thh.tax_household.is_aqhp && valid_enrollment_tax_household?(enr_thh, tax_household)
           end
+          enrolled_thh_members_person_ids = enr_thhs_for_month&.flat_map(&:tax_household)
+                                         &.flat_map(&:tax_household_members)&.uniq(&:person_id)
 
-          enr_thhs_for_month&.flat_map(&:tax_household)&.flat_map(&:tax_household_members)&.uniq(&:person_id) ||
-            thh_members_from_enr_thhs
+          enrolled_thh_members_person_ids.present? ? enrolled_thh_members_person_ids : thh_members_from_enr_thhs
         end
 
         # rubocop:enable Metrics/CyclomaticComplexity

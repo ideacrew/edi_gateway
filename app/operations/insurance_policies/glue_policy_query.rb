@@ -25,9 +25,18 @@ module InsurancePolicies
               hbx_enrollment_ids: {
                 '$in' => inclusion_policies
               },
-              responsible_party_id: {
-                '$exists' => false
-              }
+              "$or" => [
+                {
+                  responsible_party_id: {
+                    '$exists' => false
+                  }
+                },
+                {
+                  responsible_party_id: {
+                    '$eq' => nil
+                  }
+                }
+              ]
             }
           },
           { '$unwind' => '$enrollees' },
@@ -49,9 +58,18 @@ module InsurancePolicies
                 '$gte' => @start_time,
                 '$lte' => @end_time
               },
-              responsible_party_id: {
-                '$exists' => false
-              }
+              "$or" => [
+                {
+                  responsible_party_id: {
+                    '$exists' => false
+                  }
+                },
+                {
+                  responsible_party_id: {
+                    '$eq' => nil
+                  }
+                }
+              ]
             }
           },
           { '$unwind' => '$enrollees' },
@@ -75,7 +93,7 @@ module InsurancePolicies
                 '$in' => inclusion_policies
               },
               responsible_party_id: {
-                '$exists' => true
+                '$ne' => nil
               }
             }
           },
@@ -99,7 +117,7 @@ module InsurancePolicies
                 '$lte' => @end_time
               },
               responsible_party_id: {
-                '$exists' => true
+                '$ne' => nil
               }
             }
           },
