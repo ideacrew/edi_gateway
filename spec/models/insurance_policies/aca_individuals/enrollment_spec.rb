@@ -55,4 +55,32 @@ RSpec.describe InsurancePolicies::AcaIndividuals::Enrollment, type: :model, db_c
       end
     end
   end
+
+  describe '#is_enrollment_eligible?' do
+    let(:individual_hash) do
+      { :coverage_start_on => enrollment.start_on,
+        :coverage_end_on => insurance_policy.end_on,
+        :relation_with_primary => nil,
+        :filer_status => "tax_filer" }
+    end
+
+    context 'enrollee coverage_end_date is greater than enrollment termination date' do
+      it 'returns true' do
+        expect(enrollment.is_enrollment_eligible?(individual_hash)).to eq(true)
+      end
+    end
+
+    context 'enrollee coverage_end_date is less than enrollment termination date' do
+      let(:individual_hash) do
+        { :coverage_start_on => enrollment.start_on,
+          :coverage_end_on => enrollment.end_on - 10.days,
+          :relation_with_primary => nil,
+          :filer_status => "tax_filer" }
+      end
+
+      it 'returns false' do
+        expect(enrollment.is_enrollment_eligible?(individual_hash)).to eq(false)
+      end
+    end
+  end
 end
