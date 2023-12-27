@@ -386,9 +386,7 @@ module InsurancePolicies
           valid_enr_thhs = fetch_valid_enrollments_tax_households(@enrollments, tax_household_for_individual)
           enrollment = valid_enr_thhs.sort_by(&:created_at)&.last&.enrollment
 
-          if enrollment.enrollment_end_on > individual[:coverage_start_on] &&
-             enrollment.enrollment_end_on != enrollment.enrollment_end_on.end_of_year &&
-             enrollment.enrollment_end_on.next_day < enrollment.insurance_policy_end_on
+          if enrollment.is_enrollment_eligible?(individual)
             enrollment.enrollment_end_on.next_day
           else
             individual[:coverage_start_on]

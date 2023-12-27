@@ -106,6 +106,23 @@ module InsurancePolicies
           enrollee.person.hbx_id == hbx_id
         end
       end
+
+      # Determines if an enrollment is eligible.
+      #
+      # An eligible enrollment meets all of the following:
+      # - The enrollment end date is after the individual's coverage start date
+      # - The enrollment does not end on the last day of the year
+      # - There is no gap between the enrollment end date and the next insurance policy date
+      # - The next day of the enrollment end date is before the individual's coverage end date
+      #
+      # @param individual hash [Individual Hash] The individual hash
+      # @return [Boolean] True if the enrollment meets eligibility criteria for the individual
+      def is_enrollment_eligible?(individual)
+        enrollment_end_on > individual[:coverage_start_on] &&
+          enrollment_end_on != enrollment_end_on.end_of_year &&
+          enrollment_end_on.next_day < insurance_policy_end_on &&
+          enrollment_end_on.next_day < individual[:coverage_end_on]
+      end
     end
   end
 end
