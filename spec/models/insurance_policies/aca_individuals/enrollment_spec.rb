@@ -56,7 +56,6 @@ RSpec.describe InsurancePolicies::AcaIndividuals::Enrollment, type: :model, db_c
     end
   end
 
-
   describe '#fetch_eligible_enrollees' do
     it 'returns eligible members' do
       expect(
@@ -64,7 +63,7 @@ RSpec.describe InsurancePolicies::AcaIndividuals::Enrollment, type: :model, db_c
       ).to match_array([subscriber, dependents.first, dependents.second])
     end
   end
-  
+
   describe '#is_enrollment_eligible?' do
     let(:individual_hash) do
       { :coverage_start_on => enrollment.start_on,
