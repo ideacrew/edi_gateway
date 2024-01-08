@@ -8,7 +8,8 @@ RSpec.describe ::Tax1095a::FetchAndPublishIrsGroups do
 
   describe 'with valid params' do
     before :each do
-      @valid_result = subject.call({ tax_year: start_on.year, tax_form_type: "IVL_TAX", exclusion_list: [],
+      insurance_policy_1.insurance_product.update_attributes(metal_level: "catastrophic")
+      @valid_result = subject.call({ tax_year: start_on.year, tax_form_type: "IVL_CAP", exclusion_list: [],
                                      transmission_kind: "1095a" })
     end
 
