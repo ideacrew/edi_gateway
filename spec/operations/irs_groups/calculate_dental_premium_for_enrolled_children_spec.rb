@@ -67,8 +67,8 @@ RSpec.describe IrsGroups::CalculateDentalPremiumForEnrolledChildren, type: :mode
   context 'with 3 dependents on dental enrollment' do
     let(:input_params) do
       {
-        enrollments: [enrollment],
-        enrolled_people: ([enrollment.subscriber] + enrollment.dependents),
+        health_enrollments: [enrollment],
+        health_enrolled_people: ([enrollment.subscriber] + enrollment.dependents),
         month: Date.today.month
       }
     end
@@ -82,8 +82,8 @@ RSpec.describe IrsGroups::CalculateDentalPremiumForEnrolledChildren, type: :mode
   context 'with more than 3 dependents on dental enrollment' do
     let(:input_params) do
       {
-        enrollments: [enrollment],
-        enrolled_people: ([enrollment.subscriber] + enrollment.dependents),
+        health_enrollments: [enrollment],
+        health_enrolled_people: ([enrollment.subscriber] + enrollment.dependents),
         month: Date.today.month
       }
     end
@@ -103,8 +103,8 @@ RSpec.describe IrsGroups::CalculateDentalPremiumForEnrolledChildren, type: :mode
   context 'with only 1 dependent who was 19 at start of coverage' do
     let(:input_params) do
       {
-        enrollments: [enrollment],
-        enrolled_people: ([enrollment.subscriber] + enrollment.dependents),
+        health_enrollments: [enrollment],
+        health_enrolled_people: ([enrollment.subscriber] + enrollment.dependents),
         month: Date.today.month
       }
     end
@@ -166,8 +166,8 @@ RSpec.describe IrsGroups::CalculateDentalPremiumForEnrolledChildren, type: :mode
 
     let(:input_params) do
       {
-        enrollments: [enrollment_1, enrollment_2],
-        enrolled_people: [dependent5],
+        health_enrollments: [enrollment_1, enrollment_2],
+        health_enrolled_people: [dependent5],
         month: enrollment_2.start_on.month
       }
     end
