@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require 'yaml'
+
+development_configs = YAML.load_file('config/development.yml')
+
 EventSource.configure do |config|
   config.protocols = %w[amqp http]
   config.pub_sub_root = Pathname.pwd.join('app', 'event_source')
@@ -19,7 +23,7 @@ EventSource.configure do |config|
       warn rabbitmq.url
       rabbitmq.user_name = ENV['RABBITMQ_USERNAME'] || 'guest'
       warn rabbitmq.user_name
-      rabbitmq.password = ENV['RABBITMQ_PASSWORD'] || 'guest'
+      rabbitmq.password = ENV.fetch('RABBITMQ_PASSWORD', development_configs['default_rabbitmq_password'])
       warn rabbitmq.password
     end
   end
