@@ -122,7 +122,7 @@ module Tax1095a
     def publish(event)
       event.success.publish
 
-      Success("Successfully published the payload for event: #{event}")
+      Success(["Successfully published the payload for event: #{event}", event.success.payload])
     end
   end
 end
