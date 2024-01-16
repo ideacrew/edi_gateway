@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require 'shared_examples/cv3_family'
 require 'shared_examples/assisted_policy/one_enrolled_member'
