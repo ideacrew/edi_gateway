@@ -68,7 +68,8 @@ module Subscribers
 
         if result.success?
           subscriber_logger.info(
-            "OK: :Published successfully and acked for irs_group #{payload[:irs_group_id]}, for routing_key: #{routing_key}, payload: #{result.success[1]}"
+            "OK: :Published successfully and acked for irs_group #{payload[:irs_group_id]}, for routing_key: #{routing_key},
+            payload: #{result.success[1]}"
           )
         else
           errors =
