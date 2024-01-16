@@ -151,7 +151,7 @@ RSpec.describe Tax1095a::PublishFamilyPayload do
       end
     end
 
-    context ".success with no product" do
+    context ".failure when no product" do
       context "when policies are not catastrophic" do
         let(:valid_params) do
           {
@@ -169,12 +169,12 @@ RSpec.describe Tax1095a::PublishFamilyPayload do
           @result = subject.call(valid_params)
         end
 
-        it 'returns a success result' do
-          expect(@result).to be_success
+        it 'returns a failure result' do
+          expect(@result).to be_failure
         end
 
-        it 'returns no insurance_agreements' do
-          expect(@result.success[1].dig(:households, 0, :insurance_agreements)).to be_empty
+        it 'returns error message' do
+          expect(@result.failure).to eq("Unable to fetch insurance policies for irs_group_id: #{valid_params[:irs_group_id]}")
         end
       end
     end

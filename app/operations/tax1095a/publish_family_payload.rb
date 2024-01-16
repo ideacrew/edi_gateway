@@ -71,11 +71,15 @@ module Tax1095a
           policy.insurance_product.metal_level == "catastrophic"
       end
 
-      Success(result)
+      if result.present?
+        Success(result)
+      else
+        Failure("Unable to fetch insurance policies for irs_group_id: #{values[:irs_group_id]}")
+      end
     end
 
     def transform_family_payload(family_hash, tax_year, insurance_policies)
-      policy_hbx_ids = insurance_policies.pluck(:policy_hbx_id)
+      policy_hbx_ids = insurance_policies.pluck(:policy_id)
       insurance_agreements = family_hash[:households][0][:insurance_agreements]
       family_hash[:households][0][:insurance_agreements] = fetch_insurance_agreements(insurance_agreements, tax_year)
       family_hash[:households][0][:insurance_agreements].each do |agreement|
