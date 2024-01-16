@@ -48,7 +48,7 @@ gem 'nokogiri-happymapper'
 gem 'pg'
 
 # Use Puma as the app server
-gem 'puma', '~> 5.6.7'
+gem 'puma', '~> 6.4.2'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem "rails", "~> 7.0.7.2"

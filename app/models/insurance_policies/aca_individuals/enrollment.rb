@@ -95,8 +95,8 @@ module InsurancePolicies
         eligible_enrollees = fetch_eligible_enrollees(enrollments_for_month, tax_household_members)
         return 0.0 if eligible_enrollees.empty?
 
-        ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ enrollments: enrollments_for_month,
-                                                                          enrolled_people: eligible_enrollees,
+        ::IrsGroups::CalculateDentalPremiumForEnrolledChildren.new.call({ health_enrollments: enrollments_for_month,
+                                                                          health_enrolled_people: eligible_enrollees,
                                                                           month: calendar_month }).value!.to_f
       end
       # rubocop:enable Metrics/AbcSize
