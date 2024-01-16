@@ -60,7 +60,7 @@ module Tax1095a
       )
       return Failure("Unable to construct cv3 payload for irs_group_id: #{values[:irs_group_id]}") if cv3_payload.failure?
 
-      Success(cv3_payload.value!)
+      Success(JSON.parse(cv3_payload.value!.to_json, symbolize_names: true))
     end
 
     def fetch_insurance_policies(irs_group, values)
@@ -68,7 +68,7 @@ module Tax1095a
         policy.start_on.year == values[:tax_year].to_i &&
           policy.aasm_state != "canceled" &&
           policy.insurance_product.coverage_type == "health" &&
-          policy.insurnace_product.metal_level == "catastrophic"
+          policy.insurance_product.metal_level == "catastrophic"
       end
 
       Success(result)
@@ -122,7 +122,7 @@ module Tax1095a
     def publish(event)
       event.success.publish
 
-      Success("Successfully published the payload for event: #{events.map(&:name)}")
+      Success("Successfully published the payload for event: #{event}")
     end
   end
 end
