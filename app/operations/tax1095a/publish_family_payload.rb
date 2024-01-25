@@ -20,7 +20,7 @@ module Tax1095a
       irs_group = yield fetch_irs_group(values)
       family_hash = yield construct_cv3_family(values)
       insurance_policies = yield fetch_insurance_policies(irs_group, values)
-      transformed_family_hash = yield transform_family_payload(family_hash, values, insurance_policies)
+      transformed_family_hash = yield transform_family_payload(family_hash, values[:tax_year], insurance_policies)
       event = yield build_event(transformed_family_hash, values)
       result = yield publish(event)
 
@@ -117,9 +117,7 @@ module Tax1095a
     def build_event(family_hash, values)
       event_name = MAP_FORM_TYPE_TO_EVENT[values[:tax_form_type]]
       event = event("events.families.tax_form1095a.#{event_name}",
-                    attributes: family_hash, headers: { assistance_year: values[:reporting_year],
-                                                        notice_type: values[:report_type],
-                                                        affected_policies: values[:policy_hbx_ids] })
+                    attributes: family_hash, headers: { assistance_year: values[:tax_year], notice_type: values[:tax_form_type] })
       Success(event)
     end
 
