@@ -6,6 +6,11 @@ require 'shared_examples/assisted_policy/one_enrolled_member'
 
 RSpec.describe Tax1095a::PublishFamilyPayload do
   include_context 'one_enrolled_member'
+
+  before :all do
+    DatabaseCleaner.clean
+  end
+
   subject { described_class.new }
 
   describe '#call' do
@@ -26,11 +31,16 @@ RSpec.describe Tax1095a::PublishFamilyPayload do
         before do
           enrollment_1.insurance_policy.insurance_product.update_attributes(metal_level: "catastrophic")
           enrollment_2.insurance_policy.insurance_product.update_attributes(metal_level: "catastrophic")
+          @result = subject.call(valid_params)
         end
 
-        it 'returns a success result' do
-          result = subject.call(valid_params)
-          expect(result).to be_success
+        it 'returns success' do
+          expect(@result).to be_success
+        end
+
+        it 'return published payload with insurance_agreements' do
+          insurance_agreements = @result.success.dig(1, :households, 0, :insurance_agreements)
+          expect(insurance_agreements.present?).to be_truthy
         end
       end
     end
