@@ -42,6 +42,7 @@ gem 'keepr', '~> 0.7.0'
 gem 'money-rails', '~> 1.15'
 gem 'mongoid',             '~> 7.4'
 
+gem 'nokogiri', '~> 1.16.2'
 gem 'nokogiri-happymapper'
 
 # Postgres Database
