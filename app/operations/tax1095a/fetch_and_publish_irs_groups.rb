@@ -11,10 +11,9 @@ module Tax1095a
 
     PROCESSING_BATCH_SIZE = 1000
 
-    TAX_FORM_TYPES = %w[IVL_TAX Corrected_IVL_TAX IVL_VTA IVL_CAP].freeze
+    TAX_FORM_TYPES = %w[IVL_CAP].freeze
 
-    PRODUCT_CRITERIA = { "IVL_TAX" => "non_catastrophic_product_ids",
-                         "IVL_CAP" => "catastrophic_product_ids" }.freeze
+    PRODUCT_CRITERIA = { "IVL_CAP" => "catastrophic_product_ids" }.freeze
 
     # params {tax_year: ,tax_form_type: }
     def call(params)
@@ -29,11 +28,8 @@ module Tax1095a
 
     def validate(params)
       @batch_size = params[:batch_size] if params[:batch_size]
-
       return Failure("valid tax form type is not present") unless TAX_FORM_TYPES.include?(params[:tax_form_type])
       return Failure("tax_year is not present") unless params[:tax_year].present?
-      return Failure("exclusion_list required") unless params[:exclusion_list] # array of primary hbx ids
-      return Failure("transmission_kind required") unless params[:transmission_kind]
 
       Success(params)
     end

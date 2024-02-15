@@ -48,6 +48,14 @@ class Person
     query_proxy.policies
   end
 
+  def home_address
+    addresses.detect { |adr| adr.address_type == "home" }
+  end
+
+  def mailing_address
+    addresses.detect { |adr| adr.address_type == "mailing" } || home_address
+  end
+
   private
 
   def query_proxy

@@ -235,6 +235,12 @@ module InsurancePolicies
         enrolled_member_enrollments.map(&:enrollment_end_on).max
       end
 
+      # This method filters the enrollments based on the given month and year, considering
+      # the enrollment state, start date, and end date.
+      #
+      # @param month [Integer] The month for which enrollments are to be retrieved (1 to 12).
+      # @param year [Integer] The year for which enrollments are to be retrieved.
+      # @return [Array] The enrollments that are active for the given month and year.
       def enrollments_for_month(month, year)
         enrollments.select do |enrollment|
           next if enrollment.aasm_state == "coverage_canceled"
@@ -244,7 +250,7 @@ module InsurancePolicies
           end_of_month = Date.new(year, month, 1).end_of_month
           coverage_end_month = end_date.month
           coverage_end_month = 12 if year != end_date.year
-          next unless start_date < end_of_month
+          next unless start_date <= end_of_month
 
           (start_date.month..coverage_end_month).include?(month)
         end.compact

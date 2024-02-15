@@ -3,7 +3,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.6"
+ruby "3.2.2"
 
 #######################################################
 # Local components/engines
@@ -22,7 +22,7 @@ gem 'event_source', git: 'https://github.com/ideacrew/event_source.git', branch:
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 
-gem 'carrierwave-mongoid', :require => 'carrierwave/mongoid'
+gem 'carrierwave-mongoid','~> 1.4.0', :require => 'carrierwave/mongoid'
 
 gem 'dry-container',       '0.7.2'
 gem 'dry-schema',          '~> 1.6.2'
@@ -42,16 +42,17 @@ gem 'keepr', '~> 0.7.0'
 gem 'money-rails', '~> 1.15'
 gem 'mongoid',             '~> 7.4'
 
+gem 'nokogiri', '~> 1.16.2'
 gem 'nokogiri-happymapper'
 
 # Postgres Database
 gem 'pg'
 
 # Use Puma as the app server
-gem 'puma', '~> 5.0'
+gem 'puma', '~> 6.4.2'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem "rails", "~> 7.0.0" # , ">= 7.0.0"
+gem "rails", "~> 7.0.7.2"
 
 gem 'rbnacl'
 

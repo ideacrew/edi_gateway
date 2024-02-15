@@ -55,31 +55,21 @@ module Subscribers
         Logger.new("#{Rails.root}/log/#{event}_#{Date.today.strftime('%Y_%m_%d')}.log")
       end
 
-      # rubocop:disable Metrics/MethodLength
       def process_irs_group(payload, subscriber_logger, routing_key)
-        cv3_payload =
-          ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
-            {
-              tax_year: payload[:tax_year],
-              tax_form_type: payload[:tax_form_type],
-              irs_group_id: payload[:irs_group_id]
-            }
-          )
-        raise cv3_payload.failure unless cv3_payload.success?
-
         result =
           ::Tax1095a::PublishFamilyPayload.new.call(
             {
               tax_year: payload[:tax_year],
               tax_form_type: payload[:tax_form_type],
               transmission_kind: payload[:transmission_kind],
-              cv3_payload: cv3_payload.success
+              irs_group_id: payload[:irs_group_id]
             }
           )
 
         if result.success?
           subscriber_logger.info(
-            "OK: :Published successfully and acked for irs_group #{payload[:irs_group_id]}, for routing_key: #{routing_key}"
+            "OK: :Published successfully and acked for irs_group #{payload[:irs_group_id]}, for routing_key: #{routing_key},
+            payload: #{result.success[1]}"
           )
         else
           errors =
@@ -95,7 +85,6 @@ module Subscribers
           )
         end
       end
-      # rubocop:enable Metrics/MethodLength
     end
   end
 end

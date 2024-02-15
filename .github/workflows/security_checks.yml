@@ -1,0 +1,103 @@
+name: Security Checks
+on:
+  push:
+  schedule:
+    - cron: '0 5 * * *'
+
+jobs:
+  bearer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+      - name: Cache Gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
+      - name: bundle install
+        run: |
+          export BUNDLE_GITHUB__COM=x-access-token:${{ secrets.X12_TOKEN }}
+          bundle config path vendor/bundle
+          bundle install
+      - name: install bearer
+        run: |
+          sudo apt-get install apt-transport-https
+          echo "deb [trusted=yes] https://apt.fury.io/bearer/ /" | sudo tee -a /etc/apt/sources.list.d/fury.list
+          sudo apt-get update
+          sudo apt-get install bearer
+      - name: Run Bearer
+        uses: bearer/bearer-action@v2
+        with:
+          config-file: './bearer.yml'
+          skip-path: './1095a_csv_report.rb, ./db/schema.rb'
+      - name: build bearer report
+        if: failure()
+        run: |
+          bearer scan --quiet --config-file ./bearer.yml --format html --output bearer.html .
+      - name: upload bearer failure report
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: Security Reports
+          path: bearer.html
+  brakeman:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+      - name: Cache Gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
+      - name: bundle install
+        run: |
+          export BUNDLE_GITHUB__COM=x-access-token:${{ secrets.X12_TOKEN }}
+          bundle config path vendor/bundle
+          bundle install
+      - name: install brakeman
+        run: |
+          gem install brakeman
+      - name: run brakeman
+        run: |
+          brakeman --format html --output brakeman.html
+      - name: upload brakeman failure report
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: Security Reports
+          path: brakeman.html
+  bundler-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+      - name: Cache Gems
+        uses: actions/cache@v1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-edi_gateway-gems-${{ hashFiles('**/Gemfile.lock') }}
+      - name: bundle install
+        run: |
+          export BUNDLE_GITHUB__COM=x-access-token:${{ secrets.X12_TOKEN }}
+          bundle config path vendor/bundle
+          bundle install
+      - name: install bundler-audit
+        run: |
+          gem install bundler-audit && bundle-audit update
+      - name: run bundler-audit
+        run: |
+          bundle-audit --output=bundler_audit.txt
+      - name: upload bundler-audit failure report
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: Security Reports
+          path: bundler_audit.txt

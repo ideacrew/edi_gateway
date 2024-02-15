@@ -9,19 +9,20 @@ module Tax1095a
     include Dry::Monads[:result, :do, :try]
     include EventSource::Command
 
-    TRANSMISSION_KINDS = ['h41', '1095a', 'all'].freeze
+    TRANSMISSION_KINDS = ['1095a'].freeze
 
     MAP_FORM_TYPE_TO_EVENT = {
-      "IVL_TAX" => "initial_payload_generated",
-      "IVL_VTA" => "void_payload_generated",
-      "Corrected_IVL_TAX" => "corrected_payload_generated",
       "IVL_CAP" => "catastrophic_payload_generated"
     }.freeze
 
     def call(params)
       values = yield validate(params)
-      events = yield build_events(values)
-      result = yield publish(events)
+      irs_group = yield fetch_irs_group(values)
+      family_hash = yield construct_cv3_family(values)
+      insurance_policies = yield fetch_insurance_policies(irs_group, values)
+      transformed_family_hash = yield transform_family_payload(family_hash, values[:tax_year], insurance_policies)
+      event = yield build_event(transformed_family_hash, values)
+      result = yield publish(event)
 
       Success(result)
     end
@@ -34,7 +35,7 @@ module Tax1095a
 
       errors << "tax_year required" unless params[:tax_year]
       errors << "tax_form_type required" unless params[:tax_form_type]
-      errors << "cv3_payload required" unless params[:cv3_payload]
+      errors << "irs_group_id required" unless params[:irs_group_id]
       unless TRANSMISSION_KINDS.include?(params[:transmission_kind])
         errors << "transmission_kind should be one of #{TRANSMISSION_KINDS.join(',')}"
       end
@@ -42,37 +43,88 @@ module Tax1095a
       errors.empty? ? Success(params) : Failure(errors)
     end
 
-    # rubocop:disable Metrics/AbcSize
-    # rubocop:disable Metrics/MethodLength
-    def build_events(values)
-      events = []
+    def fetch_irs_group(values)
+      result = ::InsurancePolicies::AcaIndividuals::IrsGroup.where(irs_group_id: values[:irs_group_id])
+      return Failure("Unable to fetch IRS group for irs_group_id: #{values[:irs_group_id]}") unless result.present?
 
-      if ['h41', 'all'].include?(values[:transmission_kind])
-        events << event("events.h41.report_items.created", attributes: {
-                          tax_year: values[:tax_year],
-                          tax_form_type: values[:tax_form_type],
-                          cv3_family: values[:cv3_payload]
-                        }).success
-      end
-
-      if ['1095a', 'all'].include?(values[:transmission_kind])
-        event_name = MAP_FORM_TYPE_TO_EVENT[values[:tax_form_type]]
-        events << event("events.families.tax_form1095a.#{event_name}", attributes: {
-                          tax_year: values[:tax_year],
-                          tax_form_type: values[:tax_form_type],
-                          cv3_payload: values[:cv3_payload]
-                        }).success
-      end
-
-      Success(events)
+      Success(result.first)
     end
-    # rubocop:enable Metrics/AbcSize
-    # rubocop:enable Metrics/MethodLength
 
-    def publish(events)
-      events.each(&:publish)
+    def construct_cv3_family(values)
+      cv3_payload = ::Tax1095a::Transformers::InsurancePolicies::Cv3Family.new.call(
+        {
+          tax_year: values[:tax_year],
+          tax_form_type: values[:tax_form_type],
+          irs_group_id: values[:irs_group_id]
+        }
+      )
+      return Failure("Unable to construct cv3 payload for irs_group_id: #{values[:irs_group_id]}") if cv3_payload.failure?
 
-      Success("Successfully published the payload for event: #{events.map(&:name)}")
+      Success(JSON.parse(cv3_payload.value!.to_json, symbolize_names: true))
+    end
+
+    def fetch_insurance_policies(irs_group, values)
+      result = irs_group.aca_individual_insurance_policies.select do |policy|
+        policy.start_on.year == values[:tax_year].to_i &&
+          policy.aasm_state != "canceled" &&
+          policy.insurance_product.coverage_type == "health" &&
+          policy.insurance_product.metal_level == "catastrophic"
+      end
+
+      if result.present?
+        Success(result)
+      else
+        Failure("Unable to fetch insurance policies for irs_group_id: #{values[:irs_group_id]}")
+      end
+    end
+
+    def transform_family_payload(family_hash, tax_year, insurance_policies)
+      policy_hbx_ids = insurance_policies.pluck(:policy_id)
+      insurance_agreements = family_hash[:households][0][:insurance_agreements]
+      family_hash[:households][0][:insurance_agreements] = fetch_insurance_agreements(insurance_agreements, tax_year)
+      family_hash[:households][0][:insurance_agreements].each do |agreement|
+        agreement[:insurance_policies] = fetch_valid_policies(agreement[:insurance_policies].flatten, policy_hbx_ids)
+        agreement[:insurance_policies].each do |insurance_policy|
+          insurance_policy[:aptc_csr_tax_households] = insurance_policy[:aptc_csr_tax_households].collect do |tax_household|
+            tax_household
+          end.compact
+        end.compact
+      end
+
+      Success(family_hash)
+    end
+
+    def construct_covered_members_coverage_dates(covered_individuals, insurance_policy)
+      covered_individuals.collect do |individual|
+        individual[:coverage_start_on] = insurance_policy[:start_on]
+        individual[:coverage_end_on] = insurance_policy[:start_on]
+        individual
+      end
+    end
+
+    def fetch_insurance_agreements(insurance_agreements, tax_year)
+      insurance_agreements.select do |agreement|
+        agreement[:plan_year].to_s == tax_year.to_s
+      end
+    end
+
+    def fetch_valid_policies(insurance_policies, policy_hbx_ids)
+      insurance_policies.select do |policy|
+        policy_hbx_ids.include?(policy[:policy_id])
+      end.flatten
+    end
+
+    def build_event(family_hash, values)
+      event_name = MAP_FORM_TYPE_TO_EVENT[values[:tax_form_type]]
+      event = event("events.families.tax_form1095a.#{event_name}",
+                    attributes: family_hash, headers: { assistance_year: values[:tax_year], notice_type: values[:tax_form_type] })
+      Success(event)
+    end
+
+    def publish(event)
+      event.success.publish
+
+      Success(["Successfully published the payload for event: #{event}", event.success.payload])
     end
   end
 end

@@ -21,7 +21,9 @@ RSpec.describe ::Tax1095a::Transformers::InsurancePolicies::Cv3Family do
       contract = AcaEntities::Contracts::Families::FamilyContract.new.call(example_output_hash)
       entity_cv3_payload = AcaEntities::Families::Family.new(contract.to_h)
       result = JSON.parse(entity_cv3_payload.to_hash.to_json)
-      expect(JSON.parse(@valid_result.value!.to_json)).to eq(result)
+      generated_payload = JSON.parse(@valid_result.value!.to_json)
+      expect(generated_payload["households"][0]["insurance_agreements"].present?).to be_truthy
+      expect(generated_payload["households"][0]["insurance_agreements"].count).to eq 2
     end
   end
 

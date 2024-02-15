@@ -208,6 +208,13 @@ RSpec.describe InsurancePolicies::AcaIndividuals::InsurancePolicy, type: :model,
       expect(result).to match_array([enrollment_1])
       expect(result).not_to include([enrollment_2])
     end
+
+    it "returns enrollments which exists in a given month and year even though enrollment start date is end of month" do
+      enrollment_1.update_attributes(end_on: Date.new(year, 5, 30))
+      enrollment_2.update_attributes(start_on: Date.new(year, 5, 31), effectuated_on: Date.new(year, 5, 31))
+      result = insurance_policy.enrollments_for_month(5, year)
+      expect(result).to match_array([enrollment_1, enrollment_2])
+    end
   end
 
   context "#applied_aptc_amount_for" do
