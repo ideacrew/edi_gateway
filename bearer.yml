@@ -20,15 +20,6 @@ report:
     - a6e77c6d42db8f03ffbe5acae290f72c_0
     - a6e77c6d42db8f03ffbe5acae290f72c_1
     - a6e77c6d42db8f03ffbe5acae290f72c_2
-    #  # this report is not triggered via web interface. Can only be triggered by an admin on the command line
-    - c93b0a613ceb859f60b4991c33e2d73f_0
-    - c93b0a613ceb859f60b4991c33e2d73f_1
-    - c93b0a613ceb859f60b4991c33e2d73f_2
-    - c93b0a613ceb859f60b4991c33e2d73f_3
-    - c93b0a613ceb859f60b4991c33e2d73f_4
-    - c93b0a613ceb859f60b4991c33e2d73f_5
-    - c93b0a613ceb859f60b4991c33e2d73f_6
-    - c93b0a613ceb859f60b4991c33e2d73f_7
     # skip vendor/bundle
     - 24f192aaba5f9d3ff4edc63c5450955c_0
     - 6dbe8385a48c46b4fa411bfeea05a471_0
@@ -284,15 +275,21 @@ report:
     - fc8e7d28b74b92a77180c6509149c787_0
     - fc8e7d28b74b92a77180c6509149c787_1
     - fc8e7d28b74b92a77180c6509149c787_2
+    - b3e8127b1b75a8890bd2a0c23f9aa739_0
+    - a6e851123c63ef39b616e14b4c6b34fb_0
+    - a6e851123c63ef39b616e14b4c6b34fb_2
 
-    # skip 1095a_csv_report.rb related fingerprints
-    - c93b0a613ceb859f60b4991c33e2d73f_8
-    - c93b0a613ceb859f60b4991c33e2d73f_9
-    - c93b0a613ceb859f60b4991c33e2d73f_10
-    - c93b0a613ceb859f60b4991c33e2d73f_11
-    - c93b0a613ceb859f60b4991c33e2d73f_12
-    - c93b0a613ceb859f60b4991c33e2d73f_13
-    - c93b0a613ceb859f60b4991c33e2d73f_14
+    # @note 1095a_csv_report is not triggered via web interface.
+    #   This report can only be triggered by an admin on the command line.
+    #   Therefore, we skip 1095a_csv_report.rb related fingerprints.
+    - c93b0a613ceb859f60b4991c33e2d73f_0
+    - c93b0a613ceb859f60b4991c33e2d73f_1
+    - c93b0a613ceb859f60b4991c33e2d73f_2
+    - c93b0a613ceb859f60b4991c33e2d73f_3
+    - c93b0a613ceb859f60b4991c33e2d73f_4
+    - c93b0a613ceb859f60b4991c33e2d73f_5
+    - c93b0a613ceb859f60b4991c33e2d73f_6
+    - c93b0a613ceb859f60b4991c33e2d73f_7
 
   format: ""
   no-color: false
