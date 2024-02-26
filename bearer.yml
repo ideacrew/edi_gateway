@@ -243,6 +243,14 @@ report:
     - 727b4209148717d6b9120c413bf68181_1
     - f6036a3d227b074b11b9b9c087abe54c_5
 
+    # skip 1095a_csv_report.rb related fingerprints
+    - c93b0a613ceb859f60b4991c33e2d73f_8
+    - c93b0a613ceb859f60b4991c33e2d73f_9
+    - c93b0a613ceb859f60b4991c33e2d73f_10
+    - c93b0a613ceb859f60b4991c33e2d73f_11
+    - c93b0a613ceb859f60b4991c33e2d73f_12
+    - c93b0a613ceb859f60b4991c33e2d73f_13
+    - c93b0a613ceb859f60b4991c33e2d73f_14
 
   format: ""
   no-color: false
@@ -267,6 +275,4 @@ scan:
   scanner:
     - sast
     - secrets
-  skip-path:
-    - ./1095a_csv_report.rb
-    - ./db/schema.rb
+  skip-path: []
