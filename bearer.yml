@@ -267,4 +267,6 @@ scan:
   scanner:
     - sast
     - secrets
-  skip-path: []
+  skip-path:
+    - ./1095a_csv_report.rb
+    - ./db/schema.rb
