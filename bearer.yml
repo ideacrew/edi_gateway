@@ -166,6 +166,9 @@ report:
     - 713d57c6e16a328319bd6a628f50eb33_0
     - 39f694c852e578a1a20914294d15b73b_0
     - 727b4209148717d6b9120c413bf68181_1
+    - b3e8127b1b75a8890bd2a0c23f9aa739_1
+    - a6e851123c63ef39b616e14b4c6b34fb_1
+    - a6e851123c63ef39b616e14b4c6b34fb_3
 
     # skips newly identified vendor/bundle path issues/findings
     - 2ead719c16d1886621fb81ab9d85a1a3_0
