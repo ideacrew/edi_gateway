@@ -311,7 +311,7 @@ report:
     - ca2424a2827b3bd46681ff0292d7648c_0
     - ca2424a2827b3bd46681ff0292d7648c_1
     - ca2424a2827b3bd46681ff0292d7648c_2
-
+    - 98b4b50f6bfbc3f197fc899ec6c0b79b_1
 
     # @note 1095a_csv_report is not triggered via web interface.
     #   This report can only be triggered by an admin on the command line.
@@ -325,9 +325,9 @@ report:
     - c93b0a613ceb859f60b4991c33e2d73f_6
     - c93b0a613ceb859f60b4991c33e2d73f_7
 
-  format: ""
+  format: ''
   no-color: false
-  output: ""
+  output: ''
   report: security
   severity: critical,high,medium,low,warning
 rule:
@@ -335,8 +335,8 @@ rule:
   only-rule: []
   skip-rule: []
 scan:
-  context: ""
-  data_subject_mapping: ""
+  context: ''
+  data_subject_mapping: ''
   disable-domain-resolution: true
   domain-resolution-timeout: 3s
   external-rule-dir: []
