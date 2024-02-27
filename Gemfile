@@ -3,8 +3,6 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.2.2"
-
 #######################################################
 # Local components/engines
 #######################################################
@@ -18,10 +16,10 @@ gem "bootsnap", require: false
 
 gem 'carrierwave-mongoid','~> 1.4.0', :require => 'carrierwave/mongoid'
 
-gem 'dry-container',       '~> 0.9'
-gem 'dry-schema',          '~> 1.6.2'
-gem 'dry-types',           '~> 1.5.1'
-gem 'dry-validation',      '~> 1.6.0'
+gem 'dry-container',       '0.11.0'
+gem 'dry-schema',          '1.11.3'
+gem 'dry-types',           '1.6.1'
+gem 'dry-validation',      '1.9.0'
 
 # Double entry accounting feature [https://github.com/ledermann/keepr]
 gem 'keepr', '~> 0.7.0'
