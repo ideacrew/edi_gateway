@@ -1,242 +1,242 @@
----
-registry:
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-    features:
-      - key: :insurer_keys
-        item:
-          - :harvard_pilgrim
-          - :anthem
-        is_enabled: true
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-      - :insurer_keys
-    features:
-      - key: :harvard_pilgrim
-        is_enabled: true
-        settings:
-          - key: :title
-            item: "Harvard Pilgrim"
-          - key: :hios_id
-            item: "96667"
-      - key: :anthem
-        is_enabled: true
-        settings:
-          - key: :title
-            item: "Anthem"
-          - key: :hios_id
-            item: "45455"
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-      - :accounts
-      - :chart_of_accounts
-    features:
-      - key: :hbx_account_keys
-        item:
-          - :accounts_receivable_account
-          - :revenue_account
-          - :user_fees_ar_account
-          - :user_fees_revenue_account
-        is_enabled: true
-      - key: :journal_keys
-        item:
-          - :accounts_receivable_journal
-        is_enabled: true
-      - key: :insurer_account_keys
-        item:
-          - :user_fees_ar_insurer_account
-          - :user_fees_revenue_insurer_account
-          - :user_fees_adjustment_ar_insurer_account
-          - :user_fees_adjustment_revenue_insurer_account
-          # - :full_premium_ar_insurer_account
-          # - :full_premium_revenue_insurer_account
-        is_enabled: true
-      - key: :insurer_journal_keys
-        item:
-          - :user_fees_journal
-          - :user_fees_adjustment_journal
-          - :full_premium_journal
-        is_enabled: true
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-      - :accounts
-      - :chart_of_accounts
-      - :account_keys
-    features:
-      - key: :accounts_receivable_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: Accounts Receivable
-          - key: :number
-            item: 1100
-          - key: :kind
-            item: :asset
-      - key: :revenue_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: Revenue
-          - key: :number
-            item: 4000
-          - key: :kind
-            item: :revenue
-      - key: :user_fees_ar_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: User Fees A/R
-          - key: :number
-            item: 1110
-          - key: :kind
-            item: :asset
-          - key: :parent
-            item: <% lambda { Keepr::Account.find_by(:number => 1100) } %>
-      - key: :user_fees_revenue_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: User Fees Revenue
-          - key: :number
-            item: 4110
-          - key: :kind
-            item: :revenue
-          - key: :parent
-            item: <% lambda { Keepr::Account.find_by(:number => 4000) } %>
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-      - :accounts
-      - :chart_of_accounts
-      - :journal_keys
-    features:
-      - key: :accounts_receivable_journal
-        is_enabled: true
-        settings:
-          - key: :number
-            item: 1100
-          - key: :date
-            item: <% Date.new(Date.today.year, 1, 1) %>
-          - key: :subject
-            item: Total Account Receivable & Revenue Journal
-          - key: :note
-            item: Shows up on the P&L report
-          - key: :side
-            item: "credit"
-          - key: :credits
-            item: []
-          - key: :debits
-            item: []
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-      - :accounts
-      - :chart_of_accounts
-      - :insurer_account_keys
-    features:
-      - key: :user_fees_ar_insurer_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: <insurer_title> User Fees A/R
-          - key: :number
-            item: 1110
-          - key: :kind
-            item: :revenue
-          - key: :parent
-            item: <% lambda { Keepr::Account.find_by(:number => 1110) } %>
-      - key: :user_fees_revenue_insurer_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: <insurer_title> User Fees Revenue
-          - key: :number
-            item: 4110
-          - key: :kind
-            item: :revenue
-          - key: :parent
-            item: <% lambda { Keepr::Account.find_by(:number => 4110) } %>
-      - key: :user_fees_adjustment_ar_insurer_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: <insurer_title> User Fees A/R Adjustment
-          - key: :number
-            item: 1210
-          - key: :kind
-            item: :revenue
-          - key: :parent
-            item: <% lambda { Keepr::Account.find_by(:number => 1110) } %>
-      - key: :user_fees_adjustment_revenue_insurer_account
-        is_enabled: true
-        settings:
-          - key: :name
-            item: <insurer_title> User Fees Revenue Adjustment
-          - key: :number
-            item: 4210
-          - key: :kind
-            item: :revenue
-          - key: :parent
-            item: <% lambda { Keepr::Account.find_by(:number => 4110) } %>
-  - namespace:
-      - :edi_gateway
-      - :user_fees
-      - :accounts
-      - :chart_of_accounts
-      - :insurer_journal_keys
-    features:
-      - key: :user_fees_journal
-        is_enabled: true
-        settings:
-          - key: :number
-            item: 1100
-          - key: :date
-            item: <% Date.new(Date.today.year, 1, 1) %>
-          - key: :subject
-            item: Total Account Receivable & Revenue Journal
-          - key: :note
-            item: Shows up on the P&L report
-          - key: :side
-            item: "credit"
-          - key: :credits
-            item: []
-          - key: :debits
-            item: []
-      - key: :user_fees_adjustment_journal
-        is_enabled: true
-        settings:
-          - key: :number
-            item: 1100
-          - key: :date
-            item: <% Date.new(Date.today.year, 1, 1) %>
-          - key: :subject
-            item: Total Account Receivable & Revenue Journal
-          - key: :note
-            item: Shows up on the P&L report
-          - key: :side
-            item: "credit"
-          - key: :credits
-            item: []
-          - key: :debits
-            item: []
-      - key: :full_premium_journal
-        is_enabled: true
-        settings:
-          - key: :number
-            item: 1100
-          - key: :date
-            item: <% Date.new(Date.today.year, 1, 1) %>
-          - key: :subject
-            item: Total Account Receivable & Revenue Journal
-          - key: :note
-            item: Shows up on the P&L report
-          - key: :side
-            item: "credit"
-          - key: :credits
-            item: []
-          - key: :debits
-            item: []
+# ---
+# registry:
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#     features:
+#       - key: :insurer_keys
+#         item:
+#           - :harvard_pilgrim
+#           - :anthem
+#         is_enabled: true
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#       - :insurer_keys
+#     features:
+#       - key: :harvard_pilgrim
+#         is_enabled: true
+#         settings:
+#           - key: :title
+#             item: "Harvard Pilgrim"
+#           - key: :hios_id
+#             item: "96667"
+#       - key: :anthem
+#         is_enabled: true
+#         settings:
+#           - key: :title
+#             item: "Anthem"
+#           - key: :hios_id
+#             item: "45455"
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#       - :accounts
+#       - :chart_of_accounts
+#     features:
+#       - key: :hbx_account_keys
+#         item:
+#           - :accounts_receivable_account
+#           - :revenue_account
+#           - :user_fees_ar_account
+#           - :user_fees_revenue_account
+#         is_enabled: true
+#       - key: :journal_keys
+#         item:
+#           - :accounts_receivable_journal
+#         is_enabled: true
+#       - key: :insurer_account_keys
+#         item:
+#           - :user_fees_ar_insurer_account
+#           - :user_fees_revenue_insurer_account
+#           - :user_fees_adjustment_ar_insurer_account
+#           - :user_fees_adjustment_revenue_insurer_account
+#           # - :full_premium_ar_insurer_account
+#           # - :full_premium_revenue_insurer_account
+#         is_enabled: true
+#       - key: :insurer_journal_keys
+#         item:
+#           - :user_fees_journal
+#           - :user_fees_adjustment_journal
+#           - :full_premium_journal
+#         is_enabled: true
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#       - :accounts
+#       - :chart_of_accounts
+#       - :account_keys
+#     features:
+#       - key: :accounts_receivable_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: Accounts Receivable
+#           - key: :number
+#             item: 1100
+#           - key: :kind
+#             item: :asset
+#       - key: :revenue_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: Revenue
+#           - key: :number
+#             item: 4000
+#           - key: :kind
+#             item: :revenue
+#       - key: :user_fees_ar_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: User Fees A/R
+#           - key: :number
+#             item: 1110
+#           - key: :kind
+#             item: :asset
+#           - key: :parent
+#             item: <% lambda { Keepr::Account.find_by(:number => 1100) } %>
+#       - key: :user_fees_revenue_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: User Fees Revenue
+#           - key: :number
+#             item: 4110
+#           - key: :kind
+#             item: :revenue
+#           - key: :parent
+#             item: <% lambda { Keepr::Account.find_by(:number => 4000) } %>
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#       - :accounts
+#       - :chart_of_accounts
+#       - :journal_keys
+#     features:
+#       - key: :accounts_receivable_journal
+#         is_enabled: true
+#         settings:
+#           - key: :number
+#             item: 1100
+#           - key: :date
+#             item: <% Date.new(Date.today.year, 1, 1) %>
+#           - key: :subject
+#             item: Total Account Receivable & Revenue Journal
+#           - key: :note
+#             item: Shows up on the P&L report
+#           - key: :side
+#             item: "credit"
+#           - key: :credits
+#             item: []
+#           - key: :debits
+#             item: []
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#       - :accounts
+#       - :chart_of_accounts
+#       - :insurer_account_keys
+#     features:
+#       - key: :user_fees_ar_insurer_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: <insurer_title> User Fees A/R
+#           - key: :number
+#             item: 1110
+#           - key: :kind
+#             item: :revenue
+#           - key: :parent
+#             item: <% lambda { Keepr::Account.find_by(:number => 1110) } %>
+#       - key: :user_fees_revenue_insurer_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: <insurer_title> User Fees Revenue
+#           - key: :number
+#             item: 4110
+#           - key: :kind
+#             item: :revenue
+#           - key: :parent
+#             item: <% lambda { Keepr::Account.find_by(:number => 4110) } %>
+#       - key: :user_fees_adjustment_ar_insurer_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: <insurer_title> User Fees A/R Adjustment
+#           - key: :number
+#             item: 1210
+#           - key: :kind
+#             item: :revenue
+#           - key: :parent
+#             item: <% lambda { Keepr::Account.find_by(:number => 1110) } %>
+#       - key: :user_fees_adjustment_revenue_insurer_account
+#         is_enabled: true
+#         settings:
+#           - key: :name
+#             item: <insurer_title> User Fees Revenue Adjustment
+#           - key: :number
+#             item: 4210
+#           - key: :kind
+#             item: :revenue
+#           - key: :parent
+#             item: <% lambda { Keepr::Account.find_by(:number => 4110) } %>
+#   - namespace:
+#       - :edi_gateway
+#       - :user_fees
+#       - :accounts
+#       - :chart_of_accounts
+#       - :insurer_journal_keys
+#     features:
+#       - key: :user_fees_journal
+#         is_enabled: true
+#         settings:
+#           - key: :number
+#             item: 1100
+#           - key: :date
+#             item: <% Date.new(Date.today.year, 1, 1) %>
+#           - key: :subject
+#             item: Total Account Receivable & Revenue Journal
+#           - key: :note
+#             item: Shows up on the P&L report
+#           - key: :side
+#             item: "credit"
+#           - key: :credits
+#             item: []
+#           - key: :debits
+#             item: []
+#       - key: :user_fees_adjustment_journal
+#         is_enabled: true
+#         settings:
+#           - key: :number
+#             item: 1100
+#           - key: :date
+#             item: <% Date.new(Date.today.year, 1, 1) %>
+#           - key: :subject
+#             item: Total Account Receivable & Revenue Journal
+#           - key: :note
+#             item: Shows up on the P&L report
+#           - key: :side
+#             item: "credit"
+#           - key: :credits
+#             item: []
+#           - key: :debits
+#             item: []
+#       - key: :full_premium_journal
+#         is_enabled: true
+#         settings:
+#           - key: :number
+#             item: 1100
+#           - key: :date
+#             item: <% Date.new(Date.today.year, 1, 1) %>
+#           - key: :subject
+#             item: Total Account Receivable & Revenue Journal
+#           - key: :note
+#             item: Shows up on the P&L report
+#           - key: :side
+#             item: "credit"
+#           - key: :credits
+#             item: []
+#           - key: :debits
+#             item: []
