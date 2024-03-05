@@ -76,7 +76,7 @@ group :development do
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
   gem 'web-console'
 
-  gem 'yard'
+  gem 'yard', '~> 0.9.35'
   gem 'yard-mongoid'
 end
 
