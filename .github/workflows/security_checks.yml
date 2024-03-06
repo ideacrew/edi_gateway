@@ -32,7 +32,7 @@ jobs:
         uses: bearer/bearer-action@v2
         with:
           config-file: './bearer.yml'
-          skip-path: './1095a_csv_report.rb, ./db/schema.rb'
+          skip-path: './1095a_csv_report.rb, ./db/schema.rb, vendor/'
       - name: build bearer report
         if: failure()
         run: |
