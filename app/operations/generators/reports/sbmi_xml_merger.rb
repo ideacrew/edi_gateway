@@ -66,7 +66,8 @@ module Generators
       # rubocop:disable Layout/LineLength
       def merge
         cms_pbp_source_sbm_id = settings[:cms_pbp_generation][:cms_pbp_source_sbm_id]
-        file_name = "#{cms_pbp_source_sbm_id}.EPS.SBMI.D#{Time.now.utc.strftime('%y%m%d')}.T#{Time.now.utc.strftime('%H%M%S')}000.P.IN"
+        batch_timestamp = fetch_batch_timestamp
+        file_name = "#{cms_pbp_source_sbm_id}.EPS.SBMI.D#{batch_timestamp}"
         @data_file_path = "#{sbmi_folder_path}/#{file_name}"
 
         File.write(@data_file_path, build_merged_xml.to_xml(:indent => 2))
@@ -93,6 +94,24 @@ module Generators
           puts "Element count looks OK!!"
         else
           puts "ERROR: Processed #{@doc_count} files...but got #{element_count} elements"
+        end
+      end
+
+      # Fetches the timestamp for a given batch reference.
+      #
+      # If the feature `:cms_eft_serverless` is enabled in `FdshGatewayRegistry`, the timestamp is formatted as:
+      # YYMMDD.THHMMSSMMM.P
+      # Otherwise, the timestamp is formatted as:
+      # YYMMDD.THHMMSSMMM.P.IN
+      #
+      # @param batch_reference [String] The reference for the batch.
+      # @return [String] The formatted timestamp.
+      def fetch_batch_timestamp
+        batch_reference = Time.now.gmtime.strftime("%Y-%m-%dT%H:%M:%SZ")
+        if EdiGatewayRegistry.feature_enabled?(:cms_eft_serverless)
+          DateTime.strptime(batch_reference).strftime("%y%m%d.T%H%M%S%L.P")
+        else
+          DateTime.strptime(batch_reference).strftime("%y%m%d.T%H%M%S%L.P.IN")
         end
       end
     end
